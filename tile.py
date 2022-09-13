@@ -1,7 +1,7 @@
 import os
 
 from bitmaps import BitMaps
-from constants import EMPTY, OCCUPIED, CLEARED, NORMAL, REVERSE
+from constants import EMPTY, OCCUPIED, CLEARED, NORMAL, REVERSE, RED, GREEN
 
 class Tile:
 	def __init__(self, name, bmps):
@@ -60,9 +60,9 @@ class SignalTile:
 		self.bmps = bmps
 
 	def getBmp(self, sig):
-		if sig.aspect == 0:
+		if sig.aspect == RED:
 			return self.bmps["red"]
-		elif sig.aspect == 1:
+		elif sig.aspect == GREEN:
 			return self.bmps["green"]
 
 
@@ -145,6 +145,19 @@ def loadTiles(bitmaps):
 		}
 	)
 
+	turnouts["torightupinv"] = TurnoutTile("torightup", 
+		{
+			"white": b.torightup.reversed.normal,
+			"green": b.torightup.reversed.routed,
+			"red": b.torightup.reversed.occupied
+		},
+		{
+			"white": b.torightup.normal.normal,
+			"green": b.torightup.normal.routed,
+			"red": b.torightup.normal.occupied
+		}
+	)
+
 	turnouts["toleftleft"] = TurnoutTile("toleftleft", 
 		{
 			"white": b.toleftleft.normal.normal,
@@ -188,13 +201,13 @@ def loadTiles(bitmaps):
 	signals = {}
 	signals["left"] = SignalTile("C11", 
 		{
-			"green": b.east.green,
-			"red": b.east.red
+			"green": b.left.green,
+			"red": b.left.red
 		})
 	signals["right"] = SignalTile("C12", 
 		{
-			"green": b.west.green,
-			"red": b.west.red
+			"green": b.right.green,
+			"red": b.right.red
 		})
 
 	return tiles, turnouts, signals

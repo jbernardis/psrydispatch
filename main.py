@@ -2,14 +2,18 @@ import wx
 import wx.lib.newevent
 import os
 import json
+import inspect
 
+cmdFolder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
+
+from settings import Settings
 from bitmaps import BitMaps
 from tower import Towers
 from hyde import Hyde
 from trackdiagram import TrackDiagram
 from tile import loadTiles
 
-from constants import HyYdPt, LaKr, NaCl, screensList
+from constants import HyYdPt, LaKr, NaCl, screensList, EMPTY, OCCUPIED, CLEARED, TOGGLE, NORMAL, REVERSE, RED, GREEN
 from listener import Listener
 
 (DeliveryEvent, EVT_DELIVERY) = wx.lib.newevent.NewEvent() 
@@ -22,10 +26,12 @@ class Node:
 		self.panel = None
 
 useCameraDiagrams = False
+import pprint
 
 class MainFrame(wx.Frame):
 	def __init__(self):
 		wx.Frame.__init__(self, None, size=(900, 800), style=wx.DEFAULT_FRAME_STYLE)
+		self.settings = Settings(cmdFolder)
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 		vsz = wx.BoxSizer(wx.VERTICAL)
 		hsz = wx.BoxSizer(wx.HORIZONTAL)
@@ -44,13 +50,6 @@ class MainFrame(wx.Frame):
 		self.currentScreen = LaKr
 		w, h = self.diagrams[self.currentScreen].panel.GetSize()
 		self.diagrams[self.currentScreen].panel.Show()
-
-		b = wx.Button(self, wx.ID_ANY, "doit", pos=(30, h+30))
-		self.Bind(wx.EVT_BUTTON, self.OnDoit, b)
-		b = wx.Button(self, wx.ID_ANY, "doit2", pos=(110, h+30))
-		self.Bind(wx.EVT_BUTTON, self.OnDoit2, b)
-		b = wx.Button(self, wx.ID_ANY, "doit3", pos=(190, h+30))
-		self.Bind(wx.EVT_BUTTON, self.OnDoit3, b)
 
 		b = wx.Button(self, wx.ID_ANY, "Hyde/Yard/Port", pos=(500, h+50), size=(200, 50))
 		self.Bind(wx.EVT_BUTTON, lambda event: self.SwapToScreen(HyYdPt), b)
@@ -83,20 +82,38 @@ class MainFrame(wx.Frame):
 		self.towers.Initialize()
 
 		self.turnoutMap = { (t.GetScreen(), t.GetPos()): t for t in self.turnouts.values() if not t.IsRouteControlled() }
-		print(str(list(self.turnoutMap.keys())))
 		self.buttonMap = { (b.GetScreen(), b.GetPos()): b for b in self.buttons.values() }
-		print(str(list(self.buttonMap.keys())))
+		self.signalMap = { (s.GetScreen(), s.GetPos()): s for s in self.signals.values() }
 		self.towers.Draw()
+		
+		self.Bind(wx.EVT_TIMER, self.onTicker)
+		self.ticker = wx.Timer(self)
+		self.ticker.Start(1000)
+		self.buttonsToClear = []
+		
+	def onTicker(self, _):
+		collapse = False
+		for b in self.buttonsToClear:
+			b[0] -= 1
+			if b[0] == 0:
+				b[1].Release(refresh=True)
+				collapse = True
+
+		if collapse:
+			self.buttonsToClear = [x for x in self.buttonsToClear if x[0] != 0]
+
+	def ClearButtonAfter(self, secs, btn):
+		self.buttonsToClear.append([secs, btn])
 
 	def ProcessClick(self, screen, pos):
-		print("Check maps for (%s, (%d, %d)" % (screen, pos[0], pos[1]))
 		try:
 			to = self.turnoutMap[(screen, pos)]
 		except KeyError:
 			to = None
 
 		if to:
-			print("turnout %s" % to.GetName())
+			if to.Changeable():
+				self.Request({"turnout": [ [to.GetName(), TOGGLE] ]})
 			return
 
 		try:
@@ -108,7 +125,13 @@ class MainFrame(wx.Frame):
 			btn.GetTower().PerformButtonAction(btn)
 			return
 
-		print("ignoring click")
+		try:
+			sig = self.signalMap[(screen, pos)]
+		except KeyError:
+			sig = None
+
+		if sig:
+			sig.GetTower().PerformSignalAction(sig)
 
 	def DrawTile(self, screen, pos, bmp):
 		self.diagrams[screen].panel.DrawTile(pos[0], pos[1], bmp)
@@ -123,17 +146,13 @@ class MainFrame(wx.Frame):
 		self.currentScreen = screen
 		return True
 
-	def OnDoit(self, _):
-		for b in self.blocks.values():
-			b.Draw()
-		#for t in self.turnouts.values():
-			#t.Draw(self)
-			
-	def OnDoit2(self, evt):
-		self.blocks["HydeWW"].SetOccupied(refresh=True)
-			
-	def OnDoit3(self, evt):
-		pass
+	def GetBlockStatus(self, blknm):
+		try:
+			blk = self.blocks[blknm]
+		except KeyError:
+			return EMPTY
+
+		return blk.GetStatus()
 
 	def OnSubscribe(self, _):
 		if self.subscribed:
@@ -143,9 +162,9 @@ class MainFrame(wx.Frame):
 			self.subscribed = False
 			self.bSubscribe.SetLabel("Subscribe")
 		else:
-			print("tryiong to subscrube")
+			print("trying to subscrube")
 			ip = "192.168.1.138"
-			pt = 9003
+			pt = 9001
 			self.listener = Listener(self, ip, pt)
 			if not self.listener.connect():
 				print("Unable to establish connection with server")
@@ -174,15 +193,12 @@ class MainFrame(wx.Frame):
 						to = self.turnouts[turnout]
 					except KeyError:
 						print("don't know that turnout")
-					else:
-						if state.lower() == "normal":
-							to.SetNormal(refresh=True)
+						return
+					
+					tower = to.GetTower()
+					st = REVERSE if state.lower() == "reverse" else NORMAL
 
-						elif state.lower() == "reverse":
-							to.SetReverse(refresh=True)
-
-						else:
-							print("don't know that state")
+					tower.DoSwitchAction(to, st)
 
 			elif cmd == "block":
 				for block, state in parms.items():
@@ -200,12 +216,47 @@ class MainFrame(wx.Frame):
 						
 						else:
 							print("don't know that state")
+						
+			elif cmd == "signal":
+				print("signal command")
+				print(str(parms))
+				sigName = parms[0]
+				asp = parms[1]
+				try:
+					blkName = parms[2]
+				except:
+					blkName = None
+				
+				try:
+					sig = self.signals[sigName]
+				except:
+					print("don't know that signal")
+					return
+
+				if blkName is not None:
+					try:
+						blk = self.blocks[blkName]
+					except:
+						print("don't know that block")
+						return
+				else:
+					blk = None
+
+				aspect = GREEN if asp.lower() == "green" else RED
+
+				tower = sig.GetTower()
+				tower.DoSignalAction(sig, aspect, blk)
+
 			else:
 				print("some other command")
 		
 	def raiseDisconnectEvent(self): # thread context
 		evt = DisconnectEvent()
 		wx.PostEvent(self, evt)
+
+	def Request(self, req):
+		print("Outgoing request: ")
+		pprint.pprint(req)
 	
 	def onDisconnectEvent(self, _):
 		self.listener = None

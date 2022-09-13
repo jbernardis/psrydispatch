@@ -1,19 +1,40 @@
+from constants import RED
+
 class Signal:
-	def __init__(self, frame, name, pos, tiles):
+	def __init__(self, tower, screen, frame, name, pos, tiles):
+		self.tower = tower
+		self.screen = screen
 		self.frame = frame
 		self.name = name
 		self.tiles = tiles
 		self.pos = pos
-		self.aspect = 0
+		self.aspect = RED
+
+	def GetTower(self):
+		return self.tower
+
+	def GetScreen(self):
+		return self.screen
+
+	def GetName(self):
+		return self.name
+
+	def GetPos(self):
+		return self.pos
 
 	def Draw(self):
 		bmp = self.tiles.getBmp(self)
-		self.frame.DrawTile(self.pos[0], self.pos[1], bmp)
+		self.frame.DrawTile(self.screen, self.pos, bmp) 
 
-	def SetAspect(self, aspect):
+	def GetAspect(self):
+		return self.aspect
+
+	def SetAspect(self, aspect, refresh=False):
 		if self.aspect == aspect:
 			return False
 		
 		self.aspect = aspect
+		if refresh:
+			self.Draw()
 		return True
 

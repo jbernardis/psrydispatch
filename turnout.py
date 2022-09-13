@@ -16,7 +16,7 @@ class Turnout:
 
 	def Draw(self):
 		tostat = NORMAL if self.normal else REVERSE
-		blkstat = self.block.GetStatus(pos=self.pos)
+		blkstat = self.block.GetStatusFromRoute(self.screen, self.pos)
 		east = self.block.GetEast()
 		bmp = self.tiles.getBmp(tostat, blkstat, east)
 		self.frame.DrawTile(self.screen, self.pos, bmp)
@@ -30,11 +30,14 @@ class Turnout:
 	def SetPairedTurnout(self, turnout):
 		self.pairedTurnout = turnout
 
+	def Changeable(self):
+		return self.block.GetStatus() == EMPTY
+
 	def SetReverse(self, refresh=False):
 		if not self.normal:
 			return False
 
-		if self.block.GetStatus() != EMPTY:
+		if not self.Changeable():
 			# cant change a turnout in busy block
 			return False
 		
@@ -42,7 +45,7 @@ class Turnout:
 		if self.pairedTurnout is not None:
 			self.pairedTurnout.SetReverse()
 		else:
-			self.tower.DetermineRoute(self.block)
+			self.tower.DetermineRoutes(self.block)
 
 		if refresh:
 			self.Draw()
@@ -52,7 +55,7 @@ class Turnout:
 		if self.normal:
 			return False
 
-		if self.block.GetStatus() != EMPTY:
+		if not self.Changeable():
 			# cant change a turnout in busy block
 			return False
 		
@@ -60,13 +63,13 @@ class Turnout:
 		if self.pairedTurnout is not None:
 			self.pairedTurnout.SetNormal()
 		else:	
-			self.tower.DetermineRoute(self.block)
+			self.tower.DetermineRoutes(self.block)
 		if refresh:
 			self.Draw()
 		return True
 
 	def Toggle(self, refresh=False):
-		if self.block.GetStatus() != EMPTY:
+		if not self.Changeable():
 			# cant change a turnout in busy block
 			return False
 		
@@ -74,12 +77,15 @@ class Turnout:
 		if self.pairedTurnout is not None:
 			self.pairedTurnout.SetNormal()
 		else:
-			self.tower.DetermineRoute(self.block)
+			self.tower.DetermineRoutes(self.block)
 		if refresh:
 			self.Draw()
 
 	def GetName(self):
 		return self.name
+
+	def GetTower(self):
+		return self.tower
 
 	def GetScreen(self):
 		return self.screen

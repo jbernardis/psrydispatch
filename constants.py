@@ -16,3 +16,8 @@ OVERSWITCH = 1
 # turnout status
 NORMAL = 0
 REVERSE = 1
+TOGGLE = 2
+
+# signal aspects
+RED = 0
+GREEN = 1

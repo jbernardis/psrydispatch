@@ -38,7 +38,7 @@ class Button:
 
 		return True
 
-	def Releaase(self, refresh=False):
+	def Release(self, refresh=False):
 		if not self.pressed:
 			return False
 		

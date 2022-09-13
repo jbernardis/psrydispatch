@@ -1,0 +1,5 @@
+signals
+settings - implemented mechanism, but not using yet
+	single display versus 3 pages
+	dispatch versus display
+multiple routes through an OS - needs testing - but need signals first

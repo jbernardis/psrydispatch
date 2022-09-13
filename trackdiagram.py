@@ -30,10 +30,13 @@ class TrackDiagram(wx.Panel):
 
 	def OnMotion(self, evt):
 		pt = evt.GetPosition()
-		self.tx = int(pt.x/16)
-		self.ty = int(pt.y/16)
-		#print("%d %d" % (self.tx, self.ty))
-		#print("%d %d  <=> %d %d" % (self.tx, self.ty, pt.x, pt.y))
+		ntx = int(pt.x/16)
+		nty = int(pt.y/16)
+		if ntx != self.tx or nty != self.ty:
+			self.tx = ntx
+			self.ty = nty
+			print("%d %d" % (self.tx, self.ty))
+			#print("%d %d  <=> %d %d" % (self.tx, self.ty, pt.x, pt.y))
 
 	def OnLeftUp(self, evt):
 		self.frame.ProcessClick(self.screen, (self.tx, self.ty))

@@ -1,6 +1,29 @@
 from turnout import Turnout
 from constants import EMPTY, OCCUPIED, CLEARED, BLOCK, OVERSWITCH
 
+class Route:
+	def __init__(self, screen, name, blkw, pos, blke):
+		self.screen = screen
+		self.name = name
+		self.blkw = blkw
+		self.pos = [x for x in pos]
+		self.blke = blke
+
+	def GetName(self):
+		return self.name
+
+	def Contains(self, screen, pos):
+		if screen != self.screen:
+			return False
+		return pos in self.pos
+
+	def GetStatus(self, blk, frame):
+		return frame.GetBlockStatus(self.blke if blk.east else self.blkw)
+
+	def rprint(self):
+		print("%s: %s => %s => %s" % (self.name, self.blkw, str(self.pos), self.blke))
+
+
 class Block:
 	def __init__(self, tower, frame, name, tiles, east=True):
 		self.tower = tower
@@ -12,7 +35,7 @@ class Block:
 		self.occupied = False
 		self.cleared = False
 		self.determineStatus()
-		self.route = []
+		self.routes = []
 
 	def determineStatus(self):
 		self.status = OCCUPIED if self.occupied else CLEARED if self.cleared else EMPTY
@@ -23,11 +46,9 @@ class Block:
 	def GetName(self):
 		return self.name
 
-	def GetStatus(self, pos=None):
-		if pos is not None:
-			return self.status if pos in self.route else EMPTY
-		else:
-			return self.status
+	def GetStatus(self):
+		self.determineStatus()
+		return self.status
 
 	def GetEast(self):
 		return self.east
@@ -70,20 +91,43 @@ class OverSwitch (Block):
 		self.type = OVERSWITCH
 		self.turnouts = []
 
-	def SetRoute(self, route):
-		self.route = [x for x in route]
-		print("Block %s set route to %s" % (self.name, str(self.route)))
+	def SetRoutes(self, routes):
+		self.routes = [x for x in routes]
+		self.rtNames = [rte.GetName() for rte in self.routes]
 		self.Draw()
+
+	def GetRoutes(self):
+		return self.routes
+
+	def HasRoute(self, rtName):
+		return rtName in self.rtNames
 
 	def AddTurnout(self, turnout):
 		self.turnouts.append(turnout)
 
+	def GetStatusFromRoute(self, screen, pos):
+		inRoute = None
+		for rte in self.routes:
+			if rte.Contains(screen, pos):
+				inRoute = rte
+				break
+		if inRoute is None:
+			return EMPTY
+
+		return inRoute.GetStatus(self, self.frame)
+
+
 	def Draw(self):
+		self.cleared = False
+		self.occupied = False
 		for t, screen, pos, revflag in self.tiles:
-			if pos in self.route:
-				stat = self.status
-			else:
-				stat = EMPTY
+			stat = self.GetStatusFromRoute(screen, pos)
+			if stat == OCCUPIED:
+				print("Draw sets occupied")
+				self.occupied = True
+			elif stat == CLEARED:
+				print("draw sets cleared")
+				self.cleared = True
 			bmp = t.getBmp(stat, self.east, revflag)
 			self.frame.DrawTile(screen, pos, bmp)
 
