@@ -30,13 +30,14 @@ class Settings:
 		self.cfg.optionxform = str
 		if not self.cfg.read(self.inifile):
 			print("Settings file %s does not exist.  Using default values" % INIFILE)
+			self.save()
 			return
 
 		if self.cfg.has_section(self.section):
 			for opt, value in self.cfg.items(self.section):
 				if opt == 'pages':
 					try:
-						s = int(value)(200, 200)
+						s = int(value)
 					except:
 						print("invalid value in ini file for pages: (%s)" % value)
 						s = 3
@@ -45,6 +46,9 @@ class Settings:
 						print("Invalid values for pages: %d" % s)
 						s = 3
 					self.pages = s
+
+				elif opt == 'dispatch':
+					self.dispatch = parseBoolean(value, False)
 						
 				elif opt == 'ipaddr':
 					self.ipaddr = value

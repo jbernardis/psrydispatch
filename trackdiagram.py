@@ -1,12 +1,12 @@
 import wx
 
 class TrackDiagram(wx.Panel):
-	def __init__(self, frame, screen, diagramBmp, id):
+	def __init__(self, frame, dlist): #screen, id, diagramBmp, offset):
 		wx.Panel.__init__(self, frame, size=(100, 100), pos=(0,0), style=0)
 		self.frame = frame
-		self.screen = screen
-		self.diagramBmp = diagramBmp
-		self.id = id
+		self.screens = [d.screen for d in dlist]
+		self.bgbmps =  [d.bitmap for d in dlist]
+		self.offsets = [d.offset for d in dlist]
 
 		self.tiles = {}
 		self.tx = 0
@@ -14,9 +14,10 @@ class TrackDiagram(wx.Panel):
 
 		self.SetCursor(wx.Cursor(wx.CURSOR_ARROW))
 
-		self.bg_bmp = diagramBmp
-		w = self.bg_bmp.GetWidth()
-		h = self.bg_bmp.GetHeight()
+		w = 0;
+		for b in self.bgbmps:
+			w += b.GetWidth()
+		h = self.bgbmps[0].GetHeight()  # assume all the same height
 
 		self.SetSize((w, h))
 		self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
@@ -26,7 +27,8 @@ class TrackDiagram(wx.Panel):
 		self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
 
 	def DrawBackground(self, dc):
-		dc.DrawBitmap(self.bg_bmp, 0, 0)
+		for i in range(len(self.bgbmps)):
+			dc.DrawBitmap(self.bgbmps[i], self.offsets[i], 0)
 
 	def OnMotion(self, evt):
 		pt = evt.GetPosition()
@@ -39,10 +41,10 @@ class TrackDiagram(wx.Panel):
 			#print("%d %d  <=> %d %d" % (self.tx, self.ty, pt.x, pt.y))
 
 	def OnLeftUp(self, evt):
-		self.frame.ProcessClick(self.screen, (self.tx, self.ty))
+		self.frame.ProcessClick(self.screens[0], (self.tx, self.ty))
 
-	def DrawTile(self, x, y, bmp):
-		self.tiles[(x*16, y*16)] = bmp;
+	def DrawTile(self, x, y, offset, bmp):
+		self.tiles[(x*16+offset, y*16)] = bmp;
 		self.Refresh()
 
 	def OnPaint(self, evt):

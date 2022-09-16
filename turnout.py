@@ -14,9 +14,9 @@ class Turnout:
 		self.routeControlled = False
 		self.pairedTurnout = None
 
-	def Draw(self):
+	def Draw(self, blockstat=None):
 		tostat = NORMAL if self.normal else REVERSE
-		blkstat = self.block.GetStatusFromRoute(self.screen, self.pos)
+		blkstat = blockstat if blockstat is not None else self.block.GetStatus()
 		east = self.block.GetEast()
 		bmp = self.tiles.getBmp(tostat, blkstat, east)
 		self.frame.DrawTile(self.screen, self.pos, bmp)
@@ -44,8 +44,8 @@ class Turnout:
 		self.normal = False
 		if self.pairedTurnout is not None:
 			self.pairedTurnout.SetReverse()
-		else:
-			self.tower.DetermineRoutes(self.block)
+
+		self.tower.DetermineRoute(self.block)
 
 		if refresh:
 			self.Draw()
@@ -62,8 +62,8 @@ class Turnout:
 		self.normal = True
 		if self.pairedTurnout is not None:
 			self.pairedTurnout.SetNormal()
-		else:	
-			self.tower.DetermineRoutes(self.block)
+		
+		self.tower.DetermineRoute(self.block)
 		if refresh:
 			self.Draw()
 		return True
@@ -76,8 +76,8 @@ class Turnout:
 		self.normal = not self.normal
 		if self.pairedTurnout is not None:
 			self.pairedTurnout.SetNormal()
-		else:
-			self.tower.DetermineRoutes(self.block)
+
+		self.tower.DetermineRoute(self.block)
 		if refresh:
 			self.Draw()
 

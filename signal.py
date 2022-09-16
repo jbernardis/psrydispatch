@@ -1,7 +1,7 @@
 from constants import RED
 
 class Signal:
-	def __init__(self, tower, screen, frame, name, pos, tiles):
+	def __init__(self, tower, screen, frame, name, east, pos, tiles):
 		self.tower = tower
 		self.screen = screen
 		self.frame = frame
@@ -9,6 +9,7 @@ class Signal:
 		self.tiles = tiles
 		self.pos = pos
 		self.aspect = RED
+		self.east = east
 
 	def GetTower(self):
 		return self.tower
@@ -21,6 +22,9 @@ class Signal:
 
 	def GetPos(self):
 		return self.pos
+
+	def GetEast(self):
+		return self.east
 
 	def Draw(self):
 		bmp = self.tiles.getBmp(self)
