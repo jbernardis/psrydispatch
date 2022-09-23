@@ -10,242 +10,163 @@ class Hyde (Tower):
 	def __init__(self, name, frame, screen):
 		Tower.__init__(self, name, frame, screen)
 
-	def Initialize(self):
-		for b in self.blocks.values():
-			if b.GetBlockType() == OVERSWITCH:
-				self.DetermineRoute(b)
-
-	def Draw(self):
-		for b in self.blocks.values():
-			b.Draw()
-		for b in self.buttons.values():
-			b.Draw()
-		for s in self.signals.values():
-			s.Draw()
-
 	def DetermineRoute(self, block):
 		bname = block.name
-		if bname == "HydeWW":
+		if bname == "OSHWW":
 			s1 = 'N' if self.turnouts["HSw1"].IsNormal() else 'R'
 			s3 = 'N' if self.turnouts["HSw3"].IsNormal() else 'R'
 			s5 = 'N' if self.turnouts["HSw5"].IsNormal() else 'R'
 			s7 = 'N' if self.turnouts["HSw7"].IsNormal() else 'R'
 
 			if s1 + s3 == "NN":
-				block.SetRoute(Route(self.screen, block, "HWW1", "H12", [ (21, 13), (22, 13), (23, 13), (24, 13), (25, 13), (26, 13), (27, 13), (28, 13), (29, 13), (30, 13), (31, 13) ], "H11"))
+				block.SetRoute(self.routes["HRtH11H12"])
 			elif s1 + s3 == "NR":
-				block.SetRoute(Route(self.screen, block, "HWW2", "H34", [ (21, 13), (22, 13), (23, 13), (24, 13), (25, 13), (26, 12), (27, 11), (28, 11), (29, 11), (30, 11), (31, 11)], "H11"))
+				block.SetRoute(self.routes["HRtH11H34"])
 			elif s1 + s5 == "RN":
-				block.SetRoute(Route(self.screen, block, "HWW3", "H33", [ (21, 13), (22, 13), (23, 12), (24, 11), (25, 10), (26, 9), (27, 9), (28, 9), (29, 9), (30, 9), (31, 9) ], "H11"))
+				block.SetRoute(self.routes["HRtH11H33"])
 			elif s1 + s5 + s7 == "RRN":
-				block.SetRoute(Route(self.screen, block, "HWW4", "H32", [ (21, 13), (22, 13), (23, 12), (24, 11), (25, 10), (26, 9), (27, 8), (28, 7), (29, 7), (30, 7), (31, 7) ], "H11"))
+				block.SetRoute(self.routes["HRtH11H32"])
 			elif s1 + s5 + s7 == "RRR":
-				block.SetRoute(Route(self.screen, block, "HWW5", "H31", [ (21, 13), (22, 13), (23, 12), (24, 11), (25, 10), (26, 9), (27, 8), (28, 7), (29, 6), (30, 5), (31, 5) ], "H11"))
+				block.SetRoute(self.routes["HRtH11H31"])
 
-		elif bname == "HydeWN":			
+		elif bname == "OSHWW2":			
 			s7 = 'N' if self.turnouts["HSw7"].IsNormal() else 'R'
 			if s7 == "N":
-				block.SetRoute(Route(self.screen, block, "HWN1", "H31", [ (28, 5), (29, 5), (30, 5), (31, 5) ], "H30"))
+				block.SetRoute(self.routes["HRtH30H31"])
 
-		elif bname == "HydeWE":
+		elif bname == "OSHWE":
 			s9  = 'N' if self.turnouts["HSw9"].IsNormal() else 'R'
 			s11 = 'N' if self.turnouts["HSw11"].IsNormal() else 'R'
 			s13 = 'N' if self.turnouts["HSw13"].IsNormal() else 'R'
 
 			if s9 + s11 == "NN":
-				block.SetRoute(Route(self.screen, block, "HWE1", "H21", [ (21, 15), (22, 15), (23, 15), (24, 15), (25, 15), (26, 15), (27, 15), (28, 15), (29, 15), (30, 15), (31, 15) ], "H22"))
+				block.SetRoute(self.routes["HRtH21H22"])
 			elif s9 + s11 == "NR":
-				block.SetRoute(Route(self.screen, block, "HWE2", "H21", [ (21, 15), (22, 15), (23, 15), (24, 15), (25, 15), (26, 16), (27, 17), (28, 17), (29, 17), (30, 17), (31, 17) ], "H43"))
+				block.SetRoute(self.routes["HRtH21H43"])
 			elif s9 + s13 == "RN":
-				block.SetRoute(Route(self.screen, block, "HWE3", "H21", [ (21, 15), (22, 15), (23, 16), (24, 17), (25, 18), (26, 19), (27, 19), (28, 19), (29, 19), (30, 19), (31, 19) ], "H42"))
+				block.SetRoute(self.routes["HRtH21H42"])
 			elif s9 + s13 == "RR":
-				block.SetRoute(Route(self.screen, block, "HWE4", "H21", [ (21, 15), (22, 15), (23, 16), (24, 17), (25, 18), (26, 19), (27, 20), (28, 21), (29, 21), (30, 21), (31, 21) ], "H41"))
+				block.SetRoute(self.routes["HRtH21H41"])
 
-		elif bname == "HydeEW":
+		elif bname == "OSHEW":
 			s15 = 'N' if self.turnouts["HSw15"].IsNormal() else 'R'
 			s17 = 'N' if self.turnouts["HSw17"].IsNormal() else 'R'
 			s19 = 'N' if self.turnouts["HSw19"].IsNormal() else 'R'
 			s21 = 'N' if self.turnouts["HSw21"].IsNormal() else 'R'
 
 			if s21 == "R":
-				block.SetRoute(Route(self.screen, block, "HEW1", "H13", [(42, 5), (43, 5), (44, 5), (45, 5), (46, 5), (47, 6), (48, 7), (49, 8), (50, 9), (51, 10), (52, 11), (53, 12), (54, 13), (55, 13), (56, 13)], "H31"))
+				block.SetRoute(self.routes["HRtH13H31"])
 			elif s21 + s19 == "NR":
-				block.SetRoute(Route(self.screen, block, "HEW2", "H13", [(42, 7), (43, 7), (44, 7), (45, 7), (46, 8), (47, 9), (48, 10), (49, 11), (50, 12), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H32"))
+				block.SetRoute(self.routes["HRtH13H32"])
 			elif s21 + s19 + s17 == "NNR":
-				block.SetRoute(Route(self.screen, block, "HEW3", "H13", [(42, 9), (43, 9), (44, 9), (45, 10), (46, 11), (47, 12), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H33"))
+				block.SetRoute(self.routes["HRtH13H33"])
 			elif s21 + s19 + s17 + s15 == "NNNR":
-				block.SetRoute(Route(self.screen, block, "HEW4", "H13", [(42, 11), (43, 11), (44, 12), (45, 13), (46, 13), (47, 13), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H34"))
+				block.SetRoute(self.routes["HRtH13H34"])
 			elif s21 + s19 + s17 + s15 == "NNNN":
-				block.SetRoute(Route(self.screen, block, "HEW5", "H13", [(42, 13), (43, 13), (44, 13), (45, 13), (46, 13), (47, 13), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H12"))
+				block.SetRoute(self.routes["HRtH12H13"])
 
-	def PerformTurnoutAction(self, turnout):
-		if turnout.Changeable():
-			self.frame.Request({"turnout": [ [turnout.GetName(), TOGGLE] ]})
+		elif bname == "OSHEE":
+			s23 = 'N' if self.turnouts["HSw23"].IsNormal() else 'R'
+			s25 = 'N' if self.turnouts["HSw25"].IsNormal() else 'R'
+			s27 = 'N' if self.turnouts["HSw27"].IsNormal() else 'R'
+			s29 = 'N' if self.turnouts["HSw29"].IsNormal() else 'R'
+			if s29 == "R":
+				block.SetRoute(self.routes["HRtH23H40"])
+			elif s29+s27 == "NN":
+				block.SetRoute(self.routes["HRtH22H23"])
+			elif s29+s27+s25 == "NRR":
+				block.SetRoute(self.routes["HRtH23H43"])
+			elif s29+s27+s25+s23 == "NRNR":
+				block.SetRoute(self.routes["HRtH23H42"])
+			elif s29+s27+s25+s23 == "NRNN":
+				block.SetRoute(self.routes["HRtH23H41"])
 
 	def PerformButtonAction(self, btn):
 		bname = btn.GetName()
-		if bname in self.osButtons["HydeWW"]:
-			osBlk = self.blocks["HydeWW"]
+		if bname in self.osButtons["OSHWW"]:
+			osBlk = self.blocks["OSHWW"]
 			if osBlk.IsBusy():
-				print("block busy")
+				self.reportBlockBusy("OSHWW")
 				return
 
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "HWWB2":
-				self.frame.Request({"turnout": [ ["HSw7", REVERSE], ["HSw5", REVERSE], ["HSw1", REVERSE] ]})
+				self.frame.Request({"route": {"name": "H31W" }})
 			elif bname == "HWWB3":
-				self.frame.Request({"turnout": [ ["HSw7", NORMAL], ["HSw5", REVERSE], ["HSw1", REVERSE] ]})
+				self.frame.Request({"route": {"name": "H32W" }})
 			elif bname == "HWWB4":
-				self.frame.Request({"turnout": [ ["HSw5", NORMAL], ["HSw1", REVERSE] ]})
+				self.frame.Request({"route": {"name": "H33W" }})
 			elif bname == "HWWB5":
-				self.frame.Request({"turnout": [ ["HSw3", REVERSE], ["HSw1", NORMAL] ]})
+				self.frame.Request({"route": {"name": "H34W" }})
 			elif bname == "HWWB6":
-				self.frame.Request({"turnout": [ ["HSw3", NORMAL], ["HSw1", NORMAL] ]})
+				self.frame.Request({"route": {"name": "H12W" }})
 
-		elif bname in self.osButtons["HydeWN"]:
-			osBlk = self.blocks["HydeWN"]
+		elif bname in self.osButtons["OSHWW2"]:
+			osBlk = self.blocks["OSHWW2"]
 			if osBlk.IsBusy():
-				print("block busy")
+				self.reportBlockBusy("OSHWW2")
 				return
 
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "HWWB1":
-				self.frame.Request({"turnout": [ ["HSw7", NORMAL] ]})
+				self.frame.Request({"route": {"name": "H30E" }})
 
-		elif bname in self.osButtons["HydeWE"]:
-			osBlk = self.blocks["HydeWE"]
+		elif bname in self.osButtons["OSHWE"]:
+			osBlk = self.blocks["OSHWE"]
 			if osBlk.IsBusy():
-				print("block busy")
+				self.reportBlockBusy("OSHWE")
 				return
 
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "HWEB1":
-				self.frame.Request({"turnout": [ ["HSw9", NORMAL], ["HSw11", NORMAL] ]})
+				self.frame.Request({"route": {"name": "H22W" }})
 			if bname == "HWEB2":
-				self.frame.Request({"turnout": [ ["HSw9", NORMAL], ["HSw11", REVERSE] ] })
+				self.frame.Request({"route": {"name": "H43W" }})
 			elif bname == "HWEB3":
-				self.frame.Request({"turnout": [ ["HSw9", REVERSE], ["HSw13", NORMAL] ]})
+				self.frame.Request({"route": {"name": "H42W" }})
 			elif bname == "HWEB4":
-				self.frame.Request({"turnout": [ ["HSw9", REVERSE], ["HSw13", REVERSE] ]})
+				self.frame.Request({"route": {"name": "H41W" }})
 
-		elif bname in self.osButtons["HydeEW"]:
-			osBlk = self.blocks["HydeEW"]
+		elif bname in self.osButtons["OSHEW"]:
+			osBlk = self.blocks["OSHEW"]
 			if osBlk.IsBusy():
-				print("block busy")
+				self.reportBlockBusy("OSHEW")
 				return
 
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "HEWB1":
-				self.frame.Request({"turnout": [ ["HSw21", REVERSE] ]})
+				self.frame.Request({"route": {"name": "H31E" }})
 			if bname == "HEWB2":
-				self.frame.Request({"turnout": [ ["HSw21", NORMAL], ["HSw19", REVERSE] ] })
+				self.frame.Request({"route": {"name": "H32E" }})
 			elif bname == "HEWB3":
-				self.frame.Request({"turnout": [ ["HSw21", NORMAL], ["HSw19", NORMAL], ["HSw17", REVERSE] ]})
+				self.frame.Request({"route": {"name": "H33E" }})
 			elif bname == "HEWB4":
-				self.frame.Request({"turnout": [ ["HSw21", NORMAL], ["HSw19", NORMAL], ["HSw17", NORMAL], ["HSw15", REVERSE] ]})
+				self.frame.Request({"route": {"name": "H34E" }})
 			elif bname == "HEWB5":
-				self.frame.Request({"turnout": [ ["HSw21", NORMAL], ["HSw19", NORMAL], ["HSw17", NORMAL], ["HSw15", NORMAL] ]})
+				self.frame.Request({"route": {"name": "H12E" }})
 
-	def PerformSignalAction(self, sig):
-		aspect = sig.GetAspect()
-		color = GREEN if aspect == 0 else RED # the color we are trying to change to
-		signm = sig.GetName()
-		if signm  in self.osSignals["HydeWW"]:
-			osBlk = self.blocks["HydeWW"]
-			if signm == "H8L":
-				if osBlk.HasRoute("HWW5"):
-					self.frame.Request({"signal": ["H8L", color, "HydeWW"]})
-				else:
-					print("ignore signal request")
-			elif signm == "H6LA":
-				if osBlk.HasRoute("HWW4"):
-					self.frame.Request({"signal": ["H6LA", color, "HydeWW"]})
-				else:
-					print("ignore signal request")
-			elif signm == "H6LB":
-				if osBlk.HasRoute("HWW3"):
-					self.frame.Request({"signal": ["H6LB", color, "HydeWW"]})
-				else:
-					print("ignore signal request")
-			elif signm == "H6LC":
-				if osBlk.HasRoute("HWW2"):
-					self.frame.Request({"signal": ["H6LC", color, "HydeWW"]})
-				else:
-					print("ignore signal request")
-			elif signm == "H6LD":
-				if osBlk.HasRoute("HWW1"):
-					self.frame.Request({"signal": ["H6LD", color, "HydeWW"]})
-				else:
-					print("ignore signal request")
-			elif signm == "H6R":
-				rname = osBlk.GetRouteName()
-				if rname in [ "HWW1", "HWW2", "HWW3", "HWW4", "HWW5" ]:
-					self.frame.Request({"signal": ["H6R", color, "HydeWW"]})
-				else:
-					print("ignore signal request")
+		elif bname in self.osButtons["OSHEE"]:
+			osBlk = self.blocks["OSHEE"]
+			if osBlk.IsBusy():
+				self.reportBlockBusy("OSHEE")
+				return
 
-		if signm  in self.osSignals["HydeWN"]:
-			osBlk = self.blocks["HydeWN"]
-			if signm == "H8L":
-				if osBlk.HasRoute("HWN1"):
-					self.frame.Request({"signal": ["H8L", color, "HydeWN"]})
-				else:
-					print("ignore signal request")
-			elif signm == "H8R":
-				if osBlk.HasRoute("HWN1"):
-					self.frame.Request({"signal": ["H8R", color, "HydeWN"]})
-				else:
-					print("ignore signal request")
-
-		if signm  in self.osSignals["HydeWE"]:
-			osBlk = self.blocks["HydeWE"]
-			if signm == "H4R":
-				rname = osBlk.GetRouteName()
-				if rname in [ "HWE1", "HWE2", "HWE3", "HWE4" ]:
-					self.frame.Request({"signal": ["H4R", color, "HydeWE"]})
-				else:
-					print("ignore signal request")
-
-		if signm  in self.osSignals["HydeEW"]:
-			print("HydeEW %s" % signm)
-			osBlk = self.blocks["HydeEW"]
-			rname = osBlk.GetRouteName()
-			print("route %s" % rname)
-			if signm == "H12RA":
-				if osBlk.HasRoute("HEW1"):
-					self.frame.Request({"signal": ["H12RA", color, "HydeEW"]})
-				else:
-					print("ignore signal request")
-			elif signm == "H12RB":
-				if osBlk.HasRoute("HEW2"):
-					self.frame.Request({"signal": ["H12RB", color, "HydeEW"]})
-				else:
-					print("ignore signal request")
-			elif signm == "H12RC":
-				if osBlk.HasRoute("HEW3"):
-					self.frame.Request({"signal": ["H12RC", color, "HydeEW"]})
-				else:
-					print("ignore signal request")
-			elif signm == "H12RD":
-				if osBlk.HasRoute("HEW4"):
-					self.frame.Request({"signal": ["H12RD", color, "HydeEW"]})
-				else:
-					print("ignore signal request")
-			elif signm == "H12RE":
-				if osBlk.HasRoute("HEW5"):
-					self.frame.Request({"signal": ["H12RE", color, "HydeEW"]})
-				else:
-					print("ignore signal request")
-			elif signm == "H12L":
-				rname = osBlk.GetRouteName()
-				if rname in [ "HEW1", "HEW2", "HEW3", "HEW4", "HEW5" ]:
-					self.frame.Request({"signal": ["H12L", color, "HydeEW"]})
-				else:
-					print("ignore signal request")
+			btn.Press(refresh=True)
+			self.frame.ClearButtonAfter(2, btn)
+			if bname == "HEEB1":
+				self.frame.Request({"route": {"name": "H22E" }})
+			if bname == "HEEB2":
+				self.frame.Request({"route": {"name": "H43E" }})
+			elif bname == "HEEB3":
+				self.frame.Request({"route": {"name": "H42E" }})
+			elif bname == "HEEB4":
+				self.frame.Request({"route": {"name": "H41E" }})
+			elif bname == "HEEB5":
+				self.frame.Request({"route": {"name": "H40E" }})
 
 	def DefineBlocks(self, tiles):
 		self.blocks = {}
@@ -372,8 +293,9 @@ class Hyde (Tower):
 				(tiles["horiznc"], self.screen, (40,11), False),
 			], False)
 
-		self.blocks["HydeWW"] = OverSwitch(self, self.frame, "HydeWW", 
+		self.blocks["OSHWW"] = OverSwitch(self, self.frame, "OSHWW", 
 			[
+				(tiles["horiznc"], self.screen, (31, 5), False),
 				(tiles["diagleft"], self.screen, (29, 6), False),
 				(tiles["diagleft"], self.screen, (27, 8), False),
 				(tiles["diagleft"], self.screen, (25, 10), False),
@@ -409,7 +331,7 @@ class Hyde (Tower):
 			], 
 			False)
 
-		self.blocks["HydeWN"] = OverSwitch(self, self.frame, "HydeWN", 
+		self.blocks["OSHWW2"] = OverSwitch(self, self.frame, "OSHWW2", 
 			[
 				(tiles["horiznc"], self.screen, (31, 5), False),
 				(tiles["horiz"], self.screen, (28, 5), False),
@@ -417,8 +339,8 @@ class Hyde (Tower):
 			], 
 			False)
 
-		self.osBlocks["HydeWW"] = [ "H11", "H12", "H31", "H32", "H33", "H34" ]
-		self.osBlocks["HydeWN"] = [ "H30", "H31" ]
+		self.osBlocks["OSHWW"] = [ "H11", "H12", "H31", "H32", "H33", "H34" ]
+		self.osBlocks["OSHWW2"] = [ "H30", "H31" ]
 
 		self.blocks["H21"] = Block(self, self.frame, "H21",
 			[
@@ -427,14 +349,16 @@ class Hyde (Tower):
 				(tiles["horiz"],   self.screen, (15, 15), False),
 				(tiles["horiznc"], self.screen, (16, 15), False),
 				(tiles["horiz"],   self.screen, (17, 15), False),
-				(tiles["horiznc"], self.screen, (18, 15), False),
-				(tiles["horiz"],   self.screen, (19, 15), False),
-				(tiles["eobright"], self.screen, (20, 15), False),
 				(tiles["eobleft"], LaKr,        (123,13), False),
 				(tiles["horiz"],   LaKr,        (124,13), False),
 				(tiles["horiznc"], LaKr,        (125,13), False),
 				(tiles["horiz"],   LaKr,        (126,13), False),
 				(tiles["horiznc"], LaKr,        (127,13), False),
+			], True)
+		self.blocks["H21"].AddStoppingBlock([
+				(tiles["horiznc"], self.screen, (18, 15), False),
+				(tiles["horiz"],   self.screen, (19, 15), False),
+				(tiles["eobright"], self.screen, (20, 15), False),
 			], True)
 
 		self.blocks["H22"] = Block(self, self.frame, "H22",
@@ -522,7 +446,7 @@ class Hyde (Tower):
 				(tiles["horiznc"], LaKr,        (127,15), False),
 			], True)
 
-		self.blocks["HydeWE"] = OverSwitch(self, self.frame, "HydeWE", 
+		self.blocks["OSHWE"] = OverSwitch(self, self.frame, "OSHWE", 
 			[
 				(tiles["eobleft"], self.screen, (21, 15), False),
 				(tiles["horiznc"], self.screen, (23, 15), False),
@@ -558,13 +482,10 @@ class Hyde (Tower):
 
 			], True)
 
-		self.osBlocks["HydeWE"] = [ "H21", "H22", "H41", "H42", "H43" ]
+		self.osBlocks["OSHWE"] = [ "H21", "H22", "H41", "H42", "H43" ]
 
 		self.blocks["H13"] = Block(self, self.frame, "H13",
 			[
-				(tiles["eobleft"], self.screen, (57, 13), False),
-				(tiles["horiznc"], self.screen, (58, 13), False),
-				(tiles["horiz"],   self.screen, (59, 13), False),
 				(tiles["horiznc"], self.screen, (60, 13), False),
 				(tiles["horiz"],   self.screen, (61, 13), False),
 				(tiles["horiznc"], self.screen, (62, 13), False),
@@ -578,8 +499,13 @@ class Hyde (Tower):
 				(tiles["horiz"],   LaKr,        (44, 9), False),
 				(tiles["eobright"], LaKr,       (45, 9), False),
 			], False)
+		self.blocks["H13"].AddStoppingBlock([
+				(tiles["eobleft"], self.screen, (57, 13), False),
+				(tiles["horiznc"], self.screen, (58, 13), False),
+				(tiles["horiz"],   self.screen, (59, 13), False),
+				], False)
 
-		self.blocks["HydeEW"] = OverSwitch(self, self.frame, "HydeEW", 
+		self.blocks["OSHEW"] = OverSwitch(self, self.frame, "OSHEW", 
 			[
 				(tiles["horiznc"], self.screen, (42, 5), False),
 				(tiles["horiz"],   self.screen, (43, 5), False),
@@ -630,7 +556,7 @@ class Hyde (Tower):
 			], 
 			False)
 
-		self.osBlocks["HydeEW"] = [ "H13" ]
+		self.osBlocks["OSHEW"] = [ "H13" ]
 
 		self.blocks["H23"] = Block(self, self.frame, "H23",
 			[
@@ -651,7 +577,7 @@ class Hyde (Tower):
 				(tiles["eobright"], LaKr,       (45, 15), False),
 			], True)
 
-		self.blocks["HydeEE"] = OverSwitch(self, self.frame, "HydeEE", 
+		self.blocks["OSHEE"] = OverSwitch(self, self.frame, "OSHEE", 
 			[
 				(tiles["horiznc"], self.screen, (42, 15), False),
 				(tiles["horiz"],   self.screen, (43, 15), False),
@@ -699,7 +625,7 @@ class Hyde (Tower):
 				(tiles["diagleft"], self.screen, (52, 16), False),
 			], True)
 
-		self.osBlocks["HydeEE"] = [ "H23" ]
+		self.osBlocks["OSHEE"] = [ "H23" ]
 
 		return self.blocks
 
@@ -707,26 +633,26 @@ class Hyde (Tower):
 		self.turnouts = {}
 
 		toList = [
-			[ "HSw7b", "toleftleft",    "HydeWN", (30, 5) ],
+			[ "HSw7b", "toleftleft",    "OSHWW2", (30, 5) ],
 
-			[ "HSw1",  "toleftright",   "HydeWW", (22, 13) ],
-			[ "HSw3",  "toleftright",   "HydeWW", (25, 13) ],
-			[ "HSw5",  "torightupinv",  "HydeWW", (26, 9) ],
-			[ "HSw7",  "torightupinv",  "HydeWW", (28, 7) ],
+			[ "HSw1",  "toleftright",   "OSHWW", (22, 13) ],
+			[ "HSw3",  "toleftright",   "OSHWW", (25, 13) ],
+			[ "HSw5",  "torightupinv",  "OSHWW", (26, 9) ],
+			[ "HSw7",  "torightupinv",  "OSHWW", (28, 7) ],
 
-			[ "HSw9",  "torightright",  "HydeWE", (22, 15) ],
-			[ "HSw11", "torightright",  "HydeWE", (25, 15) ],
-			[ "HSw13", "toleftdowninv", "HydeWE", (26, 19) ],
+			[ "HSw9",  "torightright",  "OSHWE", (22, 15) ],
+			[ "HSw11", "torightright",  "OSHWE", (25, 15) ],
+			[ "HSw13", "toleftdowninv", "OSHWE", (26, 19) ],
 
-			[ "HSw15", "torightleft",   "HydeEW", (45, 13) ],
-			[ "HSw17", "torightleft",   "HydeEW", (48, 13) ],
-			[ "HSw19", "torightleft",   "HydeEW", (51, 13) ],
-			[ "HSw21", "torightleft",   "HydeEW", (54, 13) ],
+			[ "HSw15", "torightleft",   "OSHEW", (45, 13) ],
+			[ "HSw17", "torightleft",   "OSHEW", (48, 13) ],
+			[ "HSw19", "torightleft",   "OSHEW", (51, 13) ],
+			[ "HSw21", "torightleft",   "OSHEW", (54, 13) ],
 
-			[ "HSw23", "torightdown",   "HydeEE", (46, 19) ],
-			[ "HSw25", "torightdown",   "HydeEE", (48, 17) ],
-			[ "HSw27", "toleftleft",    "HydeEE", (50, 15) ],
-			[ "HSw29", "toleftleft",    "HydeEE", (53, 15) ],
+			[ "HSw23", "torightdown",   "OSHEE", (46, 19) ],
+			[ "HSw25", "torightdown",   "OSHEE", (48, 17) ],
+			[ "HSw27", "toleftleft",    "OSHEE", (50, 15) ],
+			[ "HSw29", "toleftleft",    "OSHEE", (53, 15) ],
 		]
 
 		for tonm, tileSet, blknm, pos in toList:
@@ -740,26 +666,35 @@ class Hyde (Tower):
 		self.turnouts["HSw7"].SetPairedTurnout(self.turnouts["HSw7b"])
 
 		self.osTurnouts = {}
-		self.osTurnouts["HydeWW"] = ["HSw1", "HSw3", "HSw5", "HSw7" ]
-		self.osTurnouts["HydeWN"] = [ "HSw7b" ]
-		self.osTurnouts["HydeWE"] = ["HSw9", "HSw11", "HSw13" ]
-		self.osTurnouts["HydeEW"] = ["HSw15", "HSw17", "HSw19", "HSw21" ]
+		self.osTurnouts["OSHWW"] = ["HSw1", "HSw3", "HSw5", "HSw7" ]
+		self.osTurnouts["OSHWW2"] = [ "HSw7b" ]
+		self.osTurnouts["OSHWE"] = ["HSw9", "HSw11", "HSw13" ]
+		self.osTurnouts["OSHEW"] = ["HSw15", "HSw17", "HSw19", "HSw21" ]
 		
 		return self.turnouts
 
-	
 	def DefineSignals(self, tiles):
 		self.signals = {}
 
 		sigList = [
-			[ "H8L",  False, "left",  (32, 4) ],
-			[ "H8R",  True,  "right", (27, 6) ],
+			[ "H4LA", False, "left",  (32, 14) ],
+			[ "H4LB", False, "left",  (32, 16) ],
+			[ "H4LC", False, "left",  (32, 18) ],
+			[ "H4LD", False, "left",  (32, 20) ],
+			[ "H4R",  True,  "right", (21, 16) ],
 			[ "H6LA", False, "left",  (32, 6) ],
 			[ "H6LB", False, "left",  (32, 8) ],
 			[ "H6LC", False, "left",  (32,10) ],
 			[ "H6LD", False, "left",  (32, 12) ],
 			[ "H6R",  True,  "right", (21, 14) ],
-			[ "H4R",  True,  "right", (21, 16) ],
+			[ "H8L",  False, "left",  (32, 4) ],
+			[ "H8R",  True,  "right", (27, 6) ],
+			[ "H10L", False, "left",  (56, 14) ],
+			[ "H10RA", True, "right", (41, 16) ],
+			[ "H10RB", True, "right", (41, 18) ],
+			[ "H10RC", True, "right", (41, 20) ],
+			[ "H10RD", True, "right", (41, 22) ],
+			[ "H10RE", True, "right", (41, 24) ],
 			[ "H12RA", True, "right", (41, 6) ],
 			[ "H12RB", True, "right", (41, 8) ],
 			[ "H12RC", True, "right", (41, 10) ],
@@ -768,13 +703,75 @@ class Hyde (Tower):
 			[ "H12L", False, "left", (56, 12) ],
 		]
 		for signm, east, tileSet, pos in sigList:
-			sig = Signal(self, self.screen, self.frame, signm, east, pos, tiles[tileSet])  
-			self.signals[signm] = sig         
+			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, east, pos, tiles[tileSet])  
+
+		self.routes = {}
+		block = self.blocks["OSHWW"]
+		self.routes["HRtH11H12"] = Route(self.screen, block, "HRtH11H12", "H12", [ (21, 13), (22, 13), (23, 13), (24, 13), (25, 13), (26, 13), (27, 13), (28, 13), (29, 13), (30, 13), (31, 13) ], "H11")
+		self.routes["HRtH11H31"] = Route(self.screen, block, "HRtH11H31", "H31", [ (21, 13), (22, 13), (23, 12), (24, 11), (25, 10), (26, 9), (27, 8), (28, 7), (29, 6), (30, 5), (31, 5) ], "H11")
+		self.routes["HRtH11H32"] = Route(self.screen, block, "HRtH11H32", "H32", [ (21, 13), (22, 13), (23, 12), (24, 11), (25, 10), (26, 9), (27, 8), (28, 7), (29, 7), (30, 7), (31, 7) ], "H11")
+		self.routes["HRtH11H33"] = Route(self.screen, block, "HRtH11H33", "H33", [ (21, 13), (22, 13), (23, 12), (24, 11), (25, 10), (26, 9), (27, 9), (28, 9), (29, 9), (30, 9), (31, 9) ], "H11")
+		self.routes["HRtH11H34"] = Route(self.screen, block, "HRtH11H34", "H34", [ (21, 13), (22, 13), (23, 13), (24, 13), (25, 13), (26, 12), (27, 11), (28, 11), (29, 11), (30, 11), (31, 11)], "H11")
+
+		block = self.blocks["OSHWW2"]			
+		self.routes["HRtH30H31"] = Route(self.screen, block, "HRtH30H31", "H31", [ (28, 5), (29, 5), (30, 5), (31, 5) ], "H30")
+
+		block = self.blocks["OSHWE"]
+		self.routes["HRtH21H22"] = Route(self.screen, block, "HRtH21H22", "H21", [ (21, 15), (22, 15), (23, 15), (24, 15), (25, 15), (26, 15), (27, 15), (28, 15), (29, 15), (30, 15), (31, 15) ], "H22")
+		self.routes["HRtH21H41"] = Route(self.screen, block, "HRtH21H41", "H21", [ (21, 15), (22, 15), (23, 16), (24, 17), (25, 18), (26, 19), (27, 20), (28, 21), (29, 21), (30, 21), (31, 21) ], "H41")
+		self.routes["HRtH21H42"] = Route(self.screen, block, "HRtH21H42", "H21", [ (21, 15), (22, 15), (23, 16), (24, 17), (25, 18), (26, 19), (27, 19), (28, 19), (29, 19), (30, 19), (31, 19) ], "H42")
+		self.routes["HRtH21H43"] = Route(self.screen, block, "HRtH21H43", "H21", [ (21, 15), (22, 15), (23, 15), (24, 15), (25, 15), (26, 16), (27, 17), (28, 17), (29, 17), (30, 17), (31, 17) ], "H43")
+
+		block = self.blocks["OSHEW"]
+		self.routes["HRtH13H31"] = Route(self.screen, block, "HRtH13H31", "H13", [(42, 5), (43, 5), (44, 5), (45, 5), (46, 5), (47, 6), (48, 7), (49, 8), (50, 9), (51, 10), (52, 11), (53, 12), (54, 13), (55, 13), (56, 13)], "H31")
+		self.routes["HRtH13H32"] = Route(self.screen, block, "HRtH13H32", "H13", [(42, 7), (43, 7), (44, 7), (45, 7), (46, 8), (47, 9), (48, 10), (49, 11), (50, 12), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H32")
+		self.routes["HRtH13H33"] = Route(self.screen, block, "HRtH13H33", "H13", [(42, 9), (43, 9), (44, 9), (45, 10), (46, 11), (47, 12), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H33")
+		self.routes["HRtH13H34"] = Route(self.screen, block, "HRtH13H34", "H13", [(42, 11), (43, 11), (44, 12), (45, 13), (46, 13), (47, 13), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H34")
+		self.routes["HRtH12H13"] = Route(self.screen, block, "HRtH12H13", "H13", [(42, 13), (43, 13), (44, 13), (45, 13), (46, 13), (47, 13), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H12")
+
+		block = self.blocks["OSHEE"]
+		self.routes["HRtH22H23"] = Route(self.screen, block, "HRtH22H23", "H22", [(42, 15), (43, 15), (44, 15), (45, 15), (46, 15), (47, 15), (48, 15), (49, 15), (50, 15), (51, 15), (52, 15), (53, 15), (54, 15), (55, 15), (56, 15)], "H23")
+		self.routes["HRtH23H40"] = Route(self.screen, block, "HRtH23H40", "H40", [(42, 23), (43, 23), (44, 23), (45, 23), (46, 22), (47, 21), (48, 20), (49, 19), (50, 18), (51, 17), (52, 16), (53, 15), (54, 15), (55, 15), (56, 15)], "H23")
+		self.routes["HRtH23H43"] = Route(self.screen, block, "HRtH23H43", "H43", [(42, 17), (43, 17), (44, 17), (45, 17), (46, 17), (47, 17), (48, 17), (49, 16), (50, 15), (51, 15), (52, 15), (53, 15), (54, 15), (55, 15), (56, 15)], "H23")
+		self.routes["HRtH23H42"] = Route(self.screen, block, "HRtH23H42", "H42", [(42, 19), (43, 19), (44, 19), (45, 19), (46, 19), (47, 18), (48, 17), (49, 16), (50, 15), (51, 15), (52, 15), (53, 15), (54, 15), (55, 15), (56, 15)], "H23")
+		self.routes["HRtH23H41"] = Route(self.screen, block, "HRtH23H41", "H41", [(42, 21), (43, 21), (44, 21), (45, 20), (46, 19), (47, 18), (48, 17), (49, 16), (50, 15), (51, 15), (52, 15), (53, 15), (54, 15), (55, 15), (56, 15)], "H23")
+
+		self.signals["H4LA"].AddPossibleRoutes("OSHWE", [ "HRtH21H22" ])
+		self.signals["H4LB"].AddPossibleRoutes("OSHWE", [ "HRtH21H43" ])
+		self.signals["H4LC"].AddPossibleRoutes("OSHWE", [ "HRtH21H42" ])
+		self.signals["H4LD"].AddPossibleRoutes("OSHWE", [ "HRtH21H41" ])
+		self.signals["H4R"].AddPossibleRoutes("OSHWE",  [ "HRtH21H41", "HRtH21H42", "HRtH21H43", "HRtH21H22" ])
+
+		self.signals["H6LA"].AddPossibleRoutes("OSHWW", [ "HRtH11H32" ])
+		self.signals["H6LB"].AddPossibleRoutes("OSHWW", [ "HRtH11H33" ])
+		self.signals["H6LC"].AddPossibleRoutes("OSHWW", [ "HRtH11H34" ])
+		self.signals["H6LD"].AddPossibleRoutes("OSHWW", [ "HRtH11H12" ])
+		self.signals["H6R"].AddPossibleRoutes("OSHWW",  [ "HRtH11H31", "HRtH11H32", "HRtH11H33", "HRtH11H34", "HRtH11H12" ])
+
+		self.signals["H8L"].AddPossibleRoutes("OSHWW",  [ "HRtH11H31" ])
+		self.signals["H8L"].AddPossibleRoutes("OSHWW2", [ "HRtH30H31" ])
+		self.signals["H8R"].AddPossibleRoutes("OSHWW2", [ "HRtH30H31" ])
+
+		self.signals["H10L"].AddPossibleRoutes("OSHEE",  [ "HRtH22H23", "HRtH23H40", "HRtH23H41", "HRtH23H42", "HRtH23H43" ])
+		self.signals["H10RA"].AddPossibleRoutes("OSHEE", [ "HRtH22H23" ])
+		self.signals["H10RB"].AddPossibleRoutes("OSHEE", [ "HRtH23H43" ])
+		self.signals["H10RC"].AddPossibleRoutes("OSHEE", [ "HRtH23H42" ])
+		self.signals["H10RD"].AddPossibleRoutes("OSHEE", [ "HRtH23H41" ])
+		self.signals["H10RE"].AddPossibleRoutes("OSHEE", [ "HRtH23H40" ])
+
+		self.signals["H12L"].AddPossibleRoutes("OSHEW",  [ "HRtH13H31", "HRtH13H32", "HRtH13H33", "HRtH13H34", "HRtH12H13" ])
+		self.signals["H12RA"].AddPossibleRoutes("OSHEW", [ "HRtH13H31" ])
+		self.signals["H12RB"].AddPossibleRoutes("OSHEW", [ "HRtH13H32" ])
+		self.signals["H12RC"].AddPossibleRoutes("OSHEW", [ "HRtH13H33" ])
+		self.signals["H12RD"].AddPossibleRoutes("OSHEW", [ "HRtH13H34" ])
+		self.signals["H12RE"].AddPossibleRoutes("OSHEW", [ "HRtH12H13" ])
+
 		self.osSignals = {}
-		self.osSignals["HydeWW"] = [ "H8L", "H6LA", "H6LB", "H6LC", "H6LD", "H6R" ]
-		self.osSignals["HydeWN"] = [ "H8L", "H8R" ]
-		self.osSignals["HydeWE"] = [ "H4R" ]
-		self.osSignals["HydeEW"] = [ "H12L", "H12RA", "H12RB", "H12RC", "H12RD", "H12RE" ]
+		self.osSignals["OSHWW"] = [ "H8L", "H6LA", "H6LB", "H6LC", "H6LD", "H6R" ]
+		self.osSignals["OSHWW2"] = [ "H8L", "H8R" ]
+		self.osSignals["OSHWE"] = [ "H4LA", "H4LB", "H4LC", "H4LD", "H4R" ]
+		self.osSignals["OSHEW"] = [ "H12L", "H12RA", "H12RB", "H12RC", "H12RD", "H12RE" ]
+		self.osSignals["OSHEE"] = [ "H10L", "H10RA", "H10RB", "H10RC", "H10RD", "H10RE" ]
 		return self.signals
 
 	def DefineButtons(self, tiles):
@@ -799,9 +796,8 @@ class Hyde (Tower):
 		b = Button(self, self.screen, self.frame, "HWWB6", (32, 13), tiles)
 		self.buttons["HWWB6"] = b
 
-		self.osButtons["HydeWW"] = [ "HWWB2", "HWWB3", "HWWB4", "HWWB5", "HWWB6" ]
-		self.osButtons["HydeWN"] = [ "HWWB1" ]
-
+		self.osButtons["OSHWW"] = [ "HWWB2", "HWWB3", "HWWB4", "HWWB5", "HWWB6" ]
+		self.osButtons["OSHWW2"] = [ "HWWB1" ]
 
 		b = Button(self, self.screen, self.frame, "HWEB1", (32, 15), tiles)
 		self.buttons["HWEB1"] = b
@@ -815,7 +811,7 @@ class Hyde (Tower):
 		b = Button(self, self.screen, self.frame, "HWEB4", (32, 21), tiles)
 		self.buttons["HWEB4"] = b
 
-		self.osButtons["HydeWE"] = [ "HWEB1", "HWEB2", "HWEB3", "HWEB4" ]
+		self.osButtons["OSHWE"] = [ "HWEB1", "HWEB2", "HWEB3", "HWEB4" ]
 
 		b = Button(self, self.screen, self.frame, "HEWB1", (41, 5), tiles)
 		self.buttons["HEWB1"] = b
@@ -832,6 +828,23 @@ class Hyde (Tower):
 		b = Button(self, self.screen, self.frame, "HEWB5", (41, 13), tiles)
 		self.buttons["HEWB5"] = b
 
-		self.osButtons["HydeEW"] = [ "HEWB1", "HEWB2", "HEWB3", "HEWB4", "HEWB5" ]
+		self.osButtons["OSHEW"] = [ "HEWB1", "HEWB2", "HEWB3", "HEWB4", "HEWB5" ]
+
+		b = Button(self, self.screen, self.frame, "HEEB1", (41, 15), tiles)
+		self.buttons["HEEB1"] = b
+
+		b = Button(self, self.screen, self.frame, "HEEB2", (41, 17), tiles)
+		self.buttons["HEEB2"] = b
+
+		b = Button(self, self.screen, self.frame, "HEEB3", (41, 19), tiles)
+		self.buttons["HEEB3"] = b
+
+		b = Button(self, self.screen, self.frame, "HEEB4", (41, 21), tiles)
+		self.buttons["HEEB4"] = b
+
+		b = Button(self, self.screen, self.frame, "HEEB5", (41, 23), tiles)
+		self.buttons["HEEB5"] = b
+
+		self.osButtons["OSHEE"] = [ "HEEB1", "HEEB2", "HEEB3", "HEEB4", "HEEB5" ]
 
 		return self.buttons

@@ -24,7 +24,8 @@ class Settings:
 		self.pages = 3
 		self.dispatch = True
 		self.ipaddr = "192.168.1.138"
-		self.port = 9001
+		self.serverport = 9000
+		self.socketport = 9001
 		
 		self.cfg = configparser.ConfigParser()
 		self.cfg.optionxform = str
@@ -53,13 +54,21 @@ class Settings:
 				elif opt == 'ipaddr':
 					self.ipaddr = value
 						
-				elif opt == 'port':
+				elif opt == 'socketport':
 					try:
 						s = int(value)
 					except:
-						print("invalid value in ini file for port: (%s)" % value)
+						print("invalid value in ini file for socket port: (%s)" % value)
 						s = 9001
-					self.port = s
+					self.socketport = s
+						
+				elif opt == 'serverport':
+					try:
+						s = int(value)
+					except:
+						print("invalid value in ini file for server port: (%s)" % value)
+						s = 9000
+					self.serverport = s
 
 		else:
 			print("Missing %s section - assuming defaults" % self.section)

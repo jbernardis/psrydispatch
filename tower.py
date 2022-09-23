@@ -1,4 +1,4 @@
-from constants import OCCUPIED, NORMAL, GREEN
+from constants import OCCUPIED, NORMAL, GREEN, OVERSWITCH, TOGGLE, RED
 
 class Tower:
 	def __init__(self, name, frame, screen):
@@ -7,35 +7,77 @@ class Tower:
 		self.screen = screen
 
 	def Initialize(self):
-		print("Tower %s does not have an implementation of Initialize" % self.name)
+		for b in self.blocks.values():
+			if b.GetBlockType() == OVERSWITCH:
+				self.DetermineRoute(b)
 
 	def Draw(self):
-		print("Tower %s does not have an implementation of Draw" % self.name)
+		for b in self.blocks.values():
+			b.Draw()
+		for b in self.buttons.values():
+			b.Draw()
+		for s in self.signals.values():
+			s.Draw()
 
 	def DetermineRoute(self, block):
 		print("Tower %s does not have an implementation of DetermineRoute" % self.name)
 
-	#  Perform... routines handle the user clicking on track diagram components.  This includes, switched, signals, and buttons
+	#  Perform... routines handle the user clicking on track diagram components.  This includes, switches, signals, and buttons
 	# in most cases, this does not actually make any changed to the display, but instead sends requests to the dispatch server
 	def PerformButtonAction(self, btn):
-		print("Tower %s does not have an implementation of PerformAction" % self.name)
+		print("Tower %s does not have an implementation of PerformButtonAction" % self.name)
 
 	def PerformTurnoutAction(self, turnout):
-		print("Tower %s does not have an implementation of PerformTurnoutAction" % self.name)
+		if turnout.Changeable():
+			self.frame.Request({"turnout": { "name": turnout.GetName(), "action": TOGGLE }})
 
-	def PerformSignalAction(self, signal):
-		print("Tower %s does not have an implementation of PerformSignalAction" % self.name)
+	def PerformSignalAction(self, sig):
+		aspect = sig.GetAspect()
+		color = GREEN if aspect == 0 else RED # the color we are trying to change to
+		signm = sig.GetName()
+		for blknm, siglist in self.osSignals.items():
+			print("looking at block %s, signals %s" % (blknm, str(siglist)))
+			if signm in siglist:
+				print("signal in list")
+				osblk = self.frame.blocks[blknm]
+				osblknm = blknm
+				rname = osblk.GetRouteName()
+				rt = self.routes[rname]
+				if sig.IsPossibleRoute(blknm, rname):
+					break
+		else:
+			self.frame.Popup("Signal %s is not for route %s" % (signm, rt.GetDescription()))
+			return
+
+		# this is a valid signal for the current route	
+		if color == GREEN:	
+			if osblk.IsBusy():
+				self.frame.Popup("OS Block %s is occupied" % osblk.GetName())
+				print("OS Block is busy")
+				return
+			exitBlkNm = rt.GetExitBlock()
+			exitBlk = self.frame.blocks[exitBlkNm]
+			if exitBlk.IsBusy():
+				self.frame.Popup("OS Exit Block %s is occupied" % exitBlk.GetName())
+				print("exit block is busy")
+				return
+		else: # color == RED
+			esig = osblk.GetEntrySignal()	
+			if esig is not None and esig.GetName() != signm:
+				self.frame.Popup("Signal %s is not for route %s" % (signm, rt.GetDescription()))
+				print("route can only be reset by the entry signal")
+				return
+
+		self.frame.Request({"signal": { "name": signm, "state": color }})
 
 	# The Do... routines handle requests that come in from the dispatch server.  The 3 objects of interest for
 	# these requests are blocks, signals, and turnouts
-	def DoBlockAction(self, blk, state):
+	def DoBlockAction(self, blk, blockend, state):
 		bname = blk.GetName()
-		print("Block occupied: %s %s" % (self.name, bname))
-		blk.SetOccupied(occupied = state == OCCUPIED, refresh=True)
+		blk.SetOccupied(occupied = state == OCCUPIED, blockend=blockend, refresh=True)
 
 		for osblknm, blkList in self.osBlocks.items():
 			if bname in blkList:
-				print("osblk: %s" % osblknm)
 				self.blocks[osblknm].Draw()
 
 	def DoTurnoutAction(self, turnout, state):
@@ -44,22 +86,39 @@ class Tower:
 		else:
 			turnout.SetReverse(refresh=True)
 
-	def DoSignalAction(self, sig, state, osblock):
+	def DoSignalAction(self, sig, state):
+		signm = sig.GetName()
+		print("do signal action")
+		for blknm, siglist in self.osSignals.items():
+			if signm in siglist:
+				osblock = self.frame.blocks[blknm]
+				rname = osblock.GetRouteName()
+				rt = self.routes[rname]
+				if sig.IsPossibleRoute(blknm, rname):
+					print("matching route: %s %s" % (blknm, rname))
+					break
+		else:
+			return
+
+		# all checking was done on the sending side, so this is a valid request - just do it
 		sig.SetAspect(state, refresh=True)
-		sigName = sig.GetName()
-		if osblock is not None:
-			if state == GREEN:
-				osblock.SetEast(sig.GetEast())
-				osblock.SetEntrySignal(sig)
-			osblock.SetCleared(state==GREEN, refresh=True)
-			rte = osblock.GetRoute()
-			if rte is not None:
-				exitBlkName = rte.GetExitBlock()
-				exitBlk = self.frame.GetBlockByName(exitBlkName)
-				if exitBlk is not None:
-					if state == GREEN:
-						exitBlk.SetEast(sig.GetEast())
-					exitBlk.SetCleared(state==GREEN, refresh=True)
+		osblock.SetEast(sig.GetEast())
+		osblock.SetEntrySignal(sig)
+		osblock.SetCleared(state==GREEN, refresh=True)
+
+		# now see if it should be propagated to the exit block
+		if osblock.IsBusy() and state == RED:
+			print("do not propagate RED past busy OS block")
+			return
+
+		exitBlkNm = rt.GetExitBlock()
+		exitBlk = self.frame.blocks[exitBlkNm]
+		if exitBlk.IsOccupied():
+			print("do not propagate to an Occupied block")
+			return
+
+		exitBlk.SetEast(sig.GetEast())
+		exitBlk.SetCleared(state==GREEN, refresh=True)
 					
 	def DefineBlocks(self, tiles):
 		print("Tower %s does not have an implementation of DefineBlocks" % self.name)
@@ -72,6 +131,10 @@ class Tower:
 
 	def DefineButtons(self, tiles):
 		print("Tower %s does not have an implementation of DefineButtons" % self.name)
+
+	def reportBlockBusy(self, blknm):
+		self.frame.Popup("Block %s is busy" % blknm)
+
 
 class Towers:
 	def __init__(self):

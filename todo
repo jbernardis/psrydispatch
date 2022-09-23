@@ -5,10 +5,15 @@ fleeting?
 deduction of train movement - reporting train location
 
 
-complete HydeEE - routes, signals, buttons and testing
-
 verify hydeio and make sure there is not something else I need to consider
 
 switch locks for sidings
 
-move do...action methods from hyde into tower
+logic for following trains
+	dispatcher -> server where trains are at init
+	server forwards to listeners
+	devise a scheme for not losing trains, or at least put up a message when one is lost
+
+pop up toaster messages for
+	unknown train or train split accross non contiguous Blocks
+

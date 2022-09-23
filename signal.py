@@ -10,7 +10,17 @@ class Signal:
 		self.pos = pos
 		self.aspect = RED
 		self.east = east
+		self.possibleRoutes = {}
 
+	def AddPossibleRoutes(self, blk, rtList):
+		self.possibleRoutes[blk] = rtList
+
+	def IsPossibleRoute(self, blknm, rname):
+		if not blknm in self.possibleRoutes:
+			return False
+
+		return rname in self.possibleRoutes[blknm]
+		
 	def GetTower(self):
 		return self.tower
 

@@ -10,7 +10,15 @@ class Tile:
 
 	def getBmp(self, status, east, revflag):
 		if status == OCCUPIED:
-			return self.bmps["red"]
+			if east:
+				k = "red-left" if revflag else "red-right"
+			else:
+				k = "red-right" if revflag else "red-left"
+			try:
+				bmp = self.bmps[k]
+			except KeyError:
+				bmp = self.bmps["red"]
+			return bmp
 
 		if status == CLEARED:
 			if east:
@@ -41,15 +49,7 @@ class TurnoutTile:
 			return bmps["red"]
 
 		if blkstat == CLEARED:
-			if east:
-				k = "green-right"
-			else:
-				k = "green-left"
-			try:
-				bmp = bmps[k]
-			except KeyError:
-				bmp = bmps["green"]
-			return bmp
+			return bmps["green"]
 
 		return bmps["white"]
 
@@ -75,6 +75,8 @@ def loadTiles(bitmaps):
 		"green": b.straight.routed,
 		"green-right": b.straight.rightrouted,
 		"green-left": b.straight.leftrouted,
+		"red-right": b.straight.rightoccupied,
+		"red-left": b.straight.leftoccupied,
 		"red": b.straight.occupied})
 	tiles["horiznc"] = Tile("horiz", {
 		"white": b.straight.normal,

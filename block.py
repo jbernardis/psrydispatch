@@ -1,5 +1,5 @@
 from turnout import Turnout
-from constants import EMPTY, OCCUPIED, CLEARED, BLOCK, OVERSWITCH, RED
+from constants import EMPTY, OCCUPIED, CLEARED, BLOCK, OVERSWITCH, STOPPINGBLOCK, RED
 
 class Route:
 	def __init__(self, screen, osblk, name, blkin, pos, blkout):
@@ -12,6 +12,9 @@ class Route:
 
 	def GetName(self):
 		return self.name
+
+	def GetDescription(self):
+		return "%s <=> %s" % (self.blkin, self.blkout)
 
 	def Contains(self, screen, pos):
 		if screen != self.screen:
@@ -42,7 +45,32 @@ class Block:
 		self.defaultEast = east
 		self.occupied = False
 		self.cleared = False
+		self.train = None
+		self.trainLoc = []
+		self.sbEast = None
+		self.sbWest = None
 		self.determineStatus()
+
+	def SetTrain(self, train):
+		self.train = train
+
+	def AddStoppingBlock(self, tiles, eastend=False):
+		if eastend:
+			self.sbEast = StoppingBlock(self, tiles, eastend)
+		else:
+			self.sbWest = StoppingBlock(self, tiles, eastend)
+		self.determineStatus()
+
+	def AddTrainLoc(self, screen, loc):
+		self.trainLoc.append([screen, loc])
+
+	def DrawTrain(self):
+		if self.train is None:
+			return
+
+		if self.occupied:
+			for screen, loc in self.trainLoc:
+				self.frame.DrawText(screen, loc, self.train.GetName())
 
 	def Reset(self):
 		self.east = self.defaultEast
@@ -73,14 +101,30 @@ class Block:
 		return self.east != self.defaultEast
 
 	def IsBusy(self):
-		return self.cleared or self.occupied
+		if self.cleared or self.occupied:
+			return True
+		for b in [self.sbEast, self.sbWest]:
+			if b and b.IsBusy():
+				return True
+		return False
+
+	def IsCleared(self):
+		return self.cleared
+
+	def IsOccupied(self):
+		return self.occupied
 
 	def Draw(self):
 		for t, screen, pos, revflag in self.tiles:
 			bmp = t.getBmp(self.status, self.east, revflag)
 			self.frame.DrawTile(screen, pos, bmp)
 
-	def SetOccupied(self, occupied=True, refresh=False):
+	def SetOccupied(self, occupied=True, blockend=None, refresh=False):
+		if blockend  in ["E", "W"]:
+			b = self.sbEast if blockend == "E" else self.sbWest
+			b.SetOccupied(occupied, None, refresh)
+			return
+
 		if self.occupied == occupied:
 			# already in the requested state
 			return
@@ -90,8 +134,68 @@ class Block:
 			self.cleared = False
 
 		self.determineStatus()
+		if self.status == EMPTY:
+			self.Reset()
+
 		if refresh:
 			self.Draw()
+
+	def SetCleared(self, cleared=True, refresh=False):
+		if cleared and self.occupied:
+			# can't mark an occupied block as cleared
+			return
+
+		if self.cleared == cleared:
+			# already in the desired state
+			return
+
+		self.cleared = cleared
+		self.determineStatus()
+		if refresh:
+			self.Draw()
+
+		for b in [self.sbEast, self.sbWest]:
+			if b is not None:
+				b.SetCleared(cleared, refresh)
+
+class StoppingBlock (Block):
+	def __init__(self, block, tiles, eastend):
+		self.block = block
+		self.tiles = tiles
+		self.eastend = eastend
+		self.type = STOPPINGBLOCK
+		self.frame = self.block.frame
+		self.occupied = False
+		self.cleared = False
+		self.determineStatus()
+
+	def Draw(self):
+		self.east = self.block.east
+		Block.Draw(self)
+
+	def determineStatus(self):
+		self.status = OCCUPIED if self.occupied else CLEARED if self.cleared else EMPTY
+
+	def getStatus(self):
+		return self.status
+
+	def Reset(self):
+		pass
+
+	def GetEast(self):
+		return self.block.east
+
+	def IsReversed(self):
+		return self.block.east != self.block.defaultEast
+
+	def IsBusy(self):
+		return self.cleared or self.occupied
+
+	def GetTower(self):
+		return None
+
+	def GetName(self):
+		return self.block.GetName() + "." + "E" if self.eastend else "W"
 
 	def SetCleared(self, cleared=True, refresh=False):
 		if cleared and self.occupied:
@@ -131,17 +235,21 @@ class OverSwitch (Block):
 	def SetEntrySignal(self, sig):
 		self.entrySignal = sig
 
+	def GetEntrySignal(self):
+		return self.entrySignal
+
 	def HasRoute(self, rtName):
 		return rtName == self.rtName
 
 	def AddTurnout(self, turnout):
 		self.turnouts.append(turnout)
 
-	def SetOccupied(self, occupied=True, refresh=False):
-		Block.SetOccupied(self, occupied, refresh)
+	def SetOccupied(self, occupied=True, blockend=None, refresh=False):
+		Block.SetOccupied(self, occupied, blockend, refresh)
 		if occupied:
 			if self.entrySignal is not None:
-				self.entrySignal.SetAspect(RED, refresh=True)
+				signm = self.entrySignal.GetName()
+				self.frame.Request({"signal": { "name": signm, "state": RED }})
 				self.entrySignal = None
 
 	def Draw(self):

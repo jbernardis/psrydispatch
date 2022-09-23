@@ -12,6 +12,7 @@ CLEARED = 2
 # block types
 BLOCK = 0
 OVERSWITCH = 1
+STOPPINGBLOCK = 2
 
 # turnout status
 NORMAL = 0

@@ -9,6 +9,7 @@ class TrackDiagram(wx.Panel):
 		self.offsets = [d.offset for d in dlist]
 
 		self.tiles = {}
+		self.text = {}
 		self.tx = 0
 		self.ty = 0
 
@@ -37,7 +38,7 @@ class TrackDiagram(wx.Panel):
 		if ntx != self.tx or nty != self.ty:
 			self.tx = ntx
 			self.ty = nty
-			print("%d %d" % (self.tx, self.ty))
+			#print("%d %d" % (self.tx, self.ty))
 			#print("%d %d  <=> %d %d" % (self.tx, self.ty, pt.x, pt.y))
 
 	def OnLeftUp(self, evt):
@@ -47,8 +48,19 @@ class TrackDiagram(wx.Panel):
 		self.tiles[(x*16+offset, y*16)] = bmp;
 		self.Refresh()
 
+	def DrawText(self, x, y, offset, text):
+		print("adding %s to text strings" % text)
+		self.text[(x*16+offset, y*16)] = text;
+		self.Refresh()
+
 	def OnPaint(self, evt):
 		dc = wx.PaintDC(self)
+		dc.SetTextForeground(wx.Colour(255, 0, 0))
+		dc.SetTextBackground(wx.Colour(255, 255, 255))
+		dc.SetBackgroundMode(wx.BRUSHSTYLE_SOLID)
 		self.DrawBackground(dc)
 		for bx, bmp in self.tiles.items():
 			dc.DrawBitmap(bmp, bx[0], bx[1])
+		for bx, txt in self.text.items():
+			print("drawing (%s)" % txt)
+			dc.DrawText(txt, bx[0], bx[1])
