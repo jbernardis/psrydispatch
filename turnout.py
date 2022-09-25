@@ -2,8 +2,8 @@ from constants import NORMAL, REVERSE, EMPTY
 import traceback
 
 class Turnout:
-	def __init__(self, tower, frame, name, screen, tiles, block, pos):
-		self.tower = tower
+	def __init__(self, district, frame, name, screen, tiles, block, pos):
+		self.district = district
 		self.frame = frame
 		self.name = name
 		self.screen = screen
@@ -49,7 +49,7 @@ class Turnout:
 			print("propagate to paired turnout")
 			self.pairedTurnout.SetReverse(refresh)
 
-		self.tower.DetermineRoute(self.block)
+		self.district.DetermineRoute(self.block)
 
 		if refresh:
 			self.Draw()
@@ -68,7 +68,7 @@ class Turnout:
 		if self.pairedTurnout is not None:
 			self.pairedTurnout.SetNormal()
 		
-		self.tower.DetermineRoute(self.block)
+		self.district.DetermineRoute(self.block)
 		if refresh:
 			self.Draw()
 		return True
@@ -82,15 +82,15 @@ class Turnout:
 		if self.pairedTurnout is not None:
 			self.pairedTurnout.Toggle()
 
-		self.tower.DetermineRoute(self.block)
+		self.district.DetermineRoute(self.block)
 		if refresh:
 			self.Draw()
 
 	def GetName(self):
 		return self.name
 
-	def GetTower(self):
-		return self.tower
+	def GetDistrict(self):
+		return self.district
 
 	def GetScreen(self):
 		return self.screen

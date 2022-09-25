@@ -1,8 +1,8 @@
 from constants import RED
 
 class Signal:
-	def __init__(self, tower, screen, frame, name, east, pos, tiles):
-		self.tower = tower
+	def __init__(self, district, screen, frame, name, east, pos, tiles):
+		self.district = district
 		self.screen = screen
 		self.frame = frame
 		self.name = name
@@ -21,8 +21,8 @@ class Signal:
 
 		return rname in self.possibleRoutes[blknm]
 		
-	def GetTower(self):
-		return self.tower
+	def GetDistrict(self):
+		return self.district
 
 	def GetScreen(self):
 		return self.screen

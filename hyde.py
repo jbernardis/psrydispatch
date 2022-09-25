@@ -1,4 +1,4 @@
-from tower import Tower
+from district import District
 from block import Block, OverSwitch, Route
 from turnout import Turnout
 from signal import Signal
@@ -6,9 +6,9 @@ from button import Button
 
 from constants import HyYdPt, LaKr, NaCl, BLOCK, OVERSWITCH, NORMAL, REVERSE, TOGGLE, RED, GREEN, OCCUPIED
 
-class Hyde (Tower):
+class Hyde (District):
 	def __init__(self, name, frame, screen):
-		Tower.__init__(self, name, frame, screen)
+		District.__init__(self, name, frame, screen)
 
 	def DetermineRoute(self, block):
 		bname = block.name
@@ -92,15 +92,22 @@ class Hyde (Tower):
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "HWWB2":
-				self.frame.Request({"route": {"name": "H31W" }})
+				self.frame.Request({"turnout": {"name": "HSw1", "status": "R" }})
+				self.frame.Request({"turnout": {"name": "HSw3", "status": "R" }})
+				self.frame.Request({"turnout": {"name": "HSw7", "status": "R" }})
 			elif bname == "HWWB3":
-				self.frame.Request({"route": {"name": "H32W" }})
+				self.frame.Request({"turnout": {"name": "HSw1", "status": "R" }})
+				self.frame.Request({"turnout": {"name": "HSw3", "status": "R" }})
+				self.frame.Request({"turnout": {"name": "HSw7", "status": "N" }})
 			elif bname == "HWWB4":
-				self.frame.Request({"route": {"name": "H33W" }})
+				self.frame.Request({"turnout": {"name": "HSw1", "status": "R" }})
+				self.frame.Request({"turnout": {"name": "HSw3", "status": "N" }})
 			elif bname == "HWWB5":
-				self.frame.Request({"route": {"name": "H34W" }})
+				self.frame.Request({"turnout": {"name": "HSw1", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw3", "status": "R" }})
 			elif bname == "HWWB6":
-				self.frame.Request({"route": {"name": "H12W" }})
+				self.frame.Request({"turnout": {"name": "HSw1", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw3", "status": "N" }})
 
 		elif bname in self.osButtons["OSHWW2"]:
 			osBlk = self.blocks["OSHWW2"]
@@ -111,7 +118,7 @@ class Hyde (Tower):
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "HWWB1":
-				self.frame.Request({"route": {"name": "H30E" }})
+				self.frame.Request({"turnout": {"name": "HSw7", "status": "N" }})
 
 		elif bname in self.osButtons["OSHWE"]:
 			osBlk = self.blocks["OSHWE"]
@@ -122,13 +129,17 @@ class Hyde (Tower):
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "HWEB1":
-				self.frame.Request({"route": {"name": "H22W" }})
+				self.frame.Request({"turnout": {"name": "HSw9", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw11", "status": "N" }})
 			if bname == "HWEB2":
-				self.frame.Request({"route": {"name": "H43W" }})
+				self.frame.Request({"turnout": {"name": "HSw9", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw11", "status": "R" }})
 			elif bname == "HWEB3":
-				self.frame.Request({"route": {"name": "H42W" }})
+				self.frame.Request({"turnout": {"name": "HSw9", "status": "R" }})
+				self.frame.Request({"turnout": {"name": "HSw11", "status": "N" }})
 			elif bname == "HWEB4":
-				self.frame.Request({"route": {"name": "H41W" }})
+				self.frame.Request({"turnout": {"name": "HSw9", "status": "R" }})
+				self.frame.Request({"turnout": {"name": "HSw11", "status": "R" }})
 
 		elif bname in self.osButtons["OSHEW"]:
 			osBlk = self.blocks["OSHEW"]
@@ -139,15 +150,24 @@ class Hyde (Tower):
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "HEWB1":
-				self.frame.Request({"route": {"name": "H31E" }})
+				self.frame.Request({"turnout": {"name": "HSw21", "status": "R" }})
 			if bname == "HEWB2":
-				self.frame.Request({"route": {"name": "H32E" }})
+				self.frame.Request({"turnout": {"name": "HSw21", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw19", "status": "R" }})
 			elif bname == "HEWB3":
-				self.frame.Request({"route": {"name": "H33E" }})
+				self.frame.Request({"turnout": {"name": "HSw21", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw19", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw17", "status": "R" }})
 			elif bname == "HEWB4":
-				self.frame.Request({"route": {"name": "H34E" }})
+				self.frame.Request({"turnout": {"name": "HSw21", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw19", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw17", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw15", "status": "R" }})
 			elif bname == "HEWB5":
-				self.frame.Request({"route": {"name": "H12E" }})
+				self.frame.Request({"turnout": {"name": "HSw21", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw19", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw17", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw15", "status": "N" }})
 
 		elif bname in self.osButtons["OSHEE"]:
 			osBlk = self.blocks["OSHEE"]
@@ -158,15 +178,24 @@ class Hyde (Tower):
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "HEEB1":
-				self.frame.Request({"route": {"name": "H22E" }})
+				self.frame.Request({"turnout": {"name": "HSw27", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw29", "status": "N" }})
 			if bname == "HEEB2":
-				self.frame.Request({"route": {"name": "H43E" }})
+				self.frame.Request({"turnout": {"name": "HSw25", "status": "R" }})
+				self.frame.Request({"turnout": {"name": "HSw27", "status": "R" }})
+				self.frame.Request({"turnout": {"name": "HSw29", "status": "N" }})
 			elif bname == "HEEB3":
-				self.frame.Request({"route": {"name": "H42E" }})
+				self.frame.Request({"turnout": {"name": "HSw23", "status": "R" }})
+				self.frame.Request({"turnout": {"name": "HSw25", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw27", "status": "R" }})
+				self.frame.Request({"turnout": {"name": "HSw29", "status": "N" }})
 			elif bname == "HEEB4":
-				self.frame.Request({"route": {"name": "H41E" }})
+				self.frame.Request({"turnout": {"name": "HSw23", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw25", "status": "N" }})
+				self.frame.Request({"turnout": {"name": "HSw27", "status": "R" }})
+				self.frame.Request({"turnout": {"name": "HSw29", "status": "N" }})
 			elif bname == "HEEB5":
-				self.frame.Request({"route": {"name": "H40E" }})
+				self.frame.Request({"turnout": {"name": "HSw29", "status": "R" }})
 
 	def DefineBlocks(self, tiles):
 		self.blocks = {}

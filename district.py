@@ -1,6 +1,6 @@
 from constants import OCCUPIED, NORMAL, GREEN, OVERSWITCH, TOGGLE, RED
 
-class Tower:
+class District:
 	def __init__(self, name, frame, screen):
 		self.name = name
 		self.frame = frame
@@ -20,12 +20,12 @@ class Tower:
 			s.Draw()
 
 	def DetermineRoute(self, block):
-		print("Tower %s does not have an implementation of DetermineRoute" % self.name)
+		print("District %s does not have an implementation of DetermineRoute" % self.name)
 
 	#  Perform... routines handle the user clicking on track diagram components.  This includes, switches, signals, and buttons
 	# in most cases, this does not actually make any changed to the display, but instead sends requests to the dispatch server
 	def PerformButtonAction(self, btn):
-		print("Tower %s does not have an implementation of PerformButtonAction" % self.name)
+		print("District %s does not have an implementation of PerformButtonAction" % self.name)
 
 	def PerformTurnoutAction(self, turnout):
 		if turnout.Changeable():
@@ -121,60 +121,60 @@ class Tower:
 		exitBlk.SetCleared(state==GREEN, refresh=True)
 					
 	def DefineBlocks(self, tiles):
-		print("Tower %s does not have an implementation of DefineBlocks" % self.name)
+		print("District %s does not have an implementation of DefineBlocks" % self.name)
 
 	def DefineTurnouts(self, tiles):
-		print("Tower %s does not have an implementation of DefineTurnouts" % self.name)
+		print("District %s does not have an implementation of DefineTurnouts" % self.name)
 
 	def DefineSignals(self, tiles):
-		print("Tower %s does not have an implementation of DefineSignals" % self.name)
+		print("District %s does not have an implementation of DefineSignals" % self.name)
 
 	def DefineButtons(self, tiles):
-		print("Tower %s does not have an implementation of DefineButtons" % self.name)
+		print("District %s does not have an implementation of DefineButtons" % self.name)
 
 	def reportBlockBusy(self, blknm):
 		self.frame.Popup("Block %s is busy" % blknm)
 
 
-class Towers:
+class Districts:
 	def __init__(self):
-		self.towers = {}
+		self.districts = {}
 
-	def AddTower(self, tower):
-		self.towers[tower.name] = tower
+	def AddDistrict(self, district):
+		self.districts[district.name] = district
 
 	def Initialize(self):
-		for t in self.towers.values():
+		for t in self.districts.values():
 			t.Initialize()
 
 	def Draw(self):
-		for t in self.towers.values():
+		for t in self.districts.values():
 			t.Draw()
 
 	def DefineBlocks(self, tiles):
 		blocks = {}
-		for t in self.towers.values():
+		for t in self.districts.values():
 			blocks.update(t.DefineBlocks(tiles))
 
 		return blocks
 
 	def DefineTurnouts(self, tiles, blocks):
 		tos = {}
-		for t in self.towers.values():
+		for t in self.districts.values():
 			tos.update(t.DefineTurnouts(tiles, blocks))
 
 		return tos
 
 	def DefineSignals(self, tiles):
 		sigs = {}
-		for t in self.towers.values():
+		for t in self.districts.values():
 			sigs.update(t.DefineSignals(tiles))
 
 		return sigs
 
 	def DefineButtons(self, tiles):
 		btns = {}
-		for t in self.towers.values():
+		for t in self.districts.values():
 			btns.update(t.DefineButtons(tiles))
 
 		return btns

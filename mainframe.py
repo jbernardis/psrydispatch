@@ -10,7 +10,7 @@ cmdFolder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( insp
 
 from settings import Settings
 from bitmaps import BitMaps
-from tower import Towers
+from district import Districts
 from hyde import Hyde
 from trackdiagram import TrackDiagram
 from tile import loadTiles
@@ -86,17 +86,17 @@ class MainFrame(wx.Frame):
 		self.Bind(EVT_DISCONNECT, self.onDisconnectEvent)
 
 		self.tiles, self.totiles, self.sigtiles = loadTiles(self.bitmaps)
-		self.towers = Towers()
-		self.towers.AddTower(Hyde("Hyde", self, HyYdPt))
+		self.districts = Districts()
+		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
 
-		self.blocks =   self.towers.DefineBlocks(self.tiles)
-		self.turnouts = self.towers.DefineTurnouts(self.totiles, self.blocks)
-		self.signals =  self.towers.DefineSignals(self.sigtiles)
-		self.buttons =  self.towers.DefineButtons(self.bitmaps.buttons)
+		self.blocks =   self.districts.DefineBlocks(self.tiles)
+		self.turnouts = self.districts.DefineTurnouts(self.totiles, self.blocks)
+		self.signals =  self.districts.DefineSignals(self.sigtiles)
+		self.buttons =  self.districts.DefineButtons(self.bitmaps.buttons)
 
 		self.trains = []
 
-		self.towers.Initialize()
+		self.districts.Initialize()
 
 		if self.settings.dispatch:
 			self.turnoutMap = { (t.GetScreen(), t.GetPos()): t for t in self.turnouts.values() if not t.IsRouteControlled() }
@@ -109,7 +109,7 @@ class MainFrame(wx.Frame):
 
 		self.buttonsToClear = []
 
-		self.towers.Draw()
+		self.districts.Draw()
 
 		for tr in self.trains:
 			tr.Draw()
@@ -142,7 +142,7 @@ class MainFrame(wx.Frame):
 			to = None
 
 		if to:
-			to.GetTower().PerformTurnoutAction(to)
+			to.GetDistrict().PerformTurnoutAction(to)
 			return
 
 		try:
@@ -151,7 +151,7 @@ class MainFrame(wx.Frame):
 			btn = None
 
 		if btn:
-			btn.GetTower().PerformButtonAction(btn)
+			btn.GetDistrict().PerformButtonAction(btn)
 			return
 
 		try:
@@ -160,7 +160,7 @@ class MainFrame(wx.Frame):
 			sig = None
 
 		if sig:
-			sig.GetTower().PerformSignalAction(sig)
+			sig.GetDistrict().PerformSignalAction(sig)
 
 	def DrawTile(self, screen, pos, bmp):
 		offset = self.diagrams[screen].offset
@@ -255,10 +255,10 @@ class MainFrame(wx.Frame):
 					except KeyError:
 						return
 					
-					tower = to.GetTower()
+					district = to.GetDistrict()
 					st = REVERSE if state == "R" else NORMAL
 
-					tower.DoTurnoutAction(to, st)
+					district.DoTurnoutAction(to, st)
 
 			elif cmd == "block":
 				for block, state in parms.items():
@@ -276,9 +276,9 @@ class MainFrame(wx.Frame):
 							except KeyError:
 								return
 
-					tower = blk.GetTower()
+					district = blk.GetDistrict()
 					stat = OCCUPIED if state == 1 else EMPTY
-					tower.DoBlockAction(blk, blockend, stat)
+					district.DoBlockAction(blk, blockend, stat)
 						
 			elif cmd == "signal":
 				sigName = parms[0]
@@ -291,8 +291,8 @@ class MainFrame(wx.Frame):
 
 				aspect = GREEN if asp == 1 else RED
 
-				tower = sig.GetTower()
-				tower.DoSignalAction(sig, aspect)
+				district = sig.GetDistrict()
+				district.DoSignalAction(sig, aspect)
 
 		
 	def raiseDisconnectEvent(self): # thread context

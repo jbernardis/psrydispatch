@@ -35,8 +35,8 @@ class Route:
 
 
 class Block:
-	def __init__(self, tower, frame, name, tiles, east=True):
-		self.tower = tower
+	def __init__(self, district, frame, name, tiles, east=True):
+		self.district = district
 		self.frame = frame
 		self.name = name
 		self.type = BLOCK
@@ -84,8 +84,8 @@ class Block:
 	def GetName(self):
 		return self.name
 
-	def GetTower(self):
-		return self.tower
+	def GetDistrict(self):
+		return self.district
 
 	def GetStatus(self):
 		self.determineStatus()
@@ -191,7 +191,7 @@ class StoppingBlock (Block):
 	def IsBusy(self):
 		return self.cleared or self.occupied
 
-	def GetTower(self):
+	def GetDistrict(self):
 		return None
 
 	def GetName(self):
@@ -212,8 +212,8 @@ class StoppingBlock (Block):
 			self.Draw()
 
 class OverSwitch (Block):
-	def __init__(self, tower, frame, name, tiles, east=True):
-		Block.__init__(self, tower, frame, name, tiles, east)
+	def __init__(self, district, frame, name, tiles, east=True):
+		Block.__init__(self, district, frame, name, tiles, east)
 		self.type = OVERSWITCH
 		self.turnouts = []
 		self.route = None

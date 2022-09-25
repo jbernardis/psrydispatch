@@ -13,5 +13,8 @@ class RRServer(object):
 		pprint.pprint(req)
 
 		for cmd, parms in req.items():
-			r = requests.get(self.ipAddr + "/" + cmd, params=parms)
+			try:
+				r = requests.get(self.ipAddr + "/" + cmd, params=parms)
+			except requests.exceptions.ConnectionError:
+				print("Unable to send request  is dispatcher running?")
 

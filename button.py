@@ -1,6 +1,6 @@
 class Button:
-	def __init__(self, tower, screen, frame, name, pos, tiles):
-		self.tower = tower
+	def __init__(self, district, screen, frame, name, pos, tiles):
+		self.district = district
 		self.screen = screen
 		self.frame = frame
 		self.name = name
@@ -9,8 +9,8 @@ class Button:
 		self.aspect = 0
 		self.pressed = False
 
-	def GetTower(self):
-		return self.tower
+	def GetDistrict(self):
+		return self.district
 
 	def GetScreen(self):
 		return self.screen
