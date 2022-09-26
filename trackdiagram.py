@@ -49,7 +49,6 @@ class TrackDiagram(wx.Panel):
 		self.Refresh()
 
 	def DrawText(self, x, y, offset, text):
-		print("adding %s to text strings" % text)
 		self.text[(x*16+offset, y*16)] = text;
 		self.Refresh()
 
@@ -62,5 +61,4 @@ class TrackDiagram(wx.Panel):
 		for bx, bmp in self.tiles.items():
 			dc.DrawBitmap(bmp, bx[0], bx[1])
 		for bx, txt in self.text.items():
-			print("drawing (%s)" % txt)
 			dc.DrawText(txt, bx[0], bx[1])

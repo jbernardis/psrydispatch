@@ -213,7 +213,6 @@ class MainFrame(wx.Frame):
 		tb.SetPopupTextColour(wx.Colour(0, 0, 0))
 		tb.SetPopupText(message)
 		tb.SetPopupTextFont(self.popupFont)
-		print("POPUP: %s" % message)
 		tb.Play()
 
 	def OnSubscribe(self, _):
@@ -224,7 +223,6 @@ class MainFrame(wx.Frame):
 			self.subscribed = False
 			self.bSubscribe.SetLabel("Subscribe")
 		else:
-			print("trying to subscribe")
 			self.listener = Listener(self, self.settings.ipaddr, self.settings.socketport)
 			if not self.listener.connect():
 				print("Unable to establish connection with server")
@@ -241,13 +239,12 @@ class MainFrame(wx.Frame):
 		except json.decoder.JSONDecodeError:
 			print("Unable to parse (%s)" % data)
 			return
-		print("got http cmd")
 		evt = DeliveryEvent(data=jdata)
 		wx.PostEvent(self, evt)
 
 	def onDeliveryEvent(self, evt):
 		for cmd, parms in evt.data.items():
-			print("%s: %s" % (cmd, parms))
+			#print("%s: %s" % (cmd, parms))
 			if cmd == "turnout":
 				for turnout, state in parms.items():
 					try:
@@ -262,7 +259,6 @@ class MainFrame(wx.Frame):
 
 			elif cmd == "block":
 				for block, state in parms.items():
-					print("block command for %s" % block)
 					try:
 						blk = self.blocks[block]
 						blockend = None
@@ -270,7 +266,6 @@ class MainFrame(wx.Frame):
 						if block.endswith(".E") or block.endswith(".W"):
 							blockend = block[-1]
 							block = block[:-2]
-							print("Stopping block %s %s" % (block, blockend))
 							try:
 								blk = self.blocks[block]
 							except KeyError:

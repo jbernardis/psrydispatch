@@ -223,7 +223,7 @@ class OverSwitch (Block):
 	def SetRoute(self, route):
 		self.route = route
 		self.rtName = self.route.GetName()
-		route.rprint()
+		#route.rprint()
 		self.Draw()
 
 	def GetRoute(self):

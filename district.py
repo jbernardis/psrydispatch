@@ -36,9 +36,7 @@ class District:
 		color = GREEN if aspect == 0 else RED # the color we are trying to change to
 		signm = sig.GetName()
 		for blknm, siglist in self.osSignals.items():
-			print("looking at block %s, signals %s" % (blknm, str(siglist)))
 			if signm in siglist:
-				print("signal in list")
 				osblk = self.frame.blocks[blknm]
 				osblknm = blknm
 				rname = osblk.GetRouteName()
@@ -53,19 +51,16 @@ class District:
 		if color == GREEN:	
 			if osblk.IsBusy():
 				self.frame.Popup("OS Block %s is occupied" % osblk.GetName())
-				print("OS Block is busy")
 				return
 			exitBlkNm = rt.GetExitBlock()
 			exitBlk = self.frame.blocks[exitBlkNm]
 			if exitBlk.IsBusy():
 				self.frame.Popup("OS Exit Block %s is occupied" % exitBlk.GetName())
-				print("exit block is busy")
 				return
 		else: # color == RED
 			esig = osblk.GetEntrySignal()	
 			if esig is not None and esig.GetName() != signm:
 				self.frame.Popup("Signal %s is not for route %s" % (signm, rt.GetDescription()))
-				print("route can only be reset by the entry signal")
 				return
 
 		self.frame.Request({"signal": { "name": signm, "state": color }})
@@ -88,14 +83,12 @@ class District:
 
 	def DoSignalAction(self, sig, state):
 		signm = sig.GetName()
-		print("do signal action")
 		for blknm, siglist in self.osSignals.items():
 			if signm in siglist:
 				osblock = self.frame.blocks[blknm]
 				rname = osblock.GetRouteName()
 				rt = self.routes[rname]
 				if sig.IsPossibleRoute(blknm, rname):
-					print("matching route: %s %s" % (blknm, rname))
 					break
 		else:
 			return
@@ -108,13 +101,13 @@ class District:
 
 		# now see if it should be propagated to the exit block
 		if osblock.IsBusy() and state == RED:
-			print("do not propagate RED past busy OS block")
+			#print("do not propagate RED past busy OS block")
 			return
 
 		exitBlkNm = rt.GetExitBlock()
 		exitBlk = self.frame.blocks[exitBlkNm]
 		if exitBlk.IsOccupied():
-			print("do not propagate to an Occupied block")
+			#print("do not propagate to an Occupied block")
 			return
 
 		exitBlk.SetEast(sig.GetEast())

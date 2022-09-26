@@ -1,6 +1,6 @@
 import requests
 
-import pprint
+#import pprint
 
 class RRServer(object):
 	def __init__(self):
@@ -10,7 +10,7 @@ class RRServer(object):
 		self.ipAddr = "http://%s:%s" % (ip, port)
 
 	def SendRequest(self, req):
-		pprint.pprint(req)
+		#pprint.pprint(req)
 
 		for cmd, parms in req.items():
 			try:

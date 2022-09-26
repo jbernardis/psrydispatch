@@ -34,19 +34,15 @@ class Turnout:
 		return self.block.GetStatus() == EMPTY
 
 	def SetReverse(self, refresh=False):
-		print("in set reverse for %s %s" % (self.name, str(refresh)))
 		if not self.normal:
 			return False
 
 		if not self.Changeable():
 			# cant change a turnout in busy block
 			return False
-
-		print("past checks - setting reverse")
 		
 		self.normal = False
 		if self.pairedTurnout is not None:
-			print("propagate to paired turnout")
 			self.pairedTurnout.SetReverse(refresh)
 
 		self.district.DetermineRoute(self.block)
