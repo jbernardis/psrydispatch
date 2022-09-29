@@ -2,13 +2,14 @@ from turnout import Turnout
 from constants import EMPTY, OCCUPIED, CLEARED, BLOCK, OVERSWITCH, STOPPINGBLOCK, RED
 
 class Route:
-	def __init__(self, screen, osblk, name, blkin, pos, blkout):
+	def __init__(self, screen, osblk, name, blkin, pos, blkout, rtype):
 		self.screen = screen
 		self.name = name
 		self.osblk = osblk
 		self.blkin = blkin
 		self.pos = [x for x in pos]
 		self.blkout = blkout
+		self.rtype = [x for x in rtype]
 
 	def GetName(self):
 		return self.name
@@ -24,11 +25,23 @@ class Route:
 	def GetStatus(self):
 		return self.osblk.GetStatus()
 
-	def GetExitBlock(self):
-		if self.osblk.IsReversed():
-			return self.blkin
+	def GetRouteType(self, reverse=False):
+		if self.osblk.east:
+			return self.rtype[1] if reverse else self.rtype[0]
 		else:
-			return self.blkout
+			return self.rtype[0] if reverse else self.rtype[1]
+
+	def GetExitBlock(self, reverse=False):
+		if self.osblk.IsReversed():
+			return self.blkout if reverse else self.blkin
+		else:
+			return self.blkin if reverse else self.blkout
+
+	def GetEntryBlock(self, reverse=False):
+		if self.osblk.IsReversed():
+			return self.blkin if reversed else self.blkout
+		else:
+			return self.blkout if reversed else self.blkin
 
 	def rprint(self):
 		print("%s: (%s) %s => %s => %s" % (self.name, self.osblk.GetName(), self.blkin, str(self.pos), self.blkout))
@@ -47,6 +60,8 @@ class Block:
 		self.cleared = False
 		self.train = None
 		self.trainLoc = []
+		self.blkEast = None
+		self.blkWest = None
 		self.sbEast = None
 		self.sbWest = None
 		self.determineStatus()
@@ -74,6 +89,12 @@ class Block:
 
 	def Reset(self):
 		self.east = self.defaultEast
+
+	def SetNextBlockEast(self, blk):
+		self.blkEast = blk
+
+	def SetNextBlockWest(self, blk):
+		self.blkWest = blk
 
 	def determineStatus(self):
 		self.status = OCCUPIED if self.occupied else CLEARED if self.cleared else EMPTY
@@ -222,8 +243,32 @@ class OverSwitch (Block):
 
 	def SetRoute(self, route):
 		self.route = route
+		if route is None:
+			self.rtName = "<None>"
+			print("set route for %s to None" % self.name)
+			return
+
+		self.route.rprint()
+			
 		self.rtName = self.route.GetName()
-		#route.rprint()
+		entryBlkName = self.route.GetEntryBlock()
+		entryBlk = self.frame.GetBlockByName(entryBlkName)
+		exitBlkName = self.route.GetExitBlock()
+		exitBlk = self.frame.GetBlockByName(exitBlkName)
+		if not entryBlk:
+			print("could not determine entry block for %s/%s from name %s" % (self.name, self.rtName, entryBlkName))
+		if not exitBlk:
+			print("could not determine exit block for %s/%s from name %s" % (self.name, self.rtName, exitBlkName))
+		if self.east:
+			if entryBlk:
+				entryBlk.SetNextBlockEast(exitBlk)
+			if exitBlk:
+				exitBlk.SetNextBlockWest(entryBlk)
+		else:
+			if entryBlk:
+				entryBlk.SetNextBlockWest(exitBlk)
+			if exitBlk:
+				exitBlk.SetNextBlockEast(entryBlk)
 		self.Draw()
 
 	def GetRoute(self):

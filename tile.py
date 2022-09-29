@@ -1,7 +1,7 @@
 import os
 
 from bitmaps import BitMaps
-from constants import EMPTY, OCCUPIED, CLEARED, NORMAL, REVERSE, RED, GREEN
+from constants import EMPTY, OCCUPIED, CLEARED, NORMAL, REVERSE, RED, GREEN, STOP
 
 class Tile:
 	def __init__(self, name, bmps):
@@ -60,9 +60,11 @@ class SignalTile:
 		self.bmps = bmps
 
 	def getBmp(self, sig):
-		if sig.aspect == RED:
+		if sig.aspect == STOP:
 			return self.bmps["red"]
 		elif sig.aspect == GREEN:
+			return self.bmps["green"]
+		else:
 			return self.bmps["green"]
 
 
@@ -82,6 +84,22 @@ def loadTiles(bitmaps):
 		"white": b.straight.normal,
 		"green": b.straight.routed,
 		"red": b.straight.occupied})
+	tiles["houtline"] = Tile("houtline", {
+		"white": b.straightoutline.normal,
+		"green": b.straightoutline.routed,
+		"red": b.straightoutline.occupied})
+	tiles["vertical"] = Tile("vertical", {
+		"white": b.vertical.normal,
+		"green": b.vertical.routed,
+		"green-right": b.vertical.uprouted,
+		"green-left": b.vertical.downrouted,
+		"red-right": b.vertical.upoccupied,
+		"red-left": b.vertical.downoccupied,
+		"red": b.vertical.occupied})
+	tiles["verticalnc"] = Tile("vertical", {
+		"white": b.vertical.normal,
+		"green": b.vertical.routed,
+		"red": b.vertical.occupied})
 	tiles["eobleft"] = Tile("eobleft", {
 		"white": b.eobleft.normal,
 		"green": b.eobleft.routed,
@@ -114,6 +132,16 @@ def loadTiles(bitmaps):
 		"white": b.turnrightright.normal,
 		"green": b.turnrightright.routed,
 		"red": b.turnrightright.occupied})
+
+	tiles["turnrightup"] = Tile("turnrightup", {
+		"white": b.turnrightup.normal,
+		"green": b.turnrightup.routed,
+		"red": b.turnrightright.occupied})
+
+	tiles["turnleftdown"] = Tile("turnleftdown", {
+		"white": b.turnleftdown.normal,
+		"green": b.turnleftdown.routed,
+		"red": b.turnleftdown.occupied})
 
 	turnouts = {}
 	turnouts["torightleft"] = TurnoutTile("torightleft", 
@@ -152,6 +180,32 @@ def loadTiles(bitmaps):
 			"white": b.torightup.reversed.normal,
 			"green": b.torightup.reversed.routed,
 			"red": b.torightup.reversed.occupied
+		}
+	)
+
+	turnouts["toleftup"] = TurnoutTile("toleftup", 
+		{
+			"white": b.toleftup.normal.normal,
+			"green": b.toleftup.normal.routed,
+			"red": b.toleftup.normal.occupied
+		},
+		{
+			"white": b.toleftup.reversed.normal,
+			"green": b.toleftup.reversed.routed,
+			"red": b.toleftup.reversed.occupied
+		}
+	)
+
+	turnouts["toleftupinv"] = TurnoutTile("toleftup", 
+		{
+			"white": b.toleftup.reversed.normal,
+			"green": b.toleftup.reversed.routed,
+			"red": b.toleftup.reversed.occupied
+		},
+		{
+			"white": b.toleftup.normal.normal,
+			"green": b.toleftup.normal.routed,
+			"red": b.toleftup.normal.occupied
 		}
 	)
 

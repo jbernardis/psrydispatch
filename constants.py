@@ -17,8 +17,14 @@ STOPPINGBLOCK = 2
 # turnout status
 NORMAL = 0
 REVERSE = 1
-TOGGLE = 2
 
 # signal aspects
 RED = 0
 GREEN = 1
+
+# route types
+STOP = 0
+MAIN = 1
+SLOW = 2
+DIVERGING = 3
+RESTRICTING = 4

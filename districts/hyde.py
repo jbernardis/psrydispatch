@@ -1,85 +1,87 @@
 from district import District
+
 from block import Block, OverSwitch, Route
 from turnout import Turnout
 from signal import Signal
 from button import Button
 
-from constants import HyYdPt, LaKr, NaCl, BLOCK, OVERSWITCH, NORMAL, REVERSE, TOGGLE, RED, GREEN, OCCUPIED
+from constants import LaKr, RESTRICTING, MAIN, DIVERGING
 
 class Hyde (District):
 	def __init__(self, name, frame, screen):
 		District.__init__(self, name, frame, screen)
 
-	def DetermineRoute(self, block):
-		bname = block.name
-		if bname == "OSHWW":
-			s1 = 'N' if self.turnouts["HSw1"].IsNormal() else 'R'
-			s3 = 'N' if self.turnouts["HSw3"].IsNormal() else 'R'
-			s5 = 'N' if self.turnouts["HSw5"].IsNormal() else 'R'
-			s7 = 'N' if self.turnouts["HSw7"].IsNormal() else 'R'
+	def DetermineRoute(self, blocks):
+		for bname in blocks:
+			block = self.frame.GetBlockByName(bname)
+			if bname == "OSHWW":
+				s1 = 'N' if self.turnouts["HSw1"].IsNormal() else 'R'
+				s3 = 'N' if self.turnouts["HSw3"].IsNormal() else 'R'
+				s5 = 'N' if self.turnouts["HSw5"].IsNormal() else 'R'
+				s7 = 'N' if self.turnouts["HSw7"].IsNormal() else 'R'
 
-			if s1 + s3 == "NN":
-				block.SetRoute(self.routes["HRtH11H12"])
-			elif s1 + s3 == "NR":
-				block.SetRoute(self.routes["HRtH11H34"])
-			elif s1 + s5 == "RN":
-				block.SetRoute(self.routes["HRtH11H33"])
-			elif s1 + s5 + s7 == "RRN":
-				block.SetRoute(self.routes["HRtH11H32"])
-			elif s1 + s5 + s7 == "RRR":
-				block.SetRoute(self.routes["HRtH11H31"])
+				if s1 + s3 == "NN":
+					block.SetRoute(self.routes["HRtH11H12"])
+				elif s1 + s3 == "NR":
+					block.SetRoute(self.routes["HRtH11H34"])
+				elif s1 + s5 == "RN":
+					block.SetRoute(self.routes["HRtH11H33"])
+				elif s1 + s5 + s7 == "RRN":
+					block.SetRoute(self.routes["HRtH11H32"])
+				elif s1 + s5 + s7 == "RRR":
+					block.SetRoute(self.routes["HRtH11H31"])
 
-		elif bname == "OSHWW2":			
-			s7 = 'N' if self.turnouts["HSw7"].IsNormal() else 'R'
-			if s7 == "N":
-				block.SetRoute(self.routes["HRtH30H31"])
+			elif bname == "OSHWW2":			
+				s7 = 'N' if self.turnouts["HSw7"].IsNormal() else 'R'
+				if s7 == "N":
+					block.SetRoute(self.routes["HRtH30H31"])
 
-		elif bname == "OSHWE":
-			s9  = 'N' if self.turnouts["HSw9"].IsNormal() else 'R'
-			s11 = 'N' if self.turnouts["HSw11"].IsNormal() else 'R'
-			s13 = 'N' if self.turnouts["HSw13"].IsNormal() else 'R'
+			elif bname == "OSHWE":
+				s9  = 'N' if self.turnouts["HSw9"].IsNormal() else 'R'
+				s11 = 'N' if self.turnouts["HSw11"].IsNormal() else 'R'
+				s13 = 'N' if self.turnouts["HSw13"].IsNormal() else 'R'
 
-			if s9 + s11 == "NN":
-				block.SetRoute(self.routes["HRtH21H22"])
-			elif s9 + s11 == "NR":
-				block.SetRoute(self.routes["HRtH21H43"])
-			elif s9 + s13 == "RN":
-				block.SetRoute(self.routes["HRtH21H42"])
-			elif s9 + s13 == "RR":
-				block.SetRoute(self.routes["HRtH21H41"])
+				if s9 + s11 == "NN":
+					block.SetRoute(self.routes["HRtH21H22"])
+				elif s9 + s11 == "NR":
+					block.SetRoute(self.routes["HRtH21H43"])
+				elif s9 + s13 == "RN":
+					block.SetRoute(self.routes["HRtH21H42"])
+				elif s9 + s13 == "RR":
+					block.SetRoute(self.routes["HRtH21H41"])
 
-		elif bname == "OSHEW":
-			s15 = 'N' if self.turnouts["HSw15"].IsNormal() else 'R'
-			s17 = 'N' if self.turnouts["HSw17"].IsNormal() else 'R'
-			s19 = 'N' if self.turnouts["HSw19"].IsNormal() else 'R'
-			s21 = 'N' if self.turnouts["HSw21"].IsNormal() else 'R'
+			elif bname == "OSHEW":
+				s15 = 'N' if self.turnouts["HSw15"].IsNormal() else 'R'
+				s17 = 'N' if self.turnouts["HSw17"].IsNormal() else 'R'
+				s19 = 'N' if self.turnouts["HSw19"].IsNormal() else 'R'
+				s21 = 'N' if self.turnouts["HSw21"].IsNormal() else 'R'
 
-			if s21 == "R":
-				block.SetRoute(self.routes["HRtH13H31"])
-			elif s21 + s19 == "NR":
-				block.SetRoute(self.routes["HRtH13H32"])
-			elif s21 + s19 + s17 == "NNR":
-				block.SetRoute(self.routes["HRtH13H33"])
-			elif s21 + s19 + s17 + s15 == "NNNR":
-				block.SetRoute(self.routes["HRtH13H34"])
-			elif s21 + s19 + s17 + s15 == "NNNN":
-				block.SetRoute(self.routes["HRtH12H13"])
+				if s21 == "R":
+					block.SetRoute(self.routes["HRtH13H31"])
+				elif s21 + s19 == "NR":
+					block.SetRoute(self.routes["HRtH13H32"])
+				elif s21 + s19 + s17 == "NNR":
+					block.SetRoute(self.routes["HRtH13H33"])
+				elif s21 + s19 + s17 + s15 == "NNNR":
+					block.SetRoute(self.routes["HRtH13H34"])
+				elif s21 + s19 + s17 + s15 == "NNNN":
+					block.SetRoute(self.routes["HRtH12H13"])
 
-		elif bname == "OSHEE":
-			s23 = 'N' if self.turnouts["HSw23"].IsNormal() else 'R'
-			s25 = 'N' if self.turnouts["HSw25"].IsNormal() else 'R'
-			s27 = 'N' if self.turnouts["HSw27"].IsNormal() else 'R'
-			s29 = 'N' if self.turnouts["HSw29"].IsNormal() else 'R'
-			if s29 == "R":
-				block.SetRoute(self.routes["HRtH23H40"])
-			elif s29+s27 == "NN":
-				block.SetRoute(self.routes["HRtH22H23"])
-			elif s29+s27+s25 == "NRR":
-				block.SetRoute(self.routes["HRtH23H43"])
-			elif s29+s27+s25+s23 == "NRNR":
-				block.SetRoute(self.routes["HRtH23H42"])
-			elif s29+s27+s25+s23 == "NRNN":
-				block.SetRoute(self.routes["HRtH23H41"])
+			elif bname == "OSHEE":
+				s23 = 'N' if self.turnouts["HSw23"].IsNormal() else 'R'
+				s25 = 'N' if self.turnouts["HSw25"].IsNormal() else 'R'
+				s27 = 'N' if self.turnouts["HSw27"].IsNormal() else 'R'
+				s29 = 'N' if self.turnouts["HSw29"].IsNormal() else 'R'
+				if s29 == "R":
+					block.SetRoute(self.routes["HRtH23H40"])
+				elif s29+s27 == "NN":
+					block.SetRoute(self.routes["HRtH22H23"])
+				elif s29+s27+s25 == "NRR":
+					block.SetRoute(self.routes["HRtH23H43"])
+				elif s29+s27+s25+s23 == "NRNR":
+					block.SetRoute(self.routes["HRtH23H42"])
+				elif s29+s27+s25+s23 == "NRNN":
+					block.SetRoute(self.routes["HRtH23H41"])
 
 	def PerformButtonAction(self, btn):
 		bname = btn.GetName()
@@ -693,12 +695,15 @@ class Hyde (District):
 			self.turnouts[tonm].SetRouteControl(True)
 
 		self.turnouts["HSw7"].SetPairedTurnout(self.turnouts["HSw7b"])
+		self.turnouts["HSw3"].SetPairedTurnout(self.turnouts["HSw5"])
+		self.turnouts["HSw11"].SetPairedTurnout(self.turnouts["HSw13"])
 
 		self.osTurnouts = {}
 		self.osTurnouts["OSHWW"] = ["HSw1", "HSw3", "HSw5", "HSw7" ]
 		self.osTurnouts["OSHWW2"] = [ "HSw7b" ]
 		self.osTurnouts["OSHWE"] = ["HSw9", "HSw11", "HSw13" ]
 		self.osTurnouts["OSHEW"] = ["HSw15", "HSw17", "HSw19", "HSw21" ]
+		self.osTurnouts["OSHEE"] = ["HSw23", "HSw25", "HSw27", "HSw29" ]
 		
 		return self.turnouts
 
@@ -736,34 +741,34 @@ class Hyde (District):
 
 		self.routes = {}
 		block = self.blocks["OSHWW"]
-		self.routes["HRtH11H12"] = Route(self.screen, block, "HRtH11H12", "H12", [ (21, 13), (22, 13), (23, 13), (24, 13), (25, 13), (26, 13), (27, 13), (28, 13), (29, 13), (30, 13), (31, 13) ], "H11")
-		self.routes["HRtH11H31"] = Route(self.screen, block, "HRtH11H31", "H31", [ (21, 13), (22, 13), (23, 12), (24, 11), (25, 10), (26, 9), (27, 8), (28, 7), (29, 6), (30, 5), (31, 5) ], "H11")
-		self.routes["HRtH11H32"] = Route(self.screen, block, "HRtH11H32", "H32", [ (21, 13), (22, 13), (23, 12), (24, 11), (25, 10), (26, 9), (27, 8), (28, 7), (29, 7), (30, 7), (31, 7) ], "H11")
-		self.routes["HRtH11H33"] = Route(self.screen, block, "HRtH11H33", "H33", [ (21, 13), (22, 13), (23, 12), (24, 11), (25, 10), (26, 9), (27, 9), (28, 9), (29, 9), (30, 9), (31, 9) ], "H11")
-		self.routes["HRtH11H34"] = Route(self.screen, block, "HRtH11H34", "H34", [ (21, 13), (22, 13), (23, 13), (24, 13), (25, 13), (26, 12), (27, 11), (28, 11), (29, 11), (30, 11), (31, 11)], "H11")
+		self.routes["HRtH11H12"] = Route(self.screen, block, "HRtH11H12", "H12", [ (21, 13), (22, 13), (23, 13), (24, 13), (25, 13), (26, 13), (27, 13), (28, 13), (29, 13), (30, 13), (31, 13) ], "H11", [RESTRICTING, RESTRICTING])
+		self.routes["HRtH11H31"] = Route(self.screen, block, "HRtH11H31", "H31", [ (21, 13), (22, 13), (23, 12), (24, 11), (25, 10), (26, 9), (27, 8), (28, 7), (29, 6), (30, 5), (31, 5) ], "H11", [RESTRICTING, RESTRICTING])
+		self.routes["HRtH11H32"] = Route(self.screen, block, "HRtH11H32", "H32", [ (21, 13), (22, 13), (23, 12), (24, 11), (25, 10), (26, 9), (27, 8), (28, 7), (29, 7), (30, 7), (31, 7) ], "H11", [RESTRICTING, RESTRICTING])
+		self.routes["HRtH11H33"] = Route(self.screen, block, "HRtH11H33", "H33", [ (21, 13), (22, 13), (23, 12), (24, 11), (25, 10), (26, 9), (27, 9), (28, 9), (29, 9), (30, 9), (31, 9) ], "H11", [RESTRICTING, RESTRICTING])
+		self.routes["HRtH11H34"] = Route(self.screen, block, "HRtH11H34", "H34", [ (21, 13), (22, 13), (23, 13), (24, 13), (25, 13), (26, 12), (27, 11), (28, 11), (29, 11), (30, 11), (31, 11)], "H11", [RESTRICTING, RESTRICTING])
 
 		block = self.blocks["OSHWW2"]			
-		self.routes["HRtH30H31"] = Route(self.screen, block, "HRtH30H31", "H31", [ (28, 5), (29, 5), (30, 5), (31, 5) ], "H30")
+		self.routes["HRtH30H31"] = Route(self.screen, block, "HRtH30H31", "H31", [ (28, 5), (29, 5), (30, 5), (31, 5) ], "H30", [RESTRICTING, MAIN])
 
 		block = self.blocks["OSHWE"]
-		self.routes["HRtH21H22"] = Route(self.screen, block, "HRtH21H22", "H21", [ (21, 15), (22, 15), (23, 15), (24, 15), (25, 15), (26, 15), (27, 15), (28, 15), (29, 15), (30, 15), (31, 15) ], "H22")
-		self.routes["HRtH21H41"] = Route(self.screen, block, "HRtH21H41", "H21", [ (21, 15), (22, 15), (23, 16), (24, 17), (25, 18), (26, 19), (27, 20), (28, 21), (29, 21), (30, 21), (31, 21) ], "H41")
-		self.routes["HRtH21H42"] = Route(self.screen, block, "HRtH21H42", "H21", [ (21, 15), (22, 15), (23, 16), (24, 17), (25, 18), (26, 19), (27, 19), (28, 19), (29, 19), (30, 19), (31, 19) ], "H42")
-		self.routes["HRtH21H43"] = Route(self.screen, block, "HRtH21H43", "H21", [ (21, 15), (22, 15), (23, 15), (24, 15), (25, 15), (26, 16), (27, 17), (28, 17), (29, 17), (30, 17), (31, 17) ], "H43")
+		self.routes["HRtH21H22"] = Route(self.screen, block, "HRtH21H22", "H21", [ (21, 15), (22, 15), (23, 15), (24, 15), (25, 15), (26, 15), (27, 15), (28, 15), (29, 15), (30, 15), (31, 15) ], "H22", [MAIN, RESTRICTING])
+		self.routes["HRtH21H41"] = Route(self.screen, block, "HRtH21H41", "H21", [ (21, 15), (22, 15), (23, 16), (24, 17), (25, 18), (26, 19), (27, 20), (28, 21), (29, 21), (30, 21), (31, 21) ], "H41", [DIVERGING, RESTRICTING])
+		self.routes["HRtH21H42"] = Route(self.screen, block, "HRtH21H42", "H21", [ (21, 15), (22, 15), (23, 16), (24, 17), (25, 18), (26, 19), (27, 19), (28, 19), (29, 19), (30, 19), (31, 19) ], "H42", [DIVERGING, RESTRICTING])
+		self.routes["HRtH21H43"] = Route(self.screen, block, "HRtH21H43", "H21", [ (21, 15), (22, 15), (23, 15), (24, 15), (25, 15), (26, 16), (27, 17), (28, 17), (29, 17), (30, 17), (31, 17) ], "H43", [DIVERGING, RESTRICTING])
 
 		block = self.blocks["OSHEW"]
-		self.routes["HRtH13H31"] = Route(self.screen, block, "HRtH13H31", "H13", [(42, 5), (43, 5), (44, 5), (45, 5), (46, 5), (47, 6), (48, 7), (49, 8), (50, 9), (51, 10), (52, 11), (53, 12), (54, 13), (55, 13), (56, 13)], "H31")
-		self.routes["HRtH13H32"] = Route(self.screen, block, "HRtH13H32", "H13", [(42, 7), (43, 7), (44, 7), (45, 7), (46, 8), (47, 9), (48, 10), (49, 11), (50, 12), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H32")
-		self.routes["HRtH13H33"] = Route(self.screen, block, "HRtH13H33", "H13", [(42, 9), (43, 9), (44, 9), (45, 10), (46, 11), (47, 12), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H33")
-		self.routes["HRtH13H34"] = Route(self.screen, block, "HRtH13H34", "H13", [(42, 11), (43, 11), (44, 12), (45, 13), (46, 13), (47, 13), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H34")
-		self.routes["HRtH12H13"] = Route(self.screen, block, "HRtH12H13", "H13", [(42, 13), (43, 13), (44, 13), (45, 13), (46, 13), (47, 13), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H12")
+		self.routes["HRtH13H31"] = Route(self.screen, block, "HRtH13H31", "H13", [(42, 5), (43, 5), (44, 5), (45, 5), (46, 5), (47, 6), (48, 7), (49, 8), (50, 9), (51, 10), (52, 11), (53, 12), (54, 13), (55, 13), (56, 13)], "H31", [RESTRICTING, DIVERGING])
+		self.routes["HRtH13H32"] = Route(self.screen, block, "HRtH13H32", "H13", [(42, 7), (43, 7), (44, 7), (45, 7), (46, 8), (47, 9), (48, 10), (49, 11), (50, 12), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H32", [RESTRICTING, DIVERGING])
+		self.routes["HRtH13H33"] = Route(self.screen, block, "HRtH13H33", "H13", [(42, 9), (43, 9), (44, 9), (45, 10), (46, 11), (47, 12), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H33", [RESTRICTING, DIVERGING])
+		self.routes["HRtH13H34"] = Route(self.screen, block, "HRtH13H34", "H13", [(42, 11), (43, 11), (44, 12), (45, 13), (46, 13), (47, 13), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H34", [RESTRICTING, DIVERGING])
+		self.routes["HRtH12H13"] = Route(self.screen, block, "HRtH12H13", "H13", [(42, 13), (43, 13), (44, 13), (45, 13), (46, 13), (47, 13), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)], "H12", [RESTRICTING, MAIN])
 
 		block = self.blocks["OSHEE"]
-		self.routes["HRtH22H23"] = Route(self.screen, block, "HRtH22H23", "H22", [(42, 15), (43, 15), (44, 15), (45, 15), (46, 15), (47, 15), (48, 15), (49, 15), (50, 15), (51, 15), (52, 15), (53, 15), (54, 15), (55, 15), (56, 15)], "H23")
-		self.routes["HRtH23H40"] = Route(self.screen, block, "HRtH23H40", "H40", [(42, 23), (43, 23), (44, 23), (45, 23), (46, 22), (47, 21), (48, 20), (49, 19), (50, 18), (51, 17), (52, 16), (53, 15), (54, 15), (55, 15), (56, 15)], "H23")
-		self.routes["HRtH23H43"] = Route(self.screen, block, "HRtH23H43", "H43", [(42, 17), (43, 17), (44, 17), (45, 17), (46, 17), (47, 17), (48, 17), (49, 16), (50, 15), (51, 15), (52, 15), (53, 15), (54, 15), (55, 15), (56, 15)], "H23")
-		self.routes["HRtH23H42"] = Route(self.screen, block, "HRtH23H42", "H42", [(42, 19), (43, 19), (44, 19), (45, 19), (46, 19), (47, 18), (48, 17), (49, 16), (50, 15), (51, 15), (52, 15), (53, 15), (54, 15), (55, 15), (56, 15)], "H23")
-		self.routes["HRtH23H41"] = Route(self.screen, block, "HRtH23H41", "H41", [(42, 21), (43, 21), (44, 21), (45, 20), (46, 19), (47, 18), (48, 17), (49, 16), (50, 15), (51, 15), (52, 15), (53, 15), (54, 15), (55, 15), (56, 15)], "H23")
+		self.routes["HRtH22H23"] = Route(self.screen, block, "HRtH22H23", "H22", [(42, 15), (43, 15), (44, 15), (45, 15), (46, 15), (47, 15), (48, 15), (49, 15), (50, 15), (51, 15), (52, 15), (53, 15), (54, 15), (55, 15), (56, 15)], "H23", [RESTRICTING, RESTRICTING])
+		self.routes["HRtH23H40"] = Route(self.screen, block, "HRtH23H40", "H40", [(42, 23), (43, 23), (44, 23), (45, 23), (46, 22), (47, 21), (48, 20), (49, 19), (50, 18), (51, 17), (52, 16), (53, 15), (54, 15), (55, 15), (56, 15)], "H23", [RESTRICTING, RESTRICTING])
+		self.routes["HRtH23H43"] = Route(self.screen, block, "HRtH23H43", "H43", [(42, 17), (43, 17), (44, 17), (45, 17), (46, 17), (47, 17), (48, 17), (49, 16), (50, 15), (51, 15), (52, 15), (53, 15), (54, 15), (55, 15), (56, 15)], "H23", [RESTRICTING, RESTRICTING])
+		self.routes["HRtH23H42"] = Route(self.screen, block, "HRtH23H42", "H42", [(42, 19), (43, 19), (44, 19), (45, 19), (46, 19), (47, 18), (48, 17), (49, 16), (50, 15), (51, 15), (52, 15), (53, 15), (54, 15), (55, 15), (56, 15)], "H23", [RESTRICTING, RESTRICTING])
+		self.routes["HRtH23H41"] = Route(self.screen, block, "HRtH23H41", "H41", [(42, 21), (43, 21), (44, 21), (45, 20), (46, 19), (47, 18), (48, 17), (49, 16), (50, 15), (51, 15), (52, 15), (53, 15), (54, 15), (55, 15), (56, 15)], "H23", [RESTRICTING, RESTRICTING])
 
 		self.signals["H4LA"].AddPossibleRoutes("OSHWE", [ "HRtH21H22" ])
 		self.signals["H4LB"].AddPossibleRoutes("OSHWE", [ "HRtH21H43" ])

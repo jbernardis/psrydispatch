@@ -8,6 +8,8 @@ class TrackDiagram(wx.Panel):
 		self.bgbmps =  [d.bitmap for d in dlist]
 		self.offsets = [d.offset for d in dlist]
 
+		self.showPosition = True
+
 		self.tiles = {}
 		self.text = {}
 		self.tx = 0
@@ -38,8 +40,8 @@ class TrackDiagram(wx.Panel):
 		if ntx != self.tx or nty != self.ty:
 			self.tx = ntx
 			self.ty = nty
-			#print("%d %d" % (self.tx, self.ty))
-			#print("%d %d  <=> %d %d" % (self.tx, self.ty, pt.x, pt.y))
+			if self.showPosition:
+				self.frame.UpdatePositionDisplay(self.tx, self.ty)
 
 	def OnLeftUp(self, evt):
 		self.frame.ProcessClick(self.screens[0], (self.tx, self.ty))

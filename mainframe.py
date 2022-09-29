@@ -11,11 +11,14 @@ cmdFolder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( insp
 from settings import Settings
 from bitmaps import BitMaps
 from district import Districts
-from hyde import Hyde
 from trackdiagram import TrackDiagram
 from tile import loadTiles
+from block import Block
 
-from constants import HyYdPt, LaKr, NaCl, screensList, EMPTY, OCCUPIED, CLEARED, TOGGLE, NORMAL, REVERSE, RED, GREEN
+from districts.hyde import Hyde
+from districts.yard import Yard
+
+from constants import HyYdPt, LaKr, NaCl, screensList, EMPTY, OCCUPIED, NORMAL, REVERSE
 from listener import Listener
 from rrserver import RRServer
 
@@ -47,7 +50,7 @@ class MainFrame(wx.Frame):
 		}
 		if self.settings.pages == 1:  # set up a single ultra-wide display accross 3 monitors
 			dp = TrackDiagram(self, [self.diagrams[sn] for sn in screensList])
-			dp.SetPosition((20, 20))
+			dp.SetPosition((20, 120))
 			w, h = dp.GetSize()
 			self.panels = {self.diagrams[sn].screen : dp for sn in screensList}  # all 3 screens just point to the same diagram
 
@@ -56,12 +59,13 @@ class MainFrame(wx.Frame):
 			for d in [self.diagrams[sn] for sn in screensList]:
 				dp = TrackDiagram(self, [d])
 				dp.Hide()
-				dp.SetPosition((20, 20))
+				dp.SetPosition((20, 120))
 				self.panels[d.screen] = dp
 
 			self.currentScreen = LaKr
 			w, h = self.panels[self.currentScreen].GetSize()
 			self.panels[self.currentScreen].Show()
+			h += 120  # add in the amount of vertical space we have reserved at the top of the display
 
 			# add buttons to switch from screen to screen
 			b = wx.Button(self, wx.ID_ANY, "Hyde/Yard/Port", pos=(500, h+50), size=(200, 50))
@@ -71,13 +75,21 @@ class MainFrame(wx.Frame):
 			b = wx.Button(self, wx.ID_ANY, "Nassau/Cliff",   pos=(1790, h+50), size=(200, 50))
 			self.Bind(wx.EVT_BUTTON, lambda event: self.SwapToScreen(NaCl), b)
 
-		self.bSubscribe = wx.Button(self, wx.ID_ANY, "Subscribe", pos=(1900, h+30))
+		self.bSubscribe = wx.Button(self, wx.ID_ANY, "Subscribe", pos=(100, 10))
 		self.Bind(wx.EVT_BUTTON, self.OnSubscribe, self.bSubscribe)
+
+		self.xpos = wx.TextCtrl(self, wx.ID_ANY, "", size=(40, -1), pos=(100, 50), style=wx.TE_READONLY)
+		self.ypos = wx.TextCtrl(self, wx.ID_ANY, "", size=(40, -1), pos=(160, 50), style=wx.TE_READONLY)
+
 
 		self.SetMaxSize((w+50, h+200))
 		self.SetSize((w+50, h+200))
 		w, h = self.GetSize()
 		wx.CallAfter(self.Initialize)
+
+	def UpdatePositionDisplay(self, x, y):
+		self.xpos.SetValue("%4d" % x)
+		self.ypos.SetValue("%4d" % y)
 
 	def Initialize(self):
 		self.listener = None
@@ -88,11 +100,14 @@ class MainFrame(wx.Frame):
 		self.tiles, self.totiles, self.sigtiles = loadTiles(self.bitmaps)
 		self.districts = Districts()
 		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
+		self.districts.AddDistrict(Yard("Yard", self, HyYdPt))
 
 		self.blocks =   self.districts.DefineBlocks(self.tiles)
 		self.turnouts = self.districts.DefineTurnouts(self.totiles, self.blocks)
 		self.signals =  self.districts.DefineSignals(self.sigtiles)
 		self.buttons =  self.districts.DefineButtons(self.bitmaps.buttons)
+
+		self.AddBogusStuff()
 
 		self.trains = []
 
@@ -120,6 +135,23 @@ class MainFrame(wx.Frame):
 
 		self.rrServer = RRServer()
 		self.rrServer.SetServerAddress(self.settings.ipaddr, self.settings.serverport)
+
+	def AddBogusStuff(self):
+		#this is to add bogus entries for block that we need before we get to their district
+		if "L10" in self.blocks:
+			print("You can remove bogus entry for block L10")
+		else:
+			self.blocks["L10"] = Block(self, self, "L10", [], False)
+
+		if "L20" in self.blocks:
+			print("You can remove bogus entry for block L20")
+		else:
+			self.blocks["L20"] = Block(self, self, "L20",	[], True)
+
+		if "P50" in self.blocks:
+			print("You can remove bogus entry for block P50")
+		else:
+			self.blocks["P50"] = Block(self, self, "P50",	[], False)
 		
 	def onTicker(self, _):
 		collapse = False
@@ -206,7 +238,6 @@ class MainFrame(wx.Frame):
 
 		tb.SetPopupSize((400, 60))
 		tb.CenterOnParent(wx.BOTH)
-		#tb.SetPopupPosition((500, 500))
 		tb.SetPopupPauseTime(5000)
 		tb.SetPopupScrollSpeed(8)
 		tb.SetPopupBackgroundColour(wx.Colour(255, 179, 154))
@@ -244,7 +275,7 @@ class MainFrame(wx.Frame):
 
 	def onDeliveryEvent(self, evt):
 		for cmd, parms in evt.data.items():
-			#print("%s: %s" % (cmd, parms))
+			print("%s: %s" % (cmd, parms))
 			if cmd == "turnout":
 				for turnout, state in parms.items():
 					try:
@@ -277,14 +308,12 @@ class MainFrame(wx.Frame):
 						
 			elif cmd == "signal":
 				sigName = parms[0]
-				asp = parms[1]
+				aspect = parms[1]
 				
 				try:
 					sig = self.signals[sigName]
 				except:
 					return
-
-				aspect = GREEN if asp == 1 else RED
 
 				district = sig.GetDistrict()
 				district.DoSignalAction(sig, aspect)

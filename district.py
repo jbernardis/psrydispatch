@@ -1,4 +1,4 @@
-from constants import OCCUPIED, NORMAL, GREEN, OVERSWITCH, TOGGLE, RED
+from constants import OCCUPIED, NORMAL, REVERSE, GREEN, OVERSWITCH, RED, STOP
 
 class District:
 	def __init__(self, name, frame, screen):
@@ -7,9 +7,8 @@ class District:
 		self.screen = screen
 
 	def Initialize(self):
-		for b in self.blocks.values():
-			if b.GetBlockType() == OVERSWITCH:
-				self.DetermineRoute(b)
+		blist = [b.GetName() for b in self.blocks.values() if b.GetBlockType() == OVERSWITCH]
+		self.DetermineRoute(blist)
 
 	def Draw(self):
 		for b in self.blocks.values():
@@ -19,7 +18,7 @@ class District:
 		for s in self.signals.values():
 			s.Draw()
 
-	def DetermineRoute(self, block):
+	def DetermineRoute(self, blocks):
 		print("District %s does not have an implementation of DetermineRoute" % self.name)
 
 	#  Perform... routines handle the user clicking on track diagram components.  This includes, switches, signals, and buttons
@@ -28,23 +27,41 @@ class District:
 		print("District %s does not have an implementation of PerformButtonAction" % self.name)
 
 	def PerformTurnoutAction(self, turnout):
+		blocks = [ blk for blk in self.osTurnouts if turnout.name in self.osTurnouts[blk]]
+		for bname in blocks:
+			blk = self.frame.GetBlockByName(bname)
+			if blk.IsBusy():
+				self.reportBlockBusy(bname)
+				return
+
+		turnout = turnout.GetControlledBy()
 		if turnout.Changeable():
-			self.frame.Request({"turnout": { "name": turnout.GetName(), "action": TOGGLE }})
+			if turnout.IsNormal():
+				self.frame.Request({"turnout": { "name": turnout.GetName(), "status": "R" }})
+			else:
+				self.frame.Request({"turnout": { "name": turnout.GetName(), "status": "N" }})
 
 	def PerformSignalAction(self, sig):
 		aspect = sig.GetAspect()
 		color = GREEN if aspect == 0 else RED # the color we are trying to change to
 		signm = sig.GetName()
+		rt = None
 		for blknm, siglist in self.osSignals.items():
 			if signm in siglist:
 				osblk = self.frame.blocks[blknm]
 				osblknm = blknm
 				rname = osblk.GetRouteName()
+				if osblk.route is None:
+					continue
 				rt = self.routes[rname]
 				if sig.IsPossibleRoute(blknm, rname):
 					break
+
 		else:
-			self.frame.Popup("Signal %s is not for route %s" % (signm, rt.GetDescription()))
+			if rt is None:
+				self.frame.Popup("No routes found for Signal %s" % (signm))
+			else:
+				self.frame.Popup("Signal %s is not for route %s" % (signm, rt.GetDescription()))
 			return
 
 		# this is a valid signal for the current route	
@@ -52,18 +69,32 @@ class District:
 			if osblk.IsBusy():
 				self.frame.Popup("OS Block %s is occupied" % osblk.GetName())
 				return
-			exitBlkNm = rt.GetExitBlock()
+
+			sigE = sig.GetEast()
+			if sigE != osblk.GetEast():
+				# the block will need to be reversed, but it's premature
+				# to do so now - so force return values as if reversed
+				exitBlkNm = rt.GetExitBlock(reverse=True)
+				aspect = rt.GetRouteType(reverse=True)
+			else:
+				exitBlkNm = rt.GetExitBlock()
+				aspect = rt.GetRouteType()
+
 			exitBlk = self.frame.blocks[exitBlkNm]
 			if exitBlk.IsBusy():
 				self.frame.Popup("OS Exit Block %s is occupied" % exitBlk.GetName())
 				return
+
 		else: # color == RED
 			esig = osblk.GetEntrySignal()	
 			if esig is not None and esig.GetName() != signm:
 				self.frame.Popup("Signal %s is not for route %s" % (signm, rt.GetDescription()))
 				return
+			aspect = STOP
 
-		self.frame.Request({"signal": { "name": signm, "state": color }})
+		# better logic here to determine signal aspect - no need to send color
+
+		self.frame.Request({"signal": { "name": signm, "aspect": aspect }})
 
 	# The Do... routines handle requests that come in from the dispatch server.  The 3 objects of interest for
 	# these requests are blocks, signals, and turnouts
@@ -81,12 +112,14 @@ class District:
 		else:
 			turnout.SetReverse(refresh=True)
 
-	def DoSignalAction(self, sig, state):
+	def DoSignalAction(self, sig, aspect):
 		signm = sig.GetName()
 		for blknm, siglist in self.osSignals.items():
 			if signm in siglist:
 				osblock = self.frame.blocks[blknm]
 				rname = osblock.GetRouteName()
+				if osblock.route is None:
+					continue
 				rt = self.routes[rname]
 				if sig.IsPossibleRoute(blknm, rname):
 					break
@@ -94,24 +127,24 @@ class District:
 			return
 
 		# all checking was done on the sending side, so this is a valid request - just do it
-		sig.SetAspect(state, refresh=True)
 		osblock.SetEast(sig.GetEast())
+		sig.SetAspect(aspect, refresh=True)
 		osblock.SetEntrySignal(sig)
-		osblock.SetCleared(state==GREEN, refresh=True)
+		osblock.SetCleared(aspect != STOP, refresh=True)
 
 		# now see if it should be propagated to the exit block
-		if osblock.IsBusy() and state == RED:
+		if osblock.IsBusy() and aspect == STOP:
 			#print("do not propagate RED past busy OS block")
 			return
 
 		exitBlkNm = rt.GetExitBlock()
-		exitBlk = self.frame.blocks[exitBlkNm]
+		exitBlk = self.frame.GetBlockByName(exitBlkNm)
 		if exitBlk.IsOccupied():
 			#print("do not propagate to an Occupied block")
 			return
 
 		exitBlk.SetEast(sig.GetEast())
-		exitBlk.SetCleared(state==GREEN, refresh=True)
+		exitBlk.SetCleared(aspect!=STOP, refresh=True)
 					
 	def DefineBlocks(self, tiles):
 		print("District %s does not have an implementation of DefineBlocks" % self.name)

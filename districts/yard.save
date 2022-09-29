@@ -1,0 +1,222 @@
+from district import District
+
+from block import Block, OverSwitch, Route
+from turnout import Turnout
+from signal import Signal
+from button import Button
+
+from constants import HyYdPt, RESTRICTING
+
+class Yard (District):
+	def __init__(self, name, frame, screen):
+		District.__init__(self, name, frame, screen)
+
+	def DetermineRoute(self, block):
+		bname = block.GetName()
+		if bname == "OSYCJW":
+			s3 = 'N' if self.turnouts["YSw3"].IsNormal() else 'R'
+
+			if s3 == "N":
+				print("1: YRtY11L10" )
+				block.SetRoute(self.routes["YRtY11L10"])
+			else:
+				print("1: None")
+				block.SetRoute(None)
+
+		elif bname == "OSYCJE":
+			s1 = 'N' if self.turnouts["YSw1"].IsNormal() else 'R'
+			s3 = 'N' if self.turnouts["YSw3"].IsNormal() else 'R'
+			ss = s1+s3
+			print(ss)
+			if ss == "NN":
+				print("2: YRtY21L20")
+				block.SetRoute(self.routes["YRtY21L20"])
+			elif ss == "NR":
+				print("2: YRtY11L20")
+				block.SetRoute(self.routes["YRtY11L20"])
+			elif ss == "RN":
+				print("2: YRtY21P50")
+				block.SetRoute(self.routes["YRtY21P50"])
+			elif ss == "RR":
+				print("2: YRtY11P50")
+				block.SetRoute(self.routes["YRtY11P50"])
+
+	def PerformButtonAction(self, btn):
+		bname = btn.GetName()
+
+	def DefineBlocks(self, tiles):
+		self.blocks = {}
+		self.osBlocks = {}
+
+		self.blocks["L10"] = Block(self, self.frame, "L10",
+			[], False)
+
+		self.blocks["L20"] = Block(self, self.frame, "L20",
+			[], True)
+
+		self.blocks["P50"] = Block(self, self.frame, "P50",
+			[], False)
+
+		self.blocks["Y11"] = Block(self, self.frame, "Y11",
+			[
+				(tiles["eobleft"],  self.screen, (122, 11), False),
+				(tiles["horiznc"],  self.screen, (123, 11), False),
+				(tiles["horiz"],    self.screen, (124, 11), False),
+				(tiles["horiznc"],  self.screen, (125, 11), False),
+				(tiles["horiz"],    self.screen, (126, 11), False),
+				(tiles["horiznc"],  self.screen, (127, 11), False),
+				(tiles["eobright"], self.screen, (128, 11), False),
+
+			], False)
+
+		self.blocks["Y21"] = Block(self, self.frame, "Y21",
+			[
+				(tiles["eobleft"],  self.screen, (122, 13), False),
+				(tiles["horiznc"],  self.screen, (123, 13), False),
+				(tiles["horiz"],    self.screen, (124, 13), False),
+				(tiles["horiznc"],  self.screen, (125, 13), False),
+				(tiles["horiz"],    self.screen, (126, 13), False),
+				(tiles["horiznc"],  self.screen, (127, 13), False),
+				(tiles["eobright"], self.screen, (128, 13), False),
+
+			], True)
+
+		self.blocks["OSYEEW"] = OverSwitch(self, self.frame, "OSYEEW", 
+			[
+				(tiles["eobleft"],        self.screen, (112, 7), False),
+				(tiles["turnrightright"], self.screen, (113, 7), False),
+				(tiles["diagright"],      self.screen, (114, 8), False),
+				(tiles["eobleft"],        self.screen, (113, 9), False),
+				(tiles["horiz"],          self.screen, (114, 9), False),
+				(tiles["diagright"],      self.screen, (116, 10), False),
+				(tiles["eobleft"],        self.screen, (114, 11), False),
+				(tiles["horiz"],          self.screen, (115, 11), False),
+				(tiles["horiznc"],        self.screen, (116, 11), False),
+				(tiles["horiz"],          self.screen, (119, 11), False),
+				(tiles["horiznc"],        self.screen, (120, 11), False),
+				(tiles["eobright"],       self.screen, (121, 11), False),
+				(tiles["diagright"],      self.screen, (119, 12), False),
+				(tiles["eobright"],       self.screen, (121, 13), False),				
+			],
+			False)
+
+		self.blocks["OSYEEE"] = OverSwitch(self, self.frame, "OSYEEE", 
+			[
+				(tiles["eobleft"],        self.screen, (114, 13), False),
+				(tiles["horiz"],          self.screen, (115, 13), False),
+				(tiles["horiznc"],        self.screen, (116, 13), False),
+				(tiles["horiz"],          self.screen, (119, 13), False),
+				(tiles["eobright"],       self.screen, (121, 13), False),				
+			],
+			True)
+
+		self.blocks["OSYCJW"] = OverSwitch(self, self.frame, "OSYCJW", 
+			[
+				(tiles["eobleft"],  self.screen, (129, 11), False),
+				(tiles["horiz"],    self.screen, (131, 11), False),
+				(tiles["horiznc"],  self.screen, (132, 11), False),
+				(tiles["horiz"],    self.screen, (133, 11), False),
+				(tiles["horiznc"],  self.screen, (134, 11), False),
+				(tiles["horiz"],    self.screen, (135, 11), False),
+				(tiles["eobright"], self.screen, (136, 11), False),
+			], 
+			False)
+
+
+		self.blocks["OSYCJE"] = OverSwitch(self, self.frame, "OSYCJE", 
+			[
+				(tiles["eobleft"],  self.screen, (129, 11), False),
+				(tiles["eobleft"],  self.screen, (129, 13), False),
+				(tiles["horiznc"],  self.screen, (130, 13), False),
+				(tiles["horiz"],    self.screen, (131, 13), False),
+				(tiles["horiznc"],  self.screen, (134, 13), False),
+				(tiles["horiz"],    self.screen, (135, 13), False),
+				(tiles["eobright"], self.screen, (136, 13), False),
+				(tiles["diagright"], self.screen, (131, 12), False),
+				(tiles["diagright"], self.screen, (134, 14), False),
+				(tiles["turnrightleft"], self.screen, (135, 15), True),
+				(tiles["eobright"], self.screen, (136, 15), False),
+			], 
+			True)
+
+		self.osBlocks["OSYCJW"] = [ "Y11", "L10" ]
+		self.osBlocks["OSYCJE"] = [ "Y11", "Y21", "L20", "P50" ]
+		self.osBlocks["OSYEEW"] = []
+		self.osBlocks["OSYEEE"] = []
+
+		return self.blocks
+
+	def DefineTurnouts(self, tiles, blocks):
+		self.turnouts = {}
+
+		toList = [
+			[ "YSw1",  "torightright",   "OSYCJE", (133, 13) ],
+			[ "YSw3",  "torightright",   "OSYCJW", (130, 11) ],
+			[ "YSw3b",  "torightleft",   "OSYCJE", (132, 13) ],
+
+			[ "YSw7",  "torightleft",    "OSYEEW", (120, 13) ],
+			[ "YSw7b", "torightright",   "OSYEEW", (118, 11) ],
+			[ "YSw9",  "torightleft",    "OSYEEW", (117, 11) ],
+			[ "YSw11", "toleftup",       "OSYEEW", (115, 9) ]
+
+		]
+
+		for tonm, tileSet, blknm, pos in toList:
+			trnout = Turnout(self, self.frame, tonm, self.screen, tiles[tileSet], blocks[blknm], pos)
+			blocks[blknm].AddTurnout(trnout)
+			self.turnouts[tonm] = trnout
+		
+		self.turnouts["YSw3"].SetPairedTurnout(self.turnouts["YSw3b"])
+		self.turnouts["YSw7"].SetPairedTurnout(self.turnouts["YSw7b"])
+
+		self.osTurnouts = {}
+		self.osTurnouts["OSYCJW"] = [ "YSw3" ]
+		self.osTurnouts["OSYCJE"] = [ "YSw1", "YSw3b" ]
+		self.osTurnouts["OSYEEW"] = [ "YSw7b", "YSw9", "YSw11" ]
+		self.osTurnouts["OSYEEE"] = [ "YSw7" ]
+		
+		return self.turnouts
+
+	def DefineSignals(self, tiles):
+		self.signals = {}
+
+		sigList = [
+			[ "Y2L",  True,    "right", (129, 12) ],
+			[ "Y2R",  False,   "left",  (136, 10) ],
+			[ "Y4L",  True,    "right", (129, 14) ],
+			[ "Y4RA", False,   "left",  (136, 14) ],
+			[ "Y4RB", False,   "left",  (136, 12) ],
+		]
+		for signm, east, tileSet, pos in sigList:
+			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, east, pos, tiles[tileSet])  
+
+		self.routes = {}
+		block = self.blocks["OSYCJW"]
+		self.routes["YRtY11L10"] = Route(self.screen, block, "YRtY11L10", "L10", [ (129, 11), (130, 11), (131, 11), (132, 11), (133, 11), (134, 11), (135, 11), (136, 11) ], "Y11", [RESTRICTING, RESTRICTING])
+
+		block = self.blocks["OSYCJE"]
+		self.routes["YRtY21L20"] = Route(self.screen, block, "YRtY21L20", "Y21", [ (129, 13), (130, 13), (131, 13), (132, 13), (133, 13), (134, 13), (135, 13), (136, 13) ], "L20", [RESTRICTING, RESTRICTING])
+		self.routes["YRtY21P50"] = Route(self.screen, block, "YRtY21P50", "Y21", [ (129, 13), (130, 13), (131, 13), (132, 13), (133, 13), (134, 14), (135, 15), (136, 15) ], "P50", [RESTRICTING, RESTRICTING])
+		self.routes["YRtY11L20"] = Route(self.screen, block, "YRtY11L20", "Y11", [ (129, 11), (130, 11), (131, 12), (132, 13), (133, 13), (134, 13), (135, 13), (136, 13) ], "L20", [RESTRICTING, RESTRICTING])
+		self.routes["YRtY11P50"] = Route(self.screen, block, "YRtY11P50", "Y11", [ (129, 11), (130, 11), (131, 12), (132, 13), (133, 13), (134, 14), (135, 15), (136, 15) ], "P50", [RESTRICTING, RESTRICTING])
+
+		self.signals["Y2L"].AddPossibleRoutes("OSYCJW", [ "YRtY11L10" ])
+		self.signals["Y2R"].AddPossibleRoutes("OSYCJW", [ "YRtY11L10" ])
+
+		self.signals["Y2L"].AddPossibleRoutes("OSYCJE", [ "YRtY11L20", "YRtY11P50" ])
+		self.signals["Y4L"].AddPossibleRoutes("OSYCJE", [ "YRtY21L20", "YRtY21P50" ])
+		self.signals["Y4RB"].AddPossibleRoutes("OSYCJE", [ "YRtY11L20", "YRtY21L20" ])
+		self.signals["Y4RA"].AddPossibleRoutes("OSYCJE", [ "YRtY11P50", "YRtY21P50" ])
+
+		self.osSignals = {}
+		self.osSignals["OSYCJW"] = [ "Y2L", "Y2R" ]
+		self.osSignals["OSYCJE"] = [ "Y2L", "Y4L", "Y4RA", "Y4RB" ]
+
+		return self.signals
+
+	def DefineButtons(self, tiles):
+		self.buttons = {}
+		self.osButtons = {}
+
+
+		return self.buttons

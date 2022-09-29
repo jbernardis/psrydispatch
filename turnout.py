@@ -13,6 +13,8 @@ class Turnout:
 		self.normal = True
 		self.routeControlled = False
 		self.pairedTurnout = None
+		self.controllingTurnout = None
+		self.opposite = False
 
 	def Draw(self, blockstat=None):
 		tostat = NORMAL if self.normal else REVERSE
@@ -27,11 +29,28 @@ class Turnout:
 	def IsRouteControlled(self):
 		return self.routeControlled
 
-	def SetPairedTurnout(self, turnout):
+	def SetPairedTurnout(self, turnout, opposite=False):
 		self.pairedTurnout = turnout
+		turnout.SetControlledBy(self, opposite)
+
+	def SetControlledBy(self, turnout, opposite=False):
+		self.controllingTurnout = turnout
+		self.opposite = opposite
+
+	def GetControlledBy(self):
+		if self.controllingTurnout:
+			return self.controllingTurnout
+		else:
+			return self
 
 	def Changeable(self):
 		return self.block.GetStatus() == EMPTY
+
+	def IsNormal(self):
+		return self.normal
+
+	def IsReverse(self):
+		return not self.normal
 
 	def SetReverse(self, refresh=False):
 		if not self.normal:
@@ -43,9 +62,13 @@ class Turnout:
 		
 		self.normal = False
 		if self.pairedTurnout is not None:
-			self.pairedTurnout.SetReverse(refresh)
+			if self.opposite:
+				self.pairedTurnout.SetNormal(refresh)
+			else:
+				self.pairedTurnout.SetReverse(refresh)
 
-		self.district.DetermineRoute(self.block)
+		blocks = [ blk for blk in self.district.osTurnouts if self.name in self.district.osTurnouts[blk]]
+		self.district.DetermineRoute(blocks)
 
 		if refresh:
 			self.Draw()
@@ -62,25 +85,17 @@ class Turnout:
 		
 		self.normal = True
 		if self.pairedTurnout is not None:
-			self.pairedTurnout.SetNormal()
+			if self.opposite:
+				self.pairedTurnout.SetReverse(refresh)
+			else:
+				self.pairedTurnout.SetNormal(refresh)
 		
-		self.district.DetermineRoute(self.block)
+
+		blocks = [ blk for blk in self.district.osTurnouts if self.name in self.district.osTurnouts[blk]]
+		self.district.DetermineRoute(blocks)
 		if refresh:
 			self.Draw()
 		return True
-
-	def Toggle(self, refresh=False):
-		if not self.Changeable():
-			# cant change a turnout in busy block
-			return False
-		
-		self.normal = not self.normal
-		if self.pairedTurnout is not None:
-			self.pairedTurnout.Toggle()
-
-		self.district.DetermineRoute(self.block)
-		if refresh:
-			self.Draw()
 
 	def GetName(self):
 		return self.name
@@ -90,6 +105,9 @@ class Turnout:
 
 	def GetScreen(self):
 		return self.screen
+
+	def GetBlock(self):
+		return self.block
 
 	def GetPos(self):
 		return self.pos
