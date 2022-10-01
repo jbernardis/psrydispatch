@@ -18,6 +18,10 @@ STOPPINGBLOCK = 2
 NORMAL = 0
 REVERSE = 1
 
+# turnout types
+TURNOUT = 0
+SLIPSWITCH = 1
+
 # signal aspects
 RED = 0
 GREEN = 1

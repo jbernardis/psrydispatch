@@ -31,7 +31,7 @@ class Node:
 		self.bitmap = bitmapName
 		self.offset = offset
 
-useCameraDiagrams = False
+import pprint
 
 class MainFrame(wx.Frame):
 	def __init__(self):
@@ -43,10 +43,11 @@ class MainFrame(wx.Frame):
 		hsz = wx.BoxSizer(wx.HORIZONTAL)
 		self.bitmaps = BitMaps(os.path.join(".", "bitmaps"))
 		singlePage = self.settings.pages == 1
+		cameraDiagrams = self.settings.usecameradiagrams
 		self.diagrams = {
-			HyYdPt: Node(HyYdPt, self.bitmaps.diagrams.HydeYardPortCam  if useCameraDiagrams else self.bitmaps.diagrams.HydeYardPort, 0),
-			LaKr:   Node(LaKr,   self.bitmaps.diagrams.LathamKrulishCam if useCameraDiagrams else self.bitmaps.diagrams.LathamKrulish, 2544 if singlePage else 0),
-			NaCl:   Node(NaCl,   self.bitmaps.diagrams.NassauCliffCam   if useCameraDiagrams else self.bitmaps.diagrams.NassauCliff, 5088 if singlePage else 0)
+			HyYdPt: Node(HyYdPt, self.bitmaps.diagrams.HydeYardPortCam  if cameraDiagrams else self.bitmaps.diagrams.HydeYardPort, 0),
+			LaKr:   Node(LaKr,   self.bitmaps.diagrams.LathamKrulishCam if cameraDiagrams else self.bitmaps.diagrams.LathamKrulish, 2544 if singlePage else 0),
+			NaCl:   Node(NaCl,   self.bitmaps.diagrams.NassauCliffCam   if cameraDiagrams else self.bitmaps.diagrams.NassauCliff, 5088 if singlePage else 0)
 		}
 		if self.settings.pages == 1:  # set up a single ultra-wide display accross 3 monitors
 			dp = TrackDiagram(self, [self.diagrams[sn] for sn in screensList])
@@ -97,7 +98,7 @@ class MainFrame(wx.Frame):
 		self.Bind(EVT_DELIVERY, self.onDeliveryEvent)
 		self.Bind(EVT_DISCONNECT, self.onDisconnectEvent)
 
-		self.tiles, self.totiles, self.sigtiles = loadTiles(self.bitmaps)
+		self.tiles, self.totiles, self.sstiles, self.sigtiles, self.generictiles = loadTiles(self.bitmaps)
 		self.districts = Districts()
 		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
 		self.districts.AddDistrict(Yard("Yard", self, HyYdPt))
@@ -111,7 +112,7 @@ class MainFrame(wx.Frame):
 
 		self.trains = []
 
-		self.districts.Initialize()
+		self.districts.Initialize(self.sstiles, self.generictiles)
 
 		if self.settings.dispatch:
 			self.turnoutMap = { (t.GetScreen(), t.GetPos()): t for t in self.turnouts.values() if not t.IsRouteControlled() }

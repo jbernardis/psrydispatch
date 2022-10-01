@@ -6,7 +6,14 @@ class District:
 		self.frame = frame
 		self.screen = screen
 
-	def Initialize(self):
+	def Initialize(self, sstiles, generictiles):
+		self.sstiles = sstiles
+		self.generictiles = generictiles
+
+		for t in self.turnouts.values():
+			print("initializing turnout %s" % t.GetName())
+			t.initialize()
+
 		blist = [b.GetName() for b in self.blocks.values() if b.GetBlockType() == OVERSWITCH]
 		self.DetermineRoute(blist)
 
@@ -18,6 +25,9 @@ class District:
 		for s in self.signals.values():
 			s.Draw()
 
+	def DrawRoute(self, block):
+		pass
+
 	def DetermineRoute(self, blocks):
 		print("District %s does not have an implementation of DetermineRoute" % self.name)
 
@@ -27,7 +37,9 @@ class District:
 		print("District %s does not have an implementation of PerformButtonAction" % self.name)
 
 	def PerformTurnoutAction(self, turnout):
+		print(turnout.GetName())
 		blocks = [ blk for blk in self.osTurnouts if turnout.name in self.osTurnouts[blk]]
+		print(str(blocks))
 		for bname in blocks:
 			blk = self.frame.GetBlockByName(bname)
 			if blk.IsBusy():
@@ -107,13 +119,17 @@ class District:
 				self.blocks[osblknm].Draw()
 
 	def DoTurnoutAction(self, turnout, state):
+		print("district do turnout %s" % turnout.GetName())
 		if state == NORMAL:
+			print("call normal")
 			turnout.SetNormal(refresh=True)
 		else:
+			print("call reverse")
 			turnout.SetReverse(refresh=True)
 
 	def DoSignalAction(self, sig, aspect):
 		signm = sig.GetName()
+		print("do signal %s" % signm)
 		for blknm, siglist in self.osSignals.items():
 			if signm in siglist:
 				osblock = self.frame.blocks[blknm]
@@ -125,6 +141,9 @@ class District:
 					break
 		else:
 			return
+
+		print("block route: %s/%s" % (blknm, rname))
+		print("calling seteast with value %s" % str(sig.GetEast()))
 
 		# all checking was done on the sending side, so this is a valid request - just do it
 		osblock.SetEast(sig.GetEast())
@@ -138,6 +157,7 @@ class District:
 			return
 
 		exitBlkNm = rt.GetExitBlock()
+		print("retrieved exit block as %s" % exitBlkNm)
 		exitBlk = self.frame.GetBlockByName(exitBlkNm)
 		if exitBlk.IsOccupied():
 			#print("do not propagate to an Occupied block")
@@ -169,9 +189,9 @@ class Districts:
 	def AddDistrict(self, district):
 		self.districts[district.name] = district
 
-	def Initialize(self):
+	def Initialize(self, sstiles, generictiles):
 		for t in self.districts.values():
-			t.Initialize()
+			t.Initialize(sstiles, generictiles)
 
 	def Draw(self):
 		for t in self.districts.values():

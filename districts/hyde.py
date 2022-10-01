@@ -687,7 +687,7 @@ class Hyde (District):
 		]
 
 		for tonm, tileSet, blknm, pos in toList:
-			trnout = Turnout(self, self.frame, tonm, self.screen, tiles[tileSet], blocks[blknm], pos)
+			trnout = Turnout(self, self.frame, tonm, self.screen, tiles[tileSet], pos)
 			blocks[blknm].AddTurnout(trnout)
 			self.turnouts[tonm] = trnout
 		

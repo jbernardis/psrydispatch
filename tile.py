@@ -33,6 +33,27 @@ class Tile:
 
 		return self.bmps["white"]
 
+class GenericTile:
+	def __init__(self, name, bmps):
+		self.name = name
+		self.bmps = bmps
+
+	def getBmp(self, status, tag):
+		prefix = ""
+		if status == OCCUPIED:
+			prefix = "red-"
+		elif status == CLEARED:
+			prefix = "green-"
+		else:
+			prefix = "white-"
+
+		try:
+			bmp = self.bmps[prefix+tag]
+		except:
+			bmp = self.bmps[tag]
+		return bmp
+
+
 class TurnoutTile:
 	def __init__(self, name, nbmps, rbmps):
 		self.name = name
@@ -44,6 +65,33 @@ class TurnoutTile:
 			bmps = self.nbmps
 		else:
 			bmps = self.rbmps
+
+		if blkstat == OCCUPIED:
+			return bmps["red"]
+
+		if blkstat == CLEARED:
+			return bmps["green"]
+
+		return bmps["white"]
+
+class SlipSwitchTile:
+	def __init__(self, name, nnbmps, nrbmps, rnbmps, rrbmps):
+		self.name = name
+		self.nnbmps = nnbmps
+		self.nrbmps = nrbmps
+		self.rnbmps = rnbmps
+		self.rrbmps = rrbmps
+
+
+	def getBmp(self, tostat, blkstat):
+		if tostat == [NORMAL, NORMAL]:
+			bmps = self.nnbmps
+		elif tostat == [NORMAL, REVERSE]:
+			bmps = self.nrbmps
+		elif tostat == [REVERSE, NORMAL]:
+			bmps = self.rnbmps
+		else: # tostat == [REVERSE, REVERSE]
+			bmps = self.rrbmps
 
 		if blkstat == OCCUPIED:
 			return bmps["red"]
@@ -300,6 +348,42 @@ def loadTiles(bitmaps):
 		}
 	)
 
+	slipswitches = {}
+	turnouts["ssleft"] = SlipSwitchTile("ssleft",
+		{ # NN
+			"white": b.slipleft.nn.normal,
+			"green": b.slipleft.nn.routed,
+			"red":   b.slipleft.nn.occupied
+		},
+		{ # NR
+			"white": b.slipleft.nr.normal,
+			"green": b.slipleft.nr.routed,
+			"red":   b.slipleft.nr.occupied
+		},
+		{ # RN
+			"white": b.slipleft.rn.normal,
+			"green": b.slipleft.rn.routed,
+			"red":   b.slipleft.rn.occupied
+		},
+		{ # RR
+			"white": b.slipleft.rr.normal,
+			"green": b.slipleft.rr.routed,
+			"red":   b.slipleft.rr.occupied
+		}
+
+	)
+
+	generictiles = {}
+	generictiles["crossing"] = GenericTile("crossing",
+		{
+			"white-diagright": b.diagright.normal,
+			"green-diagright": b.diagright.routed,
+			"red-diagright": b.diagright.occupied,
+			"white-diagleft": b.diagleft.normal,
+			"green-diagleft": b.diagleft.routed,
+			"red-diagleft": b.diagleft.occupied,
+			"cross": b.cross
+		})
 	b = bitmaps.signals
 	signals = {}
 	signals["left"] = SignalTile("C11", 
@@ -313,4 +397,4 @@ def loadTiles(bitmaps):
 			"red": b.right.red
 		})
 
-	return tiles, turnouts, signals
+	return tiles, turnouts, slipswitches, signals, generictiles

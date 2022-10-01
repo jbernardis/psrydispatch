@@ -7,6 +7,7 @@ class TrackDiagram(wx.Panel):
 		self.screens = [d.screen for d in dlist]
 		self.bgbmps =  [d.bitmap for d in dlist]
 		self.offsets = [d.offset for d in dlist]
+		self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
 
 		self.showPosition = True
 
@@ -55,7 +56,7 @@ class TrackDiagram(wx.Panel):
 		self.Refresh()
 
 	def OnPaint(self, evt):
-		dc = wx.PaintDC(self)
+		dc = wx.BufferedPaintDC(self)
 		dc.SetTextForeground(wx.Colour(255, 0, 0))
 		dc.SetTextBackground(wx.Colour(255, 255, 255))
 		dc.SetBackgroundMode(wx.BRUSHSTYLE_SOLID)

@@ -1,27 +1,41 @@
-from constants import NORMAL, REVERSE, EMPTY
+from constants import NORMAL, REVERSE, EMPTY, TURNOUT, SLIPSWITCH
 import traceback
 
 class Turnout:
-	def __init__(self, district, frame, name, screen, tiles, block, pos):
+	def __init__(self, district, frame, name, screen, tiles, pos):
 		self.district = district
 		self.frame = frame
 		self.name = name
 		self.screen = screen
 		self.tiles = tiles
 		self.pos = pos
-		self.block = block
 		self.normal = True
+		self.statusFromBlock = EMPTY
+		self.eastFromBlock = True
 		self.routeControlled = False
 		self.pairedTurnout = None
 		self.controllingTurnout = None
 		self.opposite = False
+		self.ttype = TURNOUT
+		self.blockList = []
 
-	def Draw(self, blockstat=None):
+	def GetType(self):
+		return self.ttype
+
+	def initialize(self):
+		self.blockList = [ blk for blk in self.district.osTurnouts if self.name in self.district.osTurnouts[blk]]
+
+	def Draw(self, blockstat=None, east=None):
+		if east is None:
+			east = self.eastFromBlock
+		if blockstat is None:
+			blockstat = self.statusFromBlock
+
 		tostat = NORMAL if self.normal else REVERSE
-		blkstat = blockstat if blockstat is not None else self.block.GetStatus()
-		east = self.block.GetEast()
-		bmp = self.tiles.getBmp(tostat, blkstat, east)
+		bmp = self.tiles.getBmp(tostat, blockstat, east)
 		self.frame.DrawTile(self.screen, self.pos, bmp)
+		self.statusFromBlock = blockstat
+		self.eastFromBlock = east
 
 	def SetRouteControl(self, flag=True):
 		self.routeControlled = flag
@@ -44,7 +58,10 @@ class Turnout:
 			return self
 
 	def Changeable(self):
-		return self.block.GetStatus() == EMPTY
+		return self.statusFromBlock == EMPTY
+
+	def GetBlockStatus(self):
+		return self.statusFromBlock
 
 	def IsNormal(self):
 		return self.normal
@@ -67,15 +84,13 @@ class Turnout:
 			else:
 				self.pairedTurnout.SetReverse(refresh)
 
-		blocks = [ blk for blk in self.district.osTurnouts if self.name in self.district.osTurnouts[blk]]
-		self.district.DetermineRoute(blocks)
+		self.district.DetermineRoute(self.blockList)
 
 		if refresh:
 			self.Draw()
 		return True
 
 	def SetNormal(self, refresh=False):
-
 		if self.normal:
 			return False
 
@@ -91,8 +106,7 @@ class Turnout:
 				self.pairedTurnout.SetNormal(refresh)
 		
 
-		blocks = [ blk for blk in self.district.osTurnouts if self.name in self.district.osTurnouts[blk]]
-		self.district.DetermineRoute(blocks)
+		self.district.DetermineRoute(self.blockList)
 		if refresh:
 			self.Draw()
 		return True
@@ -112,9 +126,123 @@ class Turnout:
 	def GetPos(self):
 		return self.pos
 
+class SlipSwitch(Turnout):
+	def __init__(self, district, frame, name, screen, tiles, pos):
+		Turnout.__init__(self, district, frame, name, screen, tiles, pos)
+		self.ttype = SLIPSWITCH
+		self.status = [NORMAL, NORMAL]
+		self.controllers = [None, None]
+		self.controller = None
+
+	def SetControllers(self, a, b):
+		self.controller = None
+		if a is None:
+			self.controllers[0] = self
+			self.controller = 0
+		else:
+			self.controllers[0] = a
+		if b is None:
+			self.controllers[1] = self
+			self.controller = 1
+		else:
+			self.controllers[1] = b
+
 	def IsNormal(self):
-		return self.normal
+		if self.controller is None:
+			print("Do no call is normal with a slip switch")
+			return False
+
+		return self.status[self.controller] == NORMAL
 
 	def IsReverse(self):
-		return not self.normal
+		if self.controller is None:
+			print("Do no call is reverse with a slip switch")
+			return False
+
+		return self.status[self.controller] != NORMAL
+
+	def SetReverse(self, refresh=False):
+		print("ss set reverse")
+		if self.controller is None:
+			print("Do no call set reverse with a slip switch")
+			return False
+
+		if not self.IsNormal():
+			return False
+
+		if not self.Changeable():
+			# cant change a turnout in busy block
+			return False
+		
+		self.normal = False
+		self.status[self.controller] = REVERSE
+		if self.pairedTurnout is not None:
+			if self.opposite:
+				self.pairedTurnout.SetNormal(refresh)
+			else:
+				self.pairedTurnout.SetReverse(refresh)
+
+		print(str(self.blockList))
+		self.district.DetermineRoute(self.blockList)
+
+		if refresh:
+			self.Draw()
+		return True
+
+	def SetNormal(self, refresh=False):
+		print("ss set normal")
+		if self.controller is None:
+			print("Do no call set normal with a slip switch")
+			return False
+
+		if self.IsNormal():
+			return False
+
+		if not self.Changeable():
+			# cant change a turnout in busy block
+			return False
+		
+		self.normal = True
+		self.status[self.controller] = NORMAL
+		if self.pairedTurnout is not None:
+			if self.opposite:
+				self.pairedTurnout.SetNormal(refresh)
+			else:
+				self.pairedTurnout.SetReverse(refresh)
+		print(str(self.blockList))
+
+		self.district.DetermineRoute(self.blockList)
+
+		if refresh:
+			self.Draw()
+		return True
+
+	def SetStatus(self, status):
+		self.status = status
+		print("set status")
+		print(str(self.blockList))
+
+		self.district.DetermineRoute(self.blockList)
+
+	def UpdateStatus(self):
+		newstat = [s for s in self.status]
+		if self.controller != 0:
+			newstat[0] = NORMAL if self.controllers[0].IsNormal() else REVERSE
+		if self.controller != 1:
+			newstat[1] = NORMAL if self.controllers[1].IsNormal() else REVERSE
+		self.SetStatus(newstat)
+
+	def GetStatus(self):
+		return self.status
+
+	def Draw(self, blkStat=None, east=None):
+		if blkStat is None:
+			blkStat = self.statusFromBlock
+		bmp = self.tiles.getBmp(self.status, blkStat)
+		self.frame.DrawTile(self.screen, self.pos, bmp)
+		self.statusFromBlock = blkStat
+
+
+
+
 
