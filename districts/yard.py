@@ -7,6 +7,10 @@ from button import Button
 
 from constants import HyYdPt, RESTRICTING, MAIN, DIVERGING, SLOW, NORMAL, REVERSE, EMPTY, SLIPSWITCH
 
+CJBlocks = ["OSYCJE", "OSYCJW"]
+EEBlocks = ["OSYEEE", "OSYEEW"]
+KLBlocks = ["OSYKLE", "OSYKLW"]
+
 class Yard (District):
 	def __init__(self, name, frame, screen):
 		District.__init__(self, name, frame, screen)
@@ -18,22 +22,19 @@ class Yard (District):
 		self.drawCrossing()
 
 	def DrawRoute(self, block):
-		self.drawCrossing()
+		if block.GetName() in KLBlocks:
+			self.drawCrossing()
 
 	def drawCrossing(self):
-		print("in draw crossing")
 		s17 = NORMAL if self.sw17.IsNormal() else REVERSE
 		s21 = NORMAL if self.sw21.IsNormal() else REVERSE
 
 		if s17 == REVERSE:
 			blkstat = self.sw17.GetBlockStatus()
-			print("cuing off of 17, stat = %d" % blkstat)
 		elif s21 == REVERSE:
 			blkstat = self.sw21.GetBlockStatus()
-			print("cuing off of 21, stat = %d" % blkstat)
 		else:
 			blkstat = EMPTY
-			print("no cues")
 
 		bmp = "diagright" if s17 == REVERSE else "diagleft" if s21 == REVERSE else "cross"
 		bmp = self.generictiles["crossing"].getBmp(blkstat, bmp)
@@ -58,9 +59,7 @@ class Yard (District):
 				trnout.Draw()
 
 	def DetermineRoute(self, blocks):
-		print("enter determine route")
 		for bname in blocks:
-			print("determine route for block %s" % bname)
 			block = self.frame.GetBlockByName(bname)
 			if bname == "OSYCJW":
 				s1 = 'N' if self.turnouts["YSw1"].IsNormal() else 'R'
@@ -120,7 +119,6 @@ class Yard (District):
 				s25 = 'N' if self.turnouts["YSw25"].IsNormal() else 'R'
 				s27 = 'N' if self.turnouts["YSw27"].IsNormal() else 'R'
 				s29 = 'N' if self.turnouts["YSw29"].IsNormal() else 'R'
-				print("East: 17:%s 19:%s 21:%s 23:%s 25:%s 27:%s 29:%s" % (s17, s19, s21, s23, s25, s27, s29))
 				if s17+s21+s23+s25+s27 == "NNNNN":
 					block.SetRoute(self.routes["YRtY20Y51"])
 				elif s17+s21+s23+s25 == "NNNR":
@@ -144,7 +142,6 @@ class Yard (District):
 				s25 = 'N' if self.turnouts["YSw25"].IsNormal() else 'R'
 				s27 = 'N' if self.turnouts["YSw27"].IsNormal() else 'R'
 				s29 = 'N' if self.turnouts["YSw29"].IsNormal() else 'R'
-				print("West: 17:%s 19:%s 21:%s 23:%s 25:%s 27:%s 29:%s" % (s17, s19, s21, s23, s25, s27, s29))
 				if s17+s19+s21+s29 == "NNNN":
 					block.SetRoute(self.routes["YRtY10Y52"])
 				elif s17+s21+s23+s25 == "NRNR":
@@ -159,7 +156,24 @@ class Yard (District):
 					block.SetRoute(self.routes["YRtY10Y60"])
 				else:
 					block.SetRoute(None)
-	
+
+			elif bname == "OSYWKL":
+				s33 = 'N' if self.turnouts["YSw33"].IsNormal() else 'R'
+				if s33 == "N":
+					block.SetRoute(self.routes["YRtY30Y51"])
+				else:
+					block.SetRoute(self.routes["YRtY30Y50"])
+
+	def CrossingEastWestBoundary(self, blk1, blk2):
+		if blk1.GetName() == "OSYWKL" and blk2.GetName() == "Y30":
+			return True
+		if blk1.GetName() == "OSYKLE" and blk2.GetName() == "Y70":
+			return True
+		if blk1.GetName() == "OSYKLW" and blk2.GetName() == "Y70":
+			return True
+
+		return False
+
 	def PerformButtonAction(self, btn):
 		bname = btn.GetName()
 
@@ -325,7 +339,7 @@ class Yard (District):
 				(tiles["horiz"],          self.screen, (18, 30), False),
 				(tiles["horiznc"],        self.screen, (19, 30), False),
 				(tiles["eobright"],       self.screen, (20, 30), False),
-			], True)
+			], False)
 
 		self.blocks["Y87"] = Block(self, self.frame, "Y87",
 			[
@@ -485,21 +499,30 @@ class Yard (District):
 			],
 			True)
 
+		self.blocks["OSYWKL"] = OverSwitch(self, self.frame, "OSYWKL", 
+			[
+				(tiles["eobleft"],       self.screen, (84, 13), False),
+				(tiles["horiznc"],       self.screen, (86, 13), False),
+				(tiles["horiz"],         self.screen, (87, 13), False),
+				(tiles["eobright"],      self.screen, (88, 13), False),
+				(tiles["diagright"],      self.screen, (86, 14), False),
+				(tiles["turnrightleft"], self.screen, (87, 15), False),
+				(tiles["eobright"],      self.screen, (88, 15), False),
+			],
+			True)
+
 		self.osBlocks["OSYCJW"] = [ "Y11", "L10", "L20", "P50" ]
 		self.osBlocks["OSYCJE"] = [ "Y21", "L20", "P50" ]
 		self.osBlocks["OSYEEW"] = [ "Y11", "Y10", "Y87", "Y30" ]
 		self.osBlocks["OSYEEE"] = [ "Y21", "Y20", "Y10", "Y87", "Y30" ]
 		self.osBlocks["OSYKLW"] = [ "Y10", "Y70", "Y60", "Y53", "Y52", "Y51", "Y50" ]
 		self.osBlocks["OSYKLE"] = [ "Y20", "Y70", "Y60", "Y53", "Y52", "Y51", "Y50" ]
+		self.osBlocks["OSYWKL"] = [ "Y30", "Y50", "Y51" ]
 
 		return self.blocks
 
 	def DefineTurnouts(self, tiles, blocks):
 		self.turnouts = {}
-
-		CJBlocks = ["OSYCJE", "OSYCJW"]
-		EEBlocks = ["OSYEEE", "OSYEEW"]
-		KLBlocks = ["OSYKLE", "OSYKLW"]
 
 		toList = [
 			[ "YSw1",  "torightright",   CJBlocks, (133, 13) ],
@@ -518,7 +541,9 @@ class Yard (District):
 			[ "YSw23b","toleftdowninv",  KLBlocks, (100, 11) ],
 			[ "YSw25", "toleftleft",     KLBlocks, (100, 13) ],
 			[ "YSw27", "torightleft",    KLBlocks, (99, 13) ],
-			[ "YSw29", "toleftupinv",    KLBlocks, (98, 9) ]
+			[ "YSw29", "toleftupinv",    KLBlocks, (98, 9) ],
+
+			[ "YSw33", "torightright",   ["OSYWKL"], (85, 13) ]
 		]
 
 		for tonm, tileSet, blks, pos in toList:
@@ -549,6 +574,7 @@ class Yard (District):
 		self.osTurnouts["OSYEEE"] = [ "YSw7", "YSw7b", "YSw9", "YSw11" ]
 		self.osTurnouts["OSYKLW"] = [ "YSw17", "YSw19", "YSw21", "YSw21b", "YSw23", "YSw23b", "YSw25", "YSw27", "YSw29" ]
 		self.osTurnouts["OSYKLE"] = [ "YSw17", "YSw19", "YSw21", "YSw21b", "YSw23", "YSw23b", "YSw25", "YSw27", "YSw29" ]
+		self.osTurnouts["OSYWKL"] = [ "YSw33" ]
 		
 		return self.turnouts
 
@@ -576,7 +602,11 @@ class Yard (District):
 			[ "Y26LA", True,   "right", (96, 16) ],
 			[ "Y26LB", True,   "right", (96, 14) ],
 			[ "Y26LC", True,   "right", (96, 12) ],
-			[ "Y26R",  False,  "left",  (106, 12)]
+			[ "Y26R",  False,  "left",  (106, 12)],
+
+			[ "Y34L",  True,   "right", (84, 14) ],
+			[ "Y34RA", False,  "left",  (88, 14) ],
+			[ "Y34RB", False,  "left",  (88, 12) ],
 		]
 		for signm, east, tileSet, pos in sigList:
 			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, east, pos, tiles[tileSet])  
@@ -665,6 +695,17 @@ class Yard (District):
 
 		self.osSignals["OSYKLW"] = [ "Y22R", "Y22L", "Y24LA", "Y24LB", "Y26LA", "Y26LB", "Y26LC" ]
 		self.osSignals["OSYKLE"] = [ "Y26R", "Y22L", "Y24LA", "Y24LB", "Y26LA", "Y26LB", "Y26LC" ]
+
+		# Kale west end
+		block = self.blocks["OSYWKL"]
+		self.routes["YRtY30Y51"] = Route(self.screen, block, "YRtY30Y51", "Y30", [ (84, 13), (85, 13), (86, 13), (87, 13), (88, 13) ], "Y51", [SLOW, RESTRICTING])
+		self.routes["YRtY30Y50"] = Route(self.screen, block, "YRtY30Y50", "Y30", [ (84, 13), (85, 13), (86, 14), (87, 15), (88, 15) ], "Y50", [SLOW, RESTRICTING])
+
+		self.signals["Y34L"].AddPossibleRoutes("OSYWKL", [ "YRtY30Y51", "YRtY30Y50" ])
+		self.signals["Y34RA"].AddPossibleRoutes("OSYWKL", [ "YRtY30Y50" ])
+		self.signals["Y34RB"].AddPossibleRoutes("OSYWKL", [ "YRtY30Y51" ])
+
+		self.osSignals["OSYWKL"] = [ "Y34L", "Y34RA", "Y34RB" ]
 
 		return self.signals
 

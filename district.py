@@ -11,7 +11,6 @@ class District:
 		self.generictiles = generictiles
 
 		for t in self.turnouts.values():
-			print("initializing turnout %s" % t.GetName())
 			t.initialize()
 
 		blist = [b.GetName() for b in self.blocks.values() if b.GetBlockType() == OVERSWITCH]
@@ -19,7 +18,7 @@ class District:
 
 	def Draw(self):
 		for b in self.blocks.values():
-			b.Draw()
+			b.Draw(initial=True)
 		for b in self.buttons.values():
 			b.Draw()
 		for s in self.signals.values():
@@ -37,9 +36,7 @@ class District:
 		print("District %s does not have an implementation of PerformButtonAction" % self.name)
 
 	def PerformTurnoutAction(self, turnout):
-		print(turnout.GetName())
 		blocks = [ blk for blk in self.osTurnouts if turnout.name in self.osTurnouts[blk]]
-		print(str(blocks))
 		for bname in blocks:
 			blk = self.frame.GetBlockByName(bname)
 			if blk.IsBusy():
@@ -79,7 +76,7 @@ class District:
 		# this is a valid signal for the current route	
 		if color == GREEN:	
 			if osblk.IsBusy():
-				self.frame.Popup("OS Block %s is occupied" % osblk.GetName())
+				self.frame.Popup("OS Block %s is busy" % osblk.GetName())
 				return
 
 			sigE = sig.GetEast()
@@ -94,7 +91,7 @@ class District:
 
 			exitBlk = self.frame.blocks[exitBlkNm]
 			if exitBlk.IsBusy():
-				self.frame.Popup("OS Exit Block %s is occupied" % exitBlk.GetName())
+				self.frame.Popup("OS Exit Block %s is busy" % exitBlk.GetName())
 				return
 
 		else: # color == RED
@@ -119,17 +116,13 @@ class District:
 				self.blocks[osblknm].Draw()
 
 	def DoTurnoutAction(self, turnout, state):
-		print("district do turnout %s" % turnout.GetName())
 		if state == NORMAL:
-			print("call normal")
 			turnout.SetNormal(refresh=True)
 		else:
-			print("call reverse")
 			turnout.SetReverse(refresh=True)
 
 	def DoSignalAction(self, sig, aspect):
 		signm = sig.GetName()
-		print("do signal %s" % signm)
 		for blknm, siglist in self.osSignals.items():
 			if signm in siglist:
 				osblock = self.frame.blocks[blknm]
@@ -142,9 +135,6 @@ class District:
 		else:
 			return
 
-		print("block route: %s/%s" % (blknm, rname))
-		print("calling seteast with value %s" % str(sig.GetEast()))
-
 		# all checking was done on the sending side, so this is a valid request - just do it
 		osblock.SetEast(sig.GetEast())
 		sig.SetAspect(aspect, refresh=True)
@@ -153,18 +143,23 @@ class District:
 
 		# now see if it should be propagated to the exit block
 		if osblock.IsBusy() and aspect == STOP:
-			#print("do not propagate RED past busy OS block")
 			return
 
 		exitBlkNm = rt.GetExitBlock()
-		print("retrieved exit block as %s" % exitBlkNm)
 		exitBlk = self.frame.GetBlockByName(exitBlkNm)
 		if exitBlk.IsOccupied():
-			#print("do not propagate to an Occupied block")
 			return
 
-		exitBlk.SetEast(sig.GetEast())
+		if self.CrossingEastWestBoundary(osblock, exitBlk):
+			nd = not sig.GetEast()
+		else:
+			nd = sig.GetEast()
+		exitBlk.SetEast(nd)
 		exitBlk.SetCleared(aspect!=STOP, refresh=True)
+
+	def CrossingEastWestBoundary(self, blk1, blk2):
+		print("default crossing east west method")
+		return False
 					
 	def DefineBlocks(self, tiles):
 		print("District %s does not have an implementation of DefineBlocks" % self.name)

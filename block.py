@@ -135,8 +135,7 @@ class Block:
 	def IsOccupied(self):
 		return self.occupied
 
-	def Draw(self):
-		print("in block draw %s" % self.name)
+	def Draw(self, initial=False):
 		for t, screen, pos, revflag in self.tiles:
 			bmp = t.getBmp(self.status, self.east, revflag)
 			self.frame.DrawTile(screen, pos, bmp)
@@ -174,7 +173,6 @@ class Block:
 		self.cleared = cleared
 		self.determineStatus()
 		if refresh:
-			print("calling draw")
 			self.Draw()
 
 		for b in [self.sbEast, self.sbWest]:
@@ -192,9 +190,9 @@ class StoppingBlock (Block):
 		self.cleared = False
 		self.determineStatus()
 
-	def Draw(self):
+	def Draw(self, initial=False):
 		self.east = self.block.east
-		Block.Draw(self)
+		Block.Draw(self, initial)
 
 	def determineStatus(self):
 		self.status = OCCUPIED if self.occupied else CLEARED if self.cleared else EMPTY
@@ -247,7 +245,6 @@ class OverSwitch (Block):
 		self.route = route
 		if route is None:
 			self.rtName = "<None>"
-			print("set route for %s to None" % self.name)
 			return
 
 		self.route.rprint()
@@ -301,21 +298,22 @@ class OverSwitch (Block):
 
 	def GetTileInRoute(self, screen, pos):
 		if self.route is None:
-			return EMPTY
+			return True, EMPTY
 		elif self.route.Contains(screen, pos):
-			return self.status
+			return True, self.status
 		
-		return EMPTY
+		return False, EMPTY
 
-	def Draw(self):
-		print("in OS draw %s" % self.name)
+	def Draw(self, initial=False):
 		for t, screen, pos, revflag in self.tiles:
-			stat = self.GetTileInRoute(screen, pos)
-			bmp = t.getBmp(stat, self.east, revflag)
-			self.frame.DrawTile(screen, pos, bmp)
+			draw, stat = self.GetTileInRoute(screen, pos)
+			if draw:
+				bmp = t.getBmp(stat, self.east, revflag)
+				self.frame.DrawTile(screen, pos, bmp)
 
 		for t in self.turnouts:
-			stat = self.GetTileInRoute(t.GetScreen(), t.GetPos())
-			t.Draw(stat, self.east)
+			draw, stat = self.GetTileInRoute(t.GetScreen(), t.GetPos())
+			if draw or initial:
+				t.Draw(stat, self.east)
 
 		self.district.DrawRoute(self)

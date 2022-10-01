@@ -31,8 +31,6 @@ class Node:
 		self.bitmap = bitmapName
 		self.offset = offset
 
-import pprint
-
 class MainFrame(wx.Frame):
 	def __init__(self):
 		wx.Frame.__init__(self, None, size=(900, 800), style=wx.DEFAULT_FRAME_STYLE)

@@ -149,22 +149,21 @@ class SlipSwitch(Turnout):
 
 	def IsNormal(self):
 		if self.controller is None:
-			print("Do no call is normal with a slip switch")
+			print("Do not call is normal with a slip switch")
 			return False
 
 		return self.status[self.controller] == NORMAL
 
 	def IsReverse(self):
 		if self.controller is None:
-			print("Do no call is reverse with a slip switch")
+			print("Do not call is reverse with a slip switch")
 			return False
 
 		return self.status[self.controller] != NORMAL
 
 	def SetReverse(self, refresh=False):
-		print("ss set reverse")
 		if self.controller is None:
-			print("Do no call set reverse with a slip switch")
+			print("Do not call set reverse with a slip switch")
 			return False
 
 		if not self.IsNormal():
@@ -182,7 +181,6 @@ class SlipSwitch(Turnout):
 			else:
 				self.pairedTurnout.SetReverse(refresh)
 
-		print(str(self.blockList))
 		self.district.DetermineRoute(self.blockList)
 
 		if refresh:
@@ -190,9 +188,8 @@ class SlipSwitch(Turnout):
 		return True
 
 	def SetNormal(self, refresh=False):
-		print("ss set normal")
 		if self.controller is None:
-			print("Do no call set normal with a slip switch")
+			print("Do not call set normal with a slip switch")
 			return False
 
 		if self.IsNormal():
@@ -209,7 +206,6 @@ class SlipSwitch(Turnout):
 				self.pairedTurnout.SetNormal(refresh)
 			else:
 				self.pairedTurnout.SetReverse(refresh)
-		print(str(self.blockList))
 
 		self.district.DetermineRoute(self.blockList)
 
@@ -219,8 +215,6 @@ class SlipSwitch(Turnout):
 
 	def SetStatus(self, status):
 		self.status = status
-		print("set status")
-		print(str(self.blockList))
 
 		self.district.DetermineRoute(self.blockList)
 
