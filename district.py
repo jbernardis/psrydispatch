@@ -14,6 +14,7 @@ class District:
 			t.initialize()
 
 		blist = [b.GetName() for b in self.blocks.values() if b.GetBlockType() == OVERSWITCH]
+		print(str(blist))
 		self.DetermineRoute(blist)
 
 	def Draw(self):
@@ -116,6 +117,7 @@ class District:
 				self.blocks[osblknm].Draw()
 
 	def DoTurnoutAction(self, turnout, state):
+		print("do turnout action %s %d" % (turnout.GetName(), state))
 		if state == NORMAL:
 			turnout.SetNormal(refresh=True)
 		else:
