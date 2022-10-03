@@ -58,6 +58,8 @@ class Block:
 		self.defaultEast = east
 		self.occupied = False
 		self.cleared = False
+		self.turnouts = []
+		self.locks = []
 		self.train = None
 		self.trainLoc = []
 		self.blkEast = None
@@ -79,6 +81,15 @@ class Block:
 	def AddTrainLoc(self, screen, loc):
 		self.trainLoc.append([screen, loc])
 
+	def AddLock(self, lk):
+		self.locks.append(lk)
+
+	def AreLocksSet(self):
+		for lk in self.locks:
+			if lk.GetValue():
+				return True
+		return False
+
 	def DrawTrain(self):
 		if self.train is None:
 			return
@@ -86,6 +97,9 @@ class Block:
 		if self.occupied:
 			for screen, loc in self.trainLoc:
 				self.frame.DrawText(screen, loc, self.train.GetName())
+
+	def DrawTurnouts(self):
+		pass
 
 	def Reset(self):
 		self.east = self.defaultEast
@@ -135,10 +149,20 @@ class Block:
 	def IsOccupied(self):
 		return self.occupied
 
-	def Draw(self, initial=False):
+	def Draw(self):
 		for t, screen, pos, revflag in self.tiles:
 			bmp = t.getBmp(self.status, self.east, revflag)
 			self.frame.DrawTile(screen, pos, bmp)
+		for b in [self.sbEast, self.sbWest]:
+			if b is not None:
+				b.Draw()
+		for t in self.turnouts:
+			t.Draw(self.status, self.east)
+
+		self.district.DrawOthers(self)
+
+	def AddTurnout(self, turnout):
+		self.turnouts.append(turnout)
 
 	def SetOccupied(self, occupied=True, blockend=None, refresh=False):
 		if blockend  in ["E", "W"]:
@@ -190,9 +214,11 @@ class StoppingBlock (Block):
 		self.cleared = False
 		self.determineStatus()
 
-	def Draw(self, initial=False):
+	def Draw(self):
 		self.east = self.block.east
-		Block.Draw(self, initial)
+		for t, screen, pos, revflag in self.tiles:
+			bmp = t.getBmp(self.status, self.east, revflag)
+			self.frame.DrawTile(screen, pos, bmp)
 
 	def determineStatus(self):
 		self.status = OCCUPIED if self.occupied else CLEARED if self.cleared else EMPTY
@@ -236,7 +262,6 @@ class OverSwitch (Block):
 	def __init__(self, district, frame, name, tiles, east=True):
 		Block.__init__(self, district, frame, name, tiles, east)
 		self.type = OVERSWITCH
-		self.turnouts = []
 		self.route = None
 		self.rtName = ""
 		self.entrySignal = None
@@ -285,9 +310,6 @@ class OverSwitch (Block):
 	def HasRoute(self, rtName):
 		return rtName == self.rtName
 
-	def AddTurnout(self, turnout):
-		self.turnouts.append(turnout)
-
 	def SetOccupied(self, occupied=True, blockend=None, refresh=False):
 		Block.SetOccupied(self, occupied, blockend, refresh)
 		if occupied:
@@ -304,7 +326,7 @@ class OverSwitch (Block):
 		
 		return False, EMPTY
 
-	def Draw(self, initial=False):
+	def Draw(self):
 		for t, screen, pos, revflag in self.tiles:
 			draw, stat = self.GetTileInRoute(screen, pos)
 			if draw:
@@ -313,7 +335,11 @@ class OverSwitch (Block):
 
 		for t in self.turnouts:
 			draw, stat = self.GetTileInRoute(t.GetScreen(), t.GetPos())
-			if draw or initial:
+			if draw:
 				t.Draw(stat, self.east)
 
-		self.district.DrawRoute(self)
+		self.district.DrawOthers(self)
+
+	def DrawTurnouts(self):
+		for t in self.turnouts:
+			t.Draw(EMPTY, self.east)

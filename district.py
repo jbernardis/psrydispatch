@@ -1,4 +1,4 @@
-from constants import OCCUPIED, NORMAL, REVERSE, GREEN, OVERSWITCH, RED, STOP
+from constants import OCCUPIED, EMPTY, NORMAL, REVERSE, GREEN, OVERSWITCH, RED, STOP
 
 class District:
 	def __init__(self, name, frame, screen):
@@ -6,26 +6,26 @@ class District:
 		self.frame = frame
 		self.screen = screen
 
-	def Initialize(self, sstiles, generictiles):
+	def Initialize(self, sstiles, misctiles):
 		self.sstiles = sstiles
-		self.generictiles = generictiles
+		self.misctiles = misctiles
 
 		for t in self.turnouts.values():
 			t.initialize()
 
 		blist = [b.GetName() for b in self.blocks.values() if b.GetBlockType() == OVERSWITCH]
-		print(str(blist))
 		self.DetermineRoute(blist)
 
 	def Draw(self):
 		for b in self.blocks.values():
-			b.Draw(initial=True)
+			b.Draw()
+			b.DrawTurnouts()
 		for b in self.buttons.values():
 			b.Draw()
 		for s in self.signals.values():
 			s.Draw()
 
-	def DrawRoute(self, block):
+	def DrawOthers(self, block):
 		pass
 
 	def DetermineRoute(self, blocks):
@@ -74,6 +74,10 @@ class District:
 				self.frame.Popup("Signal %s is not for route %s" % (signm, rt.GetDescription()))
 			return
 
+		if osblk.AreLocksSet():
+			self.frame.Popup("OS Block %s is locked" % osblknm)
+			return
+
 		# this is a valid signal for the current route	
 		if color == GREEN:	
 			if osblk.IsBusy():
@@ -95,6 +99,10 @@ class District:
 				self.frame.Popup("OS Exit Block %s is busy" % exitBlk.GetName())
 				return
 
+			if exitBlk.AreLocksSet():
+				self.frame.Popup("OS Exit Block %s is locked" % exitBlk.GetName())
+				return
+
 		else: # color == RED
 			esig = osblk.GetEntrySignal()	
 			if esig is not None and esig.GetName() != signm:
@@ -105,6 +113,20 @@ class District:
 		# better logic here to determine signal aspect - no need to send color
 
 		self.frame.Request({"signal": { "name": signm, "aspect": aspect }})
+
+	def PerformLockAction(self, lk):
+		if not lk.GetValue():
+			# currently unlocked - trying to lock
+	
+			if lk.IsBlockBusy():
+				self.frame.Popup("Block %s is busy" % lk.GetBlock().GetName())
+				return
+
+			stat = 1
+		else:
+			stat = 0
+			
+		self.frame.Request({"lock": { "name": lk.GetName(), "status": stat }})
 
 	# The Do... routines handle requests that come in from the dispatch server.  The 3 objects of interest for
 	# these requests are blocks, signals, and turnouts
@@ -117,7 +139,6 @@ class District:
 				self.blocks[osblknm].Draw()
 
 	def DoTurnoutAction(self, turnout, state):
-		print("do turnout action %s %d" % (turnout.GetName(), state))
 		if state == NORMAL:
 			turnout.SetNormal(refresh=True)
 		else:
@@ -159,21 +180,36 @@ class District:
 		exitBlk.SetEast(nd)
 		exitBlk.SetCleared(aspect!=STOP, refresh=True)
 
+	def DoLockAction(self, lk, stat):
+		lk.SetValue(stat!=0, refresh=True)
+
 	def CrossingEastWestBoundary(self, blk1, blk2):
-		print("default crossing east west method")
 		return False
 					
 	def DefineBlocks(self, tiles):
 		print("District %s does not have an implementation of DefineBlocks" % self.name)
+		self.blocks = {}
+		return({})
 
 	def DefineTurnouts(self, tiles):
 		print("District %s does not have an implementation of DefineTurnouts" % self.name)
+		self.turnouts = {}
+		return({})
 
 	def DefineSignals(self, tiles):
 		print("District %s does not have an implementation of DefineSignals" % self.name)
+		self.signals = {}
+		return({})
 
 	def DefineButtons(self, tiles):
 		print("District %s does not have an implementation of DefineButtons" % self.name)
+		self.buttons = {}
+		return({})
+
+	def DefineLocks(self, tiles):
+		print("District %s does not have an implementation of DefineLocks" % self.name)
+		self.locks = {}
+		return({})
 
 	def reportBlockBusy(self, blknm):
 		self.frame.Popup("Block %s is busy" % blknm)
@@ -186,9 +222,9 @@ class Districts:
 	def AddDistrict(self, district):
 		self.districts[district.name] = district
 
-	def Initialize(self, sstiles, generictiles):
+	def Initialize(self, sstiles, misctiles):
 		for t in self.districts.values():
-			t.Initialize(sstiles, generictiles)
+			t.Initialize(sstiles, misctiles)
 
 	def Draw(self):
 		for t in self.districts.values():
@@ -221,3 +257,10 @@ class Districts:
 			btns.update(t.DefineButtons(tiles))
 
 		return btns
+
+	def DefineLocks(self, tiles):
+		locks = {}
+		for t in self.districts.values():
+			locks.update(t.DefineLocks(tiles))
+
+		return locks

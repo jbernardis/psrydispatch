@@ -21,7 +21,7 @@ class Yard (District):
 		District.Draw(self)
 		self.drawCrossing()
 
-	def DrawRoute(self, block):
+	def DrawOthers(self, block):
 		if block.GetName() in KLBlocks:
 			self.drawCrossing()
 
@@ -37,7 +37,7 @@ class Yard (District):
 			blkstat = EMPTY
 
 		bmp = "diagright" if s17 == REVERSE else "diagleft" if s21 == REVERSE else "cross"
-		bmp = self.generictiles["crossing"].getBmp(blkstat, bmp)
+		bmp = self.misctiles["crossing"].getBmp(blkstat, bmp)
 		self.frame.DrawTile(self.screen, (104, 12), bmp)
 
 	def DoTurnoutAction(self, turnout, state):
@@ -59,7 +59,6 @@ class Yard (District):
 				trnout.Draw()
 
 	def DetermineRoute(self, blocks):
-		print("determine routes")
 		for bname in blocks:
 			block = self.frame.GetBlockByName(bname)
 			if bname == "OSYCJW":
@@ -957,16 +956,6 @@ class Yard (District):
 
 		self.osSignals["OSYWW"] = [ "Y40R", "Y40LA", "Y40LB", "Y40LC", "Y40LD" ]
 		self.osSignals["OSYWE"] = [ "Y42L", "Y42RA", "Y42RB", "Y42RC", "Y42RD" ]
-
-		return self.signals
-
-	def DefineButtons(self, tiles):
-		self.buttons = {}
-		self.osButtons = {}
-
-		b = Button(self, self.screen, self.frame, "YWWB1", (32, 30), tiles)
-		self.buttons["YWWB1"] = b
-		self.routes["YRtY70R70"] = Route(self.screen, block, "YRtY70Y81", "Y81", [ (21, 30), ], "Y70", [RESTRICTING, DIVERGING])
 
 		return self.signals
 

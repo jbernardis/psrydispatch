@@ -17,6 +17,7 @@ from block import Block
 
 from districts.hyde import Hyde
 from districts.yard import Yard
+from districts.latham import Latham
 
 from constants import HyYdPt, LaKr, NaCl, screensList, EMPTY, OCCUPIED, NORMAL, REVERSE
 from listener import Listener
@@ -96,30 +97,34 @@ class MainFrame(wx.Frame):
 		self.Bind(EVT_DELIVERY, self.onDeliveryEvent)
 		self.Bind(EVT_DISCONNECT, self.onDisconnectEvent)
 
-		self.tiles, self.totiles, self.sstiles, self.sigtiles, self.generictiles = loadTiles(self.bitmaps)
+		self.tiles, self.totiles, self.sstiles, self.sigtiles, self.misctiles = loadTiles(self.bitmaps)
 		self.districts = Districts()
 		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
 		self.districts.AddDistrict(Yard("Yard", self, HyYdPt))
+		self.districts.AddDistrict(Latham("Latham", self, LaKr))
 
 		self.blocks =   self.districts.DefineBlocks(self.tiles)
 		self.turnouts = self.districts.DefineTurnouts(self.totiles, self.blocks)
 		self.signals =  self.districts.DefineSignals(self.sigtiles)
 		self.buttons =  self.districts.DefineButtons(self.bitmaps.buttons)
+		self.locks   =  self.districts.DefineLocks(self.misctiles)
 
 		self.AddBogusStuff()
 
 		self.trains = []
 
-		self.districts.Initialize(self.sstiles, self.generictiles)
+		self.districts.Initialize(self.sstiles, self.misctiles)
 
 		if self.settings.dispatch:
 			self.turnoutMap = { (t.GetScreen(), t.GetPos()): t for t in self.turnouts.values() if not t.IsRouteControlled() }
 			self.buttonMap = { (b.GetScreen(), b.GetPos()): b for b in self.buttons.values() }
 			self.signalMap = { (s.GetScreen(), s.GetPos()): s for s in self.signals.values() }
+			self.lockMap = { (l.GetScreen(), l.GetPos()): l for l in self.locks.values() }
 		else:
 			self.turnoutMap = {}
 			self.buttonMap = {}
 			self.signalMap = {}
+			self.lockMap = {}
 
 		self.buttonsToClear = []
 
@@ -137,20 +142,30 @@ class MainFrame(wx.Frame):
 
 	def AddBogusStuff(self):
 		#this is to add bogus entries for block that we need before we get to their district
-		if "L10" in self.blocks:
-			print("You can remove bogus entry for block L10")
-		else:
-			self.blocks["L10"] = Block(self, self, "L10", [], False)
 
-		if "L20" in self.blocks:
-			print("You can remove bogus entry for block L20")
+		if "D10" in self.blocks:
+			print("You can remove bogus entry for block D10")
 		else:
-			self.blocks["L20"] = Block(self, self, "L20",	[], True)
-
+			self.blocks["D10"] = Block(self, self, "D11",	[], False)
+		if "D20" in self.blocks:
+			print("You can remove bogus entry for block D20")
+		else:
+			self.blocks["D20"] = Block(self, self, "D20",	[], False)
+		if "P11" in self.blocks:
+			print("You can remove bogus entry for block P11")
+		else:
+			self.blocks["P11"] = Block(self, self, "P11",	[], False)
+		if "P21" in self.blocks:
+			print("You can remove bogus entry for block P21")
+		else:
+			self.blocks["P21"] = Block(self, self, "P21",	[], False)
 		if "P50" in self.blocks:
 			print("You can remove bogus entry for block P50")
 		else:
 			self.blocks["P50"] = Block(self, self, "P50",	[], False)
+
+	def DrawOthers(self, block):
+		print("Remove this bogus drawothers method from mainframe")
 		
 	def onTicker(self, _):
 		collapse = False
@@ -192,6 +207,14 @@ class MainFrame(wx.Frame):
 
 		if sig:
 			sig.GetDistrict().PerformSignalAction(sig)
+
+		try:
+			lk = self.lockMap[(screen, pos)]
+		except KeyError:
+			lk = None
+
+		if lk:
+			lk.GetDistrict().PerformLockAction(lk)
 
 	def DrawTile(self, screen, pos, bmp):
 		offset = self.diagrams[screen].offset
@@ -274,7 +297,7 @@ class MainFrame(wx.Frame):
 
 	def onDeliveryEvent(self, evt):
 		for cmd, parms in evt.data.items():
-			print("%s: %s" % (cmd, parms))
+			print("Delivery from dispatch: %s: %s" % (cmd, parms))
 			if cmd == "turnout":
 				for turnout, state in parms.items():
 					try:
@@ -316,7 +339,18 @@ class MainFrame(wx.Frame):
 
 				district = sig.GetDistrict()
 				district.DoSignalAction(sig, aspect)
+						
+			elif cmd == "lock":
+				lkName = parms[0]
+				stat = parms[1]
+				
+				try:
+					lk = self.locks[lkName]
+				except:
+					return
 
+				district = lk.GetDistrict()
+				district.DoLockAction(lk, stat)
 		
 	def raiseDisconnectEvent(self): # thread context
 		evt = DisconnectEvent()

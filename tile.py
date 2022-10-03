@@ -33,7 +33,7 @@ class Tile:
 
 		return self.bmps["white"]
 
-class GenericTile:
+class MiscTile:
 	def __init__(self, name, bmps):
 		self.name = name
 		self.bmps = bmps
@@ -44,7 +44,7 @@ class GenericTile:
 			prefix = "red-"
 		elif status == CLEARED:
 			prefix = "green-"
-		else:
+		elif status == EMPTY:
 			prefix = "white-"
 
 		try:
@@ -373,8 +373,9 @@ def loadTiles(bitmaps):
 
 	)
 
-	generictiles = {}
-	generictiles["crossing"] = GenericTile("crossing",
+	bmisc = bitmaps.misc
+	misctiles = {}
+	misctiles["crossing"] = MiscTile("crossing",
 		{
 			"white-diagright": b.diagright.normal,
 			"green-diagright": b.diagright.routed,
@@ -382,8 +383,20 @@ def loadTiles(bitmaps):
 			"white-diagleft": b.diagleft.normal,
 			"green-diagleft": b.diagleft.routed,
 			"red-diagleft": b.diagleft.occupied,
-			"cross": b.cross
+			"cross": bmisc.cross
 		})
+	misctiles["lockdown"] = MiscTile("lockdown",
+		{
+			"locked" : bmisc.downlocked,
+			"unlocked" : bmisc.downunlocked
+		})
+	misctiles["lockup"] = MiscTile("lockup",
+		{
+			"locked" : bmisc.uplocked,
+			"unlocked" : bmisc.upunlocked,
+		})
+
+
 	b = bitmaps.signals
 	signals = {}
 	signals["left"] = SignalTile("C11", 
@@ -397,4 +410,4 @@ def loadTiles(bitmaps):
 			"red": b.right.red
 		})
 
-	return tiles, turnouts, slipswitches, signals, generictiles
+	return tiles, turnouts, slipswitches, signals, misctiles
