@@ -14,6 +14,7 @@ from district import Districts
 from trackdiagram import TrackDiagram
 from tile import loadTiles
 from block import Block
+from train import Train
 
 from districts.hyde import Hyde
 from districts.yard import Yard
@@ -23,6 +24,9 @@ from constants import HyYdPt, LaKr, NaCl, screensList, EMPTY, OCCUPIED, NORMAL, 
 from listener import Listener
 from rrserver import RRServer
 
+from edittraindlg import EditTrainDlg
+
+import pprint
 (DeliveryEvent, EVT_DELIVERY) = wx.lib.newevent.NewEvent() 
 (DisconnectEvent, EVT_DISCONNECT) = wx.lib.newevent.NewEvent() 
 
@@ -110,6 +114,16 @@ class MainFrame(wx.Frame):
 		self.locks   =  self.districts.DefineLocks(self.misctiles)
 
 		self.AddBogusStuff()
+		# print("blocks")
+		# print(str(list(self.blocks.keys())))
+		# print("turnouts")
+		# print(str(list(self.turnouts.keys())))
+		# print("signals")
+		# print(str(list(self.signals.keys())))
+		# print("buttons")
+		# print(str(list(self.buttons.keys())))
+		# print("locks")
+		# print(str(list(self.locks.keys())))
 
 		self.trains = []
 
@@ -126,6 +140,8 @@ class MainFrame(wx.Frame):
 			self.signalMap = {}
 			self.lockMap = {}
 
+		self.blockMap = self.BuildBlockMap(self.blocks)
+
 		self.buttonsToClear = []
 
 		self.districts.Draw()
@@ -140,13 +156,25 @@ class MainFrame(wx.Frame):
 		self.rrServer = RRServer()
 		self.rrServer.SetServerAddress(self.settings.ipaddr, self.settings.serverport)
 
+	def BuildBlockMap(self, bl):
+		blkMap = {}
+		for b in bl.values():
+			tl = b.GetTrainLoc()
+			for scrn, pos in tl:
+				lkey = (scrn, pos[1])
+				if lkey not in blkMap.keys():
+					blkMap[lkey] = []
+				blkMap[lkey].append((pos[0], b))
+
+		return blkMap
+
 	def AddBogusStuff(self):
 		#this is to add bogus entries for block that we need before we get to their district
 
 		if "D10" in self.blocks:
 			print("You can remove bogus entry for block D10")
 		else:
-			self.blocks["D10"] = Block(self, self, "D11",	[], False)
+			self.blocks["D10"] = Block(self, self, "D10",	[], False)
 		if "D20" in self.blocks:
 			print("You can remove bogus entry for block D20")
 		else:
@@ -182,6 +210,7 @@ class MainFrame(wx.Frame):
 		self.buttonsToClear.append([secs, btn])
 
 	def ProcessClick(self, screen, pos):
+		print("click %s %d, %d" % (screen, pos[0], pos[1]))
 		try:
 			to = self.turnoutMap[(screen, pos)]
 		except KeyError:
@@ -216,6 +245,37 @@ class MainFrame(wx.Frame):
 		if lk:
 			lk.GetDistrict().PerformLockAction(lk)
 
+		try:
+			ln = self.blockMap[(screen, pos[1])]
+		except KeyError:
+			ln = None
+
+		if ln:
+			for col, blk in ln:
+				if col <= pos[0] <= col+10:
+					break
+			else:
+				blk = None
+
+			if blk:
+				if blk.IsOccupied():
+					tr = blk.GetTrain()
+					dlg = EditTrainDlg(self, tr)
+					rc = dlg.ShowModal()
+					if rc == wx.ID_OK:
+						trainid, locoid = dlg.GetResults()
+					dlg.Destroy()
+					if rc != wx.ID_OK:
+						return
+
+					if tr is None:
+						tr = Train(trainid)
+						blk.SetTrain(tr)
+					else:
+						tr.SetName(trainid)
+					tr.SetLoco(locoid)
+					blk.DrawTrain()
+
 	def DrawTile(self, screen, pos, bmp):
 		offset = self.diagrams[screen].offset
 		self.panels[screen].DrawTile(pos[0], pos[1], offset, bmp)
@@ -223,6 +283,10 @@ class MainFrame(wx.Frame):
 	def DrawText(self, screen, pos, text):
 		offset = self.diagrams[screen].offset
 		self.panels[screen].DrawText(pos[0], pos[1], offset, text)
+
+	def ClearText(self, screen, pos):
+		offset = self.diagrams[screen].offset
+		self.panels[screen].ClearText(pos[0], pos[1], offset)
 
 	def SwapToScreen(self, screen):
 		if screen not in screensList:

@@ -1,9 +1,11 @@
-class train:
-	def __init__(self, name, frame):
+class Train:
+	def __init__(self, name=None):
 		self.name = name
-		self.frame = frame
 		self.loco = None
 		self.blocks = []
+
+	def SetName(self, name):
+		self.name = name
 
 	def SetLoco(self, loco):
 		self.loco = loco
@@ -14,23 +16,7 @@ class train:
 	def GetLoco(self):
 		return self.loco
 
-	def AddToBlock(self, blknm, refresh=False):
-		if blknm in self.blocks:
-			return
-
-		self.blocks.append(blknm)
-		if refresh:
-			self.Draw()
-
-	def RemoveFromBlock(self, blknm, refresh=False):
-		if not blknm in self.blocks:
-			return
-
-		self.blocks = [x for x in self.blocks if x != blknm]
-		if refresh:
-			self.Draw()
-
-	def Draw(self):
-		for b in self.blocks:
-			blk = self.frame.blocks[b]
-			blk.DrawTrain()
+	def GetIDString(self):
+		n = self.name if self.name else "???"
+		l = self.loco if self.loco else "???"
+		return n+"/"+l

@@ -184,7 +184,7 @@ def loadTiles(bitmaps):
 	tiles["turnrightup"] = Tile("turnrightup", {
 		"white": b.turnrightup.normal,
 		"green": b.turnrightup.routed,
-		"red": b.turnrightright.occupied})
+		"red": b.turnrightup.occupied})
 
 	tiles["turnleftdown"] = Tile("turnleftdown", {
 		"white": b.turnleftdown.normal,

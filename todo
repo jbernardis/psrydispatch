@@ -1,19 +1,16 @@
-settings - Use for ip/port, camera bmps, etc
 
 fleeting?
 
 deduction of train movement - reporting train location
+  allow loading of initial positions of traina and locos
+  allow saving current locations
+  keeping track of trains - a master list - the bility to draw a train via the master list be having a list of containing Blocks
+  checking train for non-contiguous Blocks
 
+verify all stopping sections and make sure I have them included in the current districts
 
-verify hydeio and make sure there is not something else I need to consider
+finish hyde - two remaining blocks and the hyde junction OS'es
 
-switch locks for sidings
+ATC
 
-logic for following trains
-	dispatcher -> server where trains are at init
-	server forwards to listeners
-	devise a scheme for not losing trains, or at least put up a message when one is lost
-
-pop up toaster messages for
-	unknown train or train split accross non contiguous Blocks
-
+Auto routing

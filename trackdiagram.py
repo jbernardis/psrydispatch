@@ -55,6 +55,13 @@ class TrackDiagram(wx.Panel):
 		self.text[(x*16+offset, y*16)] = text;
 		self.Refresh()
 
+	def ClearText(self, x, y, offset):
+		textKey = (x*16+offset, y*16)
+		if textKey not in self.text:
+			return
+		del(self.text[textKey])
+		self.Refresh()
+
 	def OnPaint(self, evt):
 		dc = wx.BufferedPaintDC(self)
 		dc.SetTextForeground(wx.Colour(255, 0, 0))

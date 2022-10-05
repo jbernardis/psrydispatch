@@ -220,6 +220,8 @@ class Hyde (District):
 				(tiles["horiz"], LaKr, (126,11), False),
 				(tiles["horiznc"], LaKr, (127,11), False),
 			], False)
+		self.blocks["H11"].AddTrainLoc(self.screen, (14, 13))
+		self.blocks["H11"].AddTrainLoc(LaKr, (124, 11))
 
 		self.blocks["H12"] = Block(self, self.frame, "H12",
 			[
@@ -232,7 +234,7 @@ class Hyde (District):
 				(tiles["horiz"], self.screen, (39,13), False),
 				(tiles["horiznc"], self.screen, (40,13), False),
 			], False)
-
+		self.blocks["H12"].AddTrainLoc(self.screen, (34, 13))
 
 		self.blocks["H30"] = Block(self, self.frame, "H30",
 			[
@@ -275,6 +277,8 @@ class Hyde (District):
 				(tiles["horiznc"], LaKr, (127, 9), False),
 			],
 			False)
+		self.blocks["H30"].AddTrainLoc(self.screen, (14, 11))
+		self.blocks["H30"].AddTrainLoc(LaKr, (108, 9))
 
 		self.blocks["H31"] = Block(self, self.frame, "H31",
 			[
@@ -287,6 +291,7 @@ class Hyde (District):
 				(tiles["horiz"], self.screen, (39,5), False),
 				(tiles["horiznc"], self.screen, (40,5), False),
 			], False)
+		self.blocks["H31"].AddTrainLoc(self.screen, (34, 5))
 
 		self.blocks["H32"] = Block(self, self.frame, "H32",
 			[
@@ -299,6 +304,7 @@ class Hyde (District):
 				(tiles["horiz"], self.screen, (39,7), False),
 				(tiles["horiznc"], self.screen, (40,7), False),
 			], False)
+		self.blocks["H32"].AddTrainLoc(self.screen, (34, 7))
 
 		self.blocks["H33"] = Block(self, self.frame, "H33",
 			[
@@ -311,6 +317,7 @@ class Hyde (District):
 				(tiles["horiz"], self.screen, (39,9), False),
 				(tiles["horiznc"], self.screen, (40,9), False),
 			], False)
+		self.blocks["H33"].AddTrainLoc(self.screen, (34, 9))
 
 		self.blocks["H34"] = Block(self, self.frame, "H34",
 			[
@@ -323,6 +330,7 @@ class Hyde (District):
 				(tiles["horiz"], self.screen, (39,11), False),
 				(tiles["horiznc"], self.screen, (40,11), False),
 			], False)
+		self.blocks["H34"].AddTrainLoc(self.screen, (34, 11))
 
 		self.blocks["OSHWW"] = OverSwitch(self, self.frame, "OSHWW", 
 			[
@@ -391,6 +399,8 @@ class Hyde (District):
 				(tiles["horiz"],   self.screen, (19, 15), False),
 				(tiles["eobright"], self.screen, (20, 15), False),
 			], True)
+		self.blocks["H21"].AddTrainLoc(self.screen, (14, 15))
+		self.blocks["H21"].AddTrainLoc(LaKr, (124, 13))
 
 		self.blocks["H22"] = Block(self, self.frame, "H22",
 			[
@@ -403,6 +413,7 @@ class Hyde (District):
 				(tiles["horiz"],   self.screen, (39, 15), False),
 				(tiles["horiznc"], self.screen, (40, 15), False),
 			], True)
+		self.blocks["H22"].AddTrainLoc(self.screen, (34, 15))
 
 		self.blocks["H43"] = Block(self, self.frame, "H43",
 			[
@@ -415,6 +426,7 @@ class Hyde (District):
 				(tiles["horiz"],   self.screen, (39, 17), False),
 				(tiles["horiznc"], self.screen, (40, 17), False),
 			], True)
+		self.blocks["H43"].AddTrainLoc(self.screen, (34, 17))
 
 		self.blocks["H42"] = Block(self, self.frame, "H42",
 			[
@@ -427,6 +439,7 @@ class Hyde (District):
 				(tiles["horiz"],   self.screen, (39, 19), False),
 				(tiles["horiznc"], self.screen, (40, 19), False),
 			], True)
+		self.blocks["H42"].AddTrainLoc(self.screen, (34, 19))
 
 		self.blocks["H41"] = Block(self, self.frame, "H41",
 			[
@@ -439,6 +452,7 @@ class Hyde (District):
 				(tiles["horiz"],   self.screen, (39, 21), False),
 				(tiles["horiznc"], self.screen, (40, 21), False),
 			], True)
+		self.blocks["H41"].AddTrainLoc(self.screen, (34, 21))
 
 		self.blocks["H40"] = Block(self, self.frame, "H40",
 			[
@@ -476,6 +490,8 @@ class Hyde (District):
 				(tiles["horiz"],   LaKr,        (126,15), False),
 				(tiles["horiznc"], LaKr,        (127,15), False),
 			], True)
+		self.blocks["H40"].AddTrainLoc(self.screen, (28, 23))
+		self.blocks["H40"].AddTrainLoc(LaKr, (124, 15))
 
 		self.blocks["OSHWE"] = OverSwitch(self, self.frame, "OSHWE", 
 			[
@@ -535,6 +551,8 @@ class Hyde (District):
 				(tiles["horiznc"], self.screen, (58, 13), False),
 				(tiles["horiz"],   self.screen, (59, 13), False),
 				], False)
+		self.blocks["H13"].AddTrainLoc(self.screen, (58, 13))
+		self.blocks["H13"].AddTrainLoc(LaKr, (41, 9))
 
 		self.blocks["OSHEW"] = OverSwitch(self, self.frame, "OSHEW", 
 			[
@@ -607,6 +625,8 @@ class Hyde (District):
 				(tiles["horiz"],   LaKr,        (44, 15), False),
 				(tiles["eobright"], LaKr,       (45, 15), False),
 			], True)
+		self.blocks["H23"].AddTrainLoc(self.screen, (58, 15))
+		self.blocks["H23"].AddTrainLoc(LaKr, (41, 15))
 
 		self.blocks["OSHEE"] = OverSwitch(self, self.frame, "OSHEE", 
 			[

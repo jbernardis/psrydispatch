@@ -39,9 +39,9 @@ class Route:
 
 	def GetEntryBlock(self, reverse=False):
 		if self.osblk.IsReversed():
-			return self.blkin if reversed else self.blkout
+			return self.blkin if reverse else self.blkout
 		else:
-			return self.blkout if reversed else self.blkin
+			return self.blkout if reverse else self.blkin
 
 	def rprint(self):
 		print("%s: (%s) %s => %s => %s" % (self.name, self.osblk.GetName(), self.blkin, str(self.pos), self.blkout))
@@ -81,6 +81,12 @@ class Block:
 	def AddTrainLoc(self, screen, loc):
 		self.trainLoc.append([screen, loc])
 
+	def GetTrain(self):
+		return self.train
+
+	def GetTrainLoc(self):
+		return self.trainLoc
+
 	def AddLock(self, lk):
 		self.locks.append(lk)
 
@@ -91,12 +97,19 @@ class Block:
 		return False
 
 	def DrawTrain(self):
-		if self.train is None:
+		if len(self.trainLoc) == 0:
 			return
 
-		if self.occupied:
-			for screen, loc in self.trainLoc:
-				self.frame.DrawText(screen, loc, self.train.GetName())
+		if self.train is None:
+			trainID = "???"
+		else:
+			trainID = self.train.GetIDString()
+
+		for screen, loc in self.trainLoc:
+			if self.occupied:
+				self.frame.DrawText(screen, loc, trainID)
+			else:
+				self.frame.ClearText(screen, loc)
 
 	def DrawTurnouts(self):
 		pass
@@ -105,9 +118,11 @@ class Block:
 		self.east = self.defaultEast
 
 	def SetNextBlockEast(self, blk):
+		#print("Block %s: next east block is %s" % (self.GetName(), blk.GetName()))
 		self.blkEast = blk
 
 	def SetNextBlockWest(self, blk):
+		#print("Block %s: next west block is %s" % (self.GetName(), blk.GetName()))
 		self.blkWest = blk
 
 	def determineStatus(self):
@@ -160,6 +175,7 @@ class Block:
 			t.Draw(self.status, self.east)
 
 		self.district.DrawOthers(self)
+		self.DrawTrain()
 
 	def AddTurnout(self, turnout):
 		self.turnouts.append(turnout)
@@ -177,6 +193,12 @@ class Block:
 		self.occupied = occupied
 		if self.occupied:
 			self.cleared = False
+			self.SetTrain(self.IdentifyTrain())
+		else:
+			for b in [self.sbEast, self.sbWest]:
+				if b is not None:
+					b.SetCleared(False, refresh)
+			self.SetTrain(None)
 
 		self.determineStatus()
 		if self.status == EMPTY:
@@ -184,6 +206,18 @@ class Block:
 
 		if refresh:
 			self.Draw()
+
+	def IdentifyTrain(self):
+		if self.east:
+			if self.blkWest:
+				return self.blkWest.GetTrain()
+			else:
+				return None
+		else:
+			if self.blkEast:
+				return self.blkEast.GetTrain()
+			else:
+				return None
 
 	def SetCleared(self, cleared=True, refresh=False):
 		if cleared and self.occupied:
@@ -279,20 +313,25 @@ class OverSwitch (Block):
 		entryBlk = self.frame.GetBlockByName(entryBlkName)
 		exitBlkName = self.route.GetExitBlock()
 		exitBlk = self.frame.GetBlockByName(exitBlkName)
+
 		if not entryBlk:
 			print("could not determine entry block for %s/%s from name %s" % (self.name, self.rtName, entryBlkName))
 		if not exitBlk:
 			print("could not determine exit block for %s/%s from name %s" % (self.name, self.rtName, exitBlkName))
 		if self.east:
 			if entryBlk:
-				entryBlk.SetNextBlockEast(exitBlk)
+				entryBlk.SetNextBlockEast(self)
+			self.SetNextBlockWest(entryBlk)
 			if exitBlk:
-				exitBlk.SetNextBlockWest(entryBlk)
+				exitBlk.SetNextBlockWest(self)
+			self.SetNextBlockEast(exitBlk)
 		else:
 			if entryBlk:
-				entryBlk.SetNextBlockWest(exitBlk)
+				entryBlk.SetNextBlockWest(self)
+			self.SetNextBlockEast(entryBlk)
 			if exitBlk:
-				exitBlk.SetNextBlockEast(entryBlk)
+				exitBlk.SetNextBlockEast(self)
+			self.SetNextBlockWest(exitBlk)
 		self.Draw()
 
 	def GetRoute(self):
@@ -315,7 +354,7 @@ class OverSwitch (Block):
 		if occupied:
 			if self.entrySignal is not None:
 				signm = self.entrySignal.GetName()
-				self.frame.Request({"signal": { "name": signm, "state": RED }})
+				self.frame.Request({"signal": { "name": signm, "aspect": RED }})
 				self.entrySignal = None
 
 	def GetTileInRoute(self, screen, pos):

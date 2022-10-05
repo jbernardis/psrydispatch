@@ -134,6 +134,8 @@ class Latham (District):
 				(tiles["horiznc"], HyYdPt,      (138, 11), False),
 				(tiles["horiz"],   HyYdPt,      (139, 11), False),
 			], False)
+		self.blocks["L10"].AddTrainLoc(self.screen, (1, 11))
+		self.blocks["L10"].AddTrainLoc(HyYdPt, (141, 11))
 
 		self.blocks["L20"] = Block(self, self.frame, "L20",
 			[
@@ -170,6 +172,8 @@ class Latham (District):
 				(tiles["horiznc"], self.screen, (6, 13), False),
 				(tiles["eobright"],self.screen, (7, 13), False),
 			], True)
+		self.blocks["L20"].AddTrainLoc(self.screen, (1, 13))
+		self.blocks["L20"].AddTrainLoc(HyYdPt, (141, 13))
 
 		self.blocks["L11"] = Block(self, self.frame, "L11",
 			[
@@ -184,6 +188,7 @@ class Latham (District):
 				(tiles["eobleft"],   self.screen, (21, 11), False),
 				(tiles["horiznc"],   self.screen, (22, 11), False),
 			], False)
+		self.blocks["L11"].AddTrainLoc(self.screen, (24, 11))
 
 		self.blocks["L21"] = Block(self, self.frame, "L21",
 			[
@@ -201,6 +206,7 @@ class Latham (District):
 				(tiles["horiznc"],   self.screen, (28, 13), False),
 				(tiles["eobright"],  self.screen, (29, 13), False),
 			], True)
+		self.blocks["L21"].AddTrainLoc(self.screen, (24, 13))
 
 
 		self.blocks["L31"] = Block(self, self.frame, "L31",
@@ -216,6 +222,7 @@ class Latham (District):
 				(tiles["horiznc"],   self.screen, (28, 15), False),
 				(tiles["eobright"],  self.screen, (29, 15), False),
 			], True)
+		self.blocks["L31"].AddTrainLoc(self.screen, (22, 15))
 
 		self.blocks["OSLLAW"] = OverSwitch(self, self.frame, "OSLLAW", 
 			[
