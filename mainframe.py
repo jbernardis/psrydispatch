@@ -125,7 +125,7 @@ class MainFrame(wx.Frame):
 		# print("locks")
 		# print(str(list(self.locks.keys())))
 
-		self.trains = []
+		self.trains = {}
 
 		self.districts.Initialize(self.sstiles, self.misctiles)
 
@@ -146,8 +146,8 @@ class MainFrame(wx.Frame):
 
 		self.districts.Draw()
 
-		for tr in self.trains:
-			tr.Draw()
+		# for tr in self.trains:
+		# 	tr.Draw()
 		
 		self.Bind(wx.EVT_TIMER, self.onTicker)
 		self.ticker = wx.Timer(self)
@@ -268,13 +268,7 @@ class MainFrame(wx.Frame):
 					if rc != wx.ID_OK:
 						return
 
-					if tr is None:
-						tr = Train(trainid)
-						blk.SetTrain(tr)
-					else:
-						tr.SetName(trainid)
-					tr.SetLoco(locoid)
-					blk.DrawTrain()
+					self.Request({"settrain": { "block": blk.GetName(), "name": trainid, "loco": locoid}})
 
 	def DrawTile(self, screen, pos, bmp):
 		offset = self.diagrams[screen].offset
@@ -415,6 +409,48 @@ class MainFrame(wx.Frame):
 
 				district = lk.GetDistrict()
 				district.DoLockAction(lk, stat)
+
+			elif cmd == "settrain":
+				block = parms["block"]
+				name = parms["name"]
+				loco = parms["loco"]
+
+				try:
+					blk = self.blocks[block]
+				except:
+					print("unable to identify block (%s)" % block)
+					blk = None
+
+				if blk:
+					tr = blk.GetTrain()
+					if name is None:
+						if tr:
+							tr.RemoveFromBlock(blk)
+						tr = None
+					else:
+						if tr:
+							oldName = tr.GetName()
+							if oldName and oldName != name:
+								tr.SetName(name)
+								self.trains[name] = tr
+								try:
+									del(self.trains[oldName])
+								except:
+									print("can't delete train %s from train list" % oldName)
+						try:
+							tr = self.trains[name]
+						except:
+							tr = Train(name)
+							self.trains[name] = tr
+						tr.AddToBlock(blk)
+						if loco:
+							tr.SetLoco(loco)
+
+					blk.SetTrain(tr)
+					if tr:
+						tr.Draw()
+					else:
+						blk.DrawTrain()
 		
 	def raiseDisconnectEvent(self): # thread context
 		evt = DisconnectEvent()
@@ -431,6 +467,9 @@ class MainFrame(wx.Frame):
 		print("Server socket closed")
 
 	def OnClose(self, evt):
+		print("Trains:")
+		for trid, tr in self.trains.items():
+			print("%s: %s" % (trid, tr.tstring()))
 		try:
 			self.listener.kill()
 			self.listener.join()

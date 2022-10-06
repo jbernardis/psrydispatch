@@ -369,13 +369,13 @@ class Latham (District):
 		self.turnouts["LSw9"].SetPairedTurnout(self.turnouts["LSw9b"])
 		self.turnouts["LSw15"].SetPairedTurnout(self.turnouts["LSw15b"])
 
-		self.turnouts["LSw11"].SetRouteControl(True)
-		self.turnouts["LSw13"].SetRouteControl(True)
+		self.turnouts["LSw11"].SetDisabled(True)
+		self.turnouts["LSw13"].SetDisabled(True)
 
 		self.osTurnouts = {}
-		self.osTurnouts["OSLLAW"] = [ "LSw5", "LSw5b", "LSW7", "LSw7b", "LSw9", "LSw9b" ]
-		self.osTurnouts["OSLLAM"] = [ "LSw1", "LSw3", "LSw3b", "LSw5", "LSw5b", "LSW7", "LSw7b", "LSw9", "LSw9b" ]
-		self.osTurnouts["OSLLAE"] = [ "LSw3", "LSw3b", "LSw5", "LSw5b", "LSW7", "LSw7b", "LSw9", "LSw9b" ]
+		self.osTurnouts["OSLLAW"] = [ "LSw5", "LSw5b", "LSw7", "LSw7b", "LSw9", "LSw9b" ]
+		self.osTurnouts["OSLLAM"] = [ "LSw1", "LSw3", "LSw3b", "LSw5", "LSw5b", "LSw7", "LSw7b", "LSw9", "LSw9b" ]
+		self.osTurnouts["OSLLAE"] = [ "LSw3", "LSw3b", "LSw5", "LSw5b", "LSw7", "LSw7b", "LSw9", "LSw9b" ]
 
 		self.osTurnouts["OSLCAW"] = [ "LSw15", "Sw15b" ]
 		self.osTurnouts["OSLCAM"] = [ "LSw15", "LSw15b", "LSw17" ]

@@ -38,11 +38,14 @@ class District:
 
 	def PerformTurnoutAction(self, turnout):
 		blocks = [ blk for blk in self.osTurnouts if turnout.name in self.osTurnouts[blk]]
+		print(str(blocks))
 		for bname in blocks:
+			print("looking at block (%s)" % bname)
 			blk = self.frame.GetBlockByName(bname)
 			if blk.IsBusy():
 				self.reportBlockBusy(bname)
 				return
+		print("past block loop")
 
 		turnout = turnout.GetControlledBy()
 		if turnout.Changeable():

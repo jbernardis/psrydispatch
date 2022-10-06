@@ -6,6 +6,10 @@ deduction of train movement - reporting train location
   allow saving current locations
   keeping track of trains - a master list - the bility to draw a train via the master list be having a list of containing Blocks
   checking train for non-contiguous Blocks
+  we need to have an empty train object when a train has not yet been identified so that it can move forward as block occupancy is detected
+
+
+write an audit method for all of a district's data - just as a development aid if nothing else
 
 verify all stopping sections and make sure I have them included in the current districts
 

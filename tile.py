@@ -60,18 +60,27 @@ class TurnoutTile:
 		self.nbmps = nbmps
 		self.rbmps = rbmps
 
-	def getBmp(self, tostat, blkstat, east):
+	def getBmp(self, tostat, blkstat, east, disabled):
 		if tostat == NORMAL:
 			bmps = self.nbmps
 		else:
 			bmps = self.rbmps
 
 		if blkstat == OCCUPIED:
+			if disabled:
+				if "red-dis" in bmps:
+					return bmps["red-dis"]
 			return bmps["red"]
 
 		if blkstat == CLEARED:
+			if disabled:
+				if "green-dis" in bmps:
+					return bmps["green-dis"]
 			return bmps["green"]
 
+		if disabled:
+			if "white-dis" in bmps:
+				return bmps["white-dis"]
 		return bmps["white"]
 
 class SlipSwitchTile:
@@ -83,7 +92,7 @@ class SlipSwitchTile:
 		self.rrbmps = rrbmps
 
 
-	def getBmp(self, tostat, blkstat):
+	def getBmp(self, tostat, blkstat, disabled):
 		if tostat == [NORMAL, NORMAL]:
 			bmps = self.nnbmps
 		elif tostat == [NORMAL, REVERSE]:
@@ -94,11 +103,20 @@ class SlipSwitchTile:
 			bmps = self.rrbmps
 
 		if blkstat == OCCUPIED:
+			if disabled:
+				if "red-dis" in bmps:
+					return bmps["red-dis"]
 			return bmps["red"]
 
 		if blkstat == CLEARED:
+			if disabled:
+				if "green-dis" in bmps:
+					return bmps["green-dis"]
 			return bmps["green"]
 
+		if disabled:
+			if "white-dis" in bmps:
+				return bmps["white-dis"]
 		return bmps["white"]
 
 
@@ -196,12 +214,18 @@ def loadTiles(bitmaps):
 		{
 			"white": b.torightleft.normal.normal,
 			"green": b.torightleft.normal.routed,
-			"red": b.torightleft.normal.occupied
+			"red": b.torightleft.normal.occupied,
+			"white-dis": b.torightleft.normal.normaldis,
+			"green-dis": b.torightleft.normal.routeddis,
+			"red-dis": b.torightleft.normal.occupieddis
 		},
 		{
 			"white": b.torightleft.reversed.normal,
 			"green": b.torightleft.reversed.routed,
-			"red": b.torightleft.reversed.occupied
+			"red": b.torightleft.reversed.occupied,
+			"white-dis": b.torightleft.reversed.normaldis,
+			"green-dis": b.torightleft.reversed.routeddis,
+			"red-dis": b.torightleft.reversed.occupieddis
 		}
 	)
 
@@ -209,12 +233,18 @@ def loadTiles(bitmaps):
 		{
 			"white": b.torightright.normal.normal,
 			"green": b.torightright.normal.routed,
-			"red": b.torightright.normal.occupied
+			"red": b.torightright.normal.occupied,
+			"white-dis": b.torightright.normal.normaldis,
+			"green-dis": b.torightright.normal.routeddis,
+			"red-dis": b.torightright.normal.occupieddis
 		},
 		{
 			"white": b.torightright.reversed.normal,
 			"green": b.torightright.reversed.routed,
-			"red": b.torightright.reversed.occupied
+			"red": b.torightright.reversed.occupied,
+			"white-dis": b.torightright.reversed.normaldis,
+			"green-dis": b.torightright.reversed.routeddis,
+			"red-dis": b.torightright.reversed.occupieddis
 		}
 	)
 
@@ -222,12 +252,18 @@ def loadTiles(bitmaps):
 		{
 			"white": b.torightup.normal.normal,
 			"green": b.torightup.normal.routed,
-			"red": b.torightup.normal.occupied
+			"red": b.torightup.normal.occupied,
+			"white-dis": b.torightup.normal.normaldis,
+			"green-dis": b.torightup.normal.routeddis,
+			"red-dis": b.torightup.normal.occupieddis
 		},
 		{
 			"white": b.torightup.reversed.normal,
 			"green": b.torightup.reversed.routed,
-			"red": b.torightup.reversed.occupied
+			"red": b.torightup.reversed.occupied,
+			"white-dis": b.torightup.reversed.normaldis,
+			"green-dis": b.torightup.reversed.routeddis,
+			"red-dis": b.torightup.reversed.occupieddis
 		}
 	)
 
@@ -235,12 +271,18 @@ def loadTiles(bitmaps):
 		{
 			"white": b.toleftup.normal.normal,
 			"green": b.toleftup.normal.routed,
-			"red": b.toleftup.normal.occupied
+			"red": b.toleftup.normal.occupied,
+			"white-dis": b.toleftup.normal.normaldis,
+			"green-dis": b.toleftup.normal.routeddis,
+			"red=dis": b.toleftup.normal.occupieddis
 		},
 		{
 			"white": b.toleftup.reversed.normal,
 			"green": b.toleftup.reversed.routed,
-			"red": b.toleftup.reversed.occupied
+			"red": b.toleftup.reversed.occupied,
+			"white-dis": b.toleftup.reversed.normaldis,
+			"green-dis": b.toleftup.reversed.routeddis,
+			"red-dis": b.toleftup.reversed.occupieddis
 		}
 	)
 
@@ -248,12 +290,18 @@ def loadTiles(bitmaps):
 		{
 			"white": b.toleftup.reversed.normal,
 			"green": b.toleftup.reversed.routed,
-			"red": b.toleftup.reversed.occupied
+			"red": b.toleftup.reversed.occupied,
+			"white-dis": b.toleftup.reversed.normaldis,
+			"green-dis": b.toleftup.reversed.routeddis,
+			"red-dis": b.toleftup.reversed.occupieddis
 		},
 		{
 			"white": b.toleftup.normal.normal,
 			"green": b.toleftup.normal.routed,
-			"red": b.toleftup.normal.occupied
+			"red": b.toleftup.normal.occupied,
+			"white-dis": b.toleftup.normal.normaldis,
+			"green-dis": b.toleftup.normal.routeddis,
+			"red-dis": b.toleftup.normal.occupieddis
 		}
 	)
 
@@ -261,12 +309,18 @@ def loadTiles(bitmaps):
 		{
 			"white": b.torightup.reversed.normal,
 			"green": b.torightup.reversed.routed,
-			"red": b.torightup.reversed.occupied
+			"red": b.torightup.reversed.occupied,
+			"white-dis": b.torightup.reversed.normaldis,
+			"green-dis": b.torightup.reversed.routeddis,
+			"red-dis": b.torightup.reversed.occupieddis
 		},
 		{
 			"white": b.torightup.normal.normal,
 			"green": b.torightup.normal.routed,
-			"red": b.torightup.normal.occupied
+			"red": b.torightup.normal.occupied,
+			"white-dis": b.torightup.normal.normaldis,
+			"green-dis": b.torightup.normal.routeddis,
+			"red-dis": b.torightup.normal.occupieddis
 		}
 	)
 
@@ -274,12 +328,18 @@ def loadTiles(bitmaps):
 		{
 			"white": b.torightdown.normal.normal,
 			"green": b.torightdown.normal.routed,
-			"red": b.torightdown.normal.occupied
+			"red": b.torightdown.normal.occupied,
+			"white-dis": b.torightdown.normal.normaldis,
+			"green-dis": b.torightdown.normal.routeddis,
+			"red-dis": b.torightdown.normal.occupieddis
 		},
 		{
 			"white": b.torightdown.reversed.normal,
 			"green": b.torightdown.reversed.routed,
-			"red": b.torightdown.reversed.occupied
+			"red": b.torightdown.reversed.occupied,
+			"white-dis": b.torightdown.reversed.normaldis,
+			"green-dis": b.torightdown.reversed.routeddis,
+			"red-dis": b.torightdown.reversed.occupieddis
 		}
 	)
 
@@ -287,12 +347,18 @@ def loadTiles(bitmaps):
 		{
 			"white": b.toleftleft.normal.normal,
 			"green": b.toleftleft.normal.routed,
-			"red": b.toleftleft.normal.occupied
+			"red": b.toleftleft.normal.occupied,
+			"white-dis": b.toleftleft.normal.normaldis,
+			"green-dis": b.toleftleft.normal.routeddis,
+			"red-dis": b.toleftleft.normal.occupieddis
 		},
 		{
 			"white": b.toleftleft.reversed.normal,
 			"green": b.toleftleft.reversed.routed,
-			"red": b.toleftleft.reversed.occupied
+			"red": b.toleftleft.reversed.occupied,
+			"white-dis": b.toleftleft.reversed.normaldis,
+			"green-dis": b.toleftleft.reversed.routeddis,
+			"red-dis": b.toleftleft.reversed.occupieddis
 		}
 	)
 
@@ -300,12 +366,18 @@ def loadTiles(bitmaps):
 		{
 			"white": b.toleftleft.reversed.normal,
 			"green": b.toleftleft.reversed.routed,
-			"red": b.toleftleft.reversed.occupied
+			"red": b.toleftleft.reversed.occupied,
+			"white-dis": b.toleftleft.reversed.normaldis,
+			"green-dis": b.toleftleft.reversed.routeddis,
+			"red-dis": b.toleftleft.reversed.occupieddis
 		},
 		{
 			"white": b.toleftleft.normal.normal,
 			"green": b.toleftleft.normal.routed,
-			"red": b.toleftleft.normal.occupied
+			"red": b.toleftleft.normal.occupied,
+			"white-dis": b.toleftleft.normal.normaldis,
+			"green-dis": b.toleftleft.normal.routeddis,
+			"red-dis": b.toleftleft.normal.occupieddis
 		}
 	)
 	
@@ -313,12 +385,18 @@ def loadTiles(bitmaps):
 		{
 			"white": b.toleftright.normal.normal,
 			"green": b.toleftright.normal.routed,
-			"red": b.toleftright.normal.occupied
+			"red": b.toleftright.normal.occupied,
+			"white-dis": b.toleftright.normal.normaldis,
+			"green-dis": b.toleftright.normal.routeddis,
+			"red-dis": b.toleftright.normal.occupieddis
 		},
 		{
 			"white": b.toleftright.reversed.normal,
 			"green": b.toleftright.reversed.routed,
-			"red": b.toleftright.reversed.occupied
+			"red": b.toleftright.reversed.occupied,
+			"white-dis": b.toleftright.reversed.normaldis,
+			"green-dis": b.toleftright.reversed.routeddis,
+			"red-dis": b.toleftright.reversed.occupieddis
 		}
 	)
 	
@@ -326,12 +404,18 @@ def loadTiles(bitmaps):
 		{
 			"white": b.toleftdown.normal.normal,
 			"green": b.toleftdown.normal.routed,
-			"red": b.toleftdown.normal.occupied
+			"red": b.toleftdown.normal.occupied,
+			"white-dis": b.toleftdown.normal.normaldis,
+			"green-dis": b.toleftdown.normal.routeddis,
+			"red-dis": b.toleftdown.normal.occupieddis
 		},
 		{
 			"white": b.toleftdown.reversed.normal,
 			"green": b.toleftdown.reversed.routed,
-			"red": b.toleftdown.reversed.occupied
+			"red": b.toleftdown.reversed.occupied,
+			"white-dis": b.toleftdown.reversed.normaldis,
+			"green-dis": b.toleftdown.reversed.routeddis,
+			"red-dis": b.toleftdown.reversed.occupieddis
 		}
 	)
 	
@@ -339,12 +423,18 @@ def loadTiles(bitmaps):
 		{
 			"white": b.toleftdown.reversed.normal,
 			"green": b.toleftdown.reversed.routed,
-			"red": b.toleftdown.reversed.occupied
+			"red": b.toleftdown.reversed.occupied,
+			"white-dis": b.toleftdown.reversed.normaldis,
+			"green-dis": b.toleftdown.reversed.routeddis,
+			"red-dis": b.toleftdown.reversed.occupieddis
 		},
 		{
 			"white": b.toleftdown.normal.normal,
 			"green": b.toleftdown.normal.routed,
-			"red": b.toleftdown.normal.occupied
+			"red": b.toleftdown.normal.occupied,
+			"white-dis": b.toleftdown.normal.normaldis,
+			"green-dis": b.toleftdown.normal.routeddis,
+			"red-dis": b.toleftdown.normal.occupieddis
 		}
 	)
 
@@ -353,22 +443,34 @@ def loadTiles(bitmaps):
 		{ # NN
 			"white": b.slipleft.nn.normal,
 			"green": b.slipleft.nn.routed,
-			"red":   b.slipleft.nn.occupied
+			"red":   b.slipleft.nn.occupied,
+			"white-dis": b.slipleft.nn.normaldis,
+			"green-dis": b.slipleft.nn.routeddis,
+			"red-dis":   b.slipleft.nn.occupieddis
 		},
 		{ # NR
 			"white": b.slipleft.nr.normal,
 			"green": b.slipleft.nr.routed,
-			"red":   b.slipleft.nr.occupied
+			"red":   b.slipleft.nr.occupied,
+			"white-dis": b.slipleft.nr.normaldis,
+			"green-dis": b.slipleft.nr.routeddis,
+			"red-dis":   b.slipleft.nr.occupieddis
 		},
 		{ # RN
 			"white": b.slipleft.rn.normal,
 			"green": b.slipleft.rn.routed,
-			"red":   b.slipleft.rn.occupied
+			"red":   b.slipleft.rn.occupied,
+			"white-dis": b.slipleft.rn.normaldis,
+			"green-dis": b.slipleft.rn.routeddis,
+			"red-dis":   b.slipleft.rn.occupieddis
 		},
 		{ # RR
 			"white": b.slipleft.rr.normal,
 			"green": b.slipleft.rr.routed,
-			"red":   b.slipleft.rr.occupied
+			"red":   b.slipleft.rr.occupied,
+			"white-dis": b.slipleft.rr.normaldis,
+			"green-dis": b.slipleft.rr.routeddis,
+			"red-dis":   b.slipleft.rr.occupieddis
 		}
 
 	)

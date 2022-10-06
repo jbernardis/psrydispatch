@@ -13,6 +13,7 @@ class Turnout:
 		self.statusFromBlock = EMPTY
 		self.eastFromBlock = True
 		self.routeControlled = False
+		self.disabled = False
 		self.pairedTurnout = None
 		self.controllingTurnout = None
 		self.opposite = False
@@ -32,13 +33,16 @@ class Turnout:
 			blockstat = self.statusFromBlock
 
 		tostat = NORMAL if self.normal else REVERSE
-		bmp = self.tiles.getBmp(tostat, blockstat, east)
+		bmp = self.tiles.getBmp(tostat, blockstat, east, self.routeControlled or self.disabled)
 		self.frame.DrawTile(self.screen, self.pos, bmp)
 		self.statusFromBlock = blockstat
 		self.eastFromBlock = east
 
 	def SetRouteControl(self, flag=True):
 		self.routeControlled = flag
+
+	def SetDisabled(self, flag=True):
+		self.disabled = flag
 
 	def IsRouteControlled(self):
 		return self.routeControlled
@@ -131,6 +135,7 @@ class SlipSwitch(Turnout):
 		Turnout.__init__(self, district, frame, name, screen, tiles, pos)
 		self.ttype = SLIPSWITCH
 		self.status = [NORMAL, NORMAL]
+		self.disabled = False
 		self.controllers = [None, None]
 		self.controller = None
 
@@ -232,7 +237,7 @@ class SlipSwitch(Turnout):
 	def Draw(self, blkStat=None, east=None):
 		if blkStat is None:
 			blkStat = self.statusFromBlock
-		bmp = self.tiles.getBmp(self.status, blkStat)
+		bmp = self.tiles.getBmp(self.status, blkStat, self.disabled)
 		self.frame.DrawTile(self.screen, self.pos, bmp)
 		self.statusFromBlock = blkStat
 

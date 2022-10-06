@@ -193,12 +193,15 @@ class Block:
 		self.occupied = occupied
 		if self.occupied:
 			self.cleared = False
-			self.SetTrain(self.IdentifyTrain())
+			trn, loco = self.IdentifyTrain()
 		else:
 			for b in [self.sbEast, self.sbWest]:
 				if b is not None:
 					b.SetCleared(False, refresh)
-			self.SetTrain(None)
+			trn = None
+			loco = None
+
+		self.frame.Request({"settrain": { "block": self.GetName(), "name": trn, "loco": loco}})
 
 		self.determineStatus()
 		if self.status == EMPTY:
@@ -210,14 +213,20 @@ class Block:
 	def IdentifyTrain(self):
 		if self.east:
 			if self.blkWest:
-				return self.blkWest.GetTrain()
+				tr = self.blkWest.GetTrain()
+				if tr is None:
+					return None, None
+				return tr.GetNameAndLoco()
 			else:
-				return None
+				return None, None
 		else:
 			if self.blkEast:
-				return self.blkEast.GetTrain()
+				tr = self.blkEast.GetTrain()
+				if tr is None:
+					return None, None
+				return tr.GetNameAndLoco()
 			else:
-				return None
+				return None, None
 
 	def SetCleared(self, cleared=True, refresh=False):
 		if cleared and self.occupied:
