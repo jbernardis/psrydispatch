@@ -94,22 +94,15 @@ class Hyde (District):
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "HWWB2":
-				self.frame.Request({"turnout": {"name": "HSw1", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "HSw3", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "HSw7", "status": "R" }})
+				self.MatrixTurnoutRequest([["HSw1", "R"], ["HSw3", "R"], ["HSw7", "R"]])
 			elif bname == "HWWB3":
-				self.frame.Request({"turnout": {"name": "HSw1", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "HSw3", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "HSw7", "status": "N" }})
+				self.MatrixTurnoutRequest([["HSw1", "R"], ["HSw3", "R"], ["HSw7", "N"]])
 			elif bname == "HWWB4":
-				self.frame.Request({"turnout": {"name": "HSw1", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "HSw3", "status": "N" }})
+				self.MatrixTurnoutRequest([["HSw1", "R"], ["HSw3", "N"]])
 			elif bname == "HWWB5":
-				self.frame.Request({"turnout": {"name": "HSw1", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw3", "status": "R" }})
+				self.MatrixTurnoutRequest([["HSw1", "N"], ["HSw3", "R"]])
 			elif bname == "HWWB6":
-				self.frame.Request({"turnout": {"name": "HSw1", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw3", "status": "N" }})
+				self.MatrixTurnoutRequest([["HSw1", "N"], ["HSw3", "N"]])
 
 		elif bname in self.osButtons["OSHWW2"]:
 			osBlk = self.blocks["OSHWW2"]
@@ -120,7 +113,7 @@ class Hyde (District):
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "HWWB1":
-				self.frame.Request({"turnout": {"name": "HSw7", "status": "N" }})
+				self.MatrixTurnoutRequest([["HSw7", "N"]])
 
 		elif bname in self.osButtons["OSHWE"]:
 			osBlk = self.blocks["OSHWE"]
@@ -131,17 +124,13 @@ class Hyde (District):
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "HWEB1":
-				self.frame.Request({"turnout": {"name": "HSw9", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw11", "status": "N" }})
+				self.MatrixTurnoutRequest([["HSw9", "N"], ["HSw11", "N"]])
 			if bname == "HWEB2":
-				self.frame.Request({"turnout": {"name": "HSw9", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw11", "status": "R" }})
+				self.MatrixTurnoutRequest([["HSw9", "N"], ["HSw11", "R"]])
 			elif bname == "HWEB3":
-				self.frame.Request({"turnout": {"name": "HSw9", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "HSw11", "status": "N" }})
+				self.MatrixTurnoutRequest([["HSw9", "R"], ["HSw11", "N"]])
 			elif bname == "HWEB4":
-				self.frame.Request({"turnout": {"name": "HSw9", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "HSw11", "status": "R" }})
+				self.MatrixTurnoutRequest([["HSw9", "R"], ["HSw11", "R"]])
 
 		elif bname in self.osButtons["OSHEW"]:
 			osBlk = self.blocks["OSHEW"]
@@ -152,24 +141,15 @@ class Hyde (District):
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "HEWB1":
-				self.frame.Request({"turnout": {"name": "HSw21", "status": "R" }})
+				self.MatrixTurnoutRequest([["HSw21", "R"]])
 			if bname == "HEWB2":
-				self.frame.Request({"turnout": {"name": "HSw21", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw19", "status": "R" }})
+				self.MatrixTurnoutRequest([["HSw21", "N"], ["HSw19", "R"]])
 			elif bname == "HEWB3":
-				self.frame.Request({"turnout": {"name": "HSw21", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw19", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw17", "status": "R" }})
+				self.MatrixTurnoutRequest([["HSw21", "N"], ["HSw19", "N"], ["HSw17", "R"]])
 			elif bname == "HEWB4":
-				self.frame.Request({"turnout": {"name": "HSw21", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw19", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw17", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw15", "status": "R" }})
+				self.MatrixTurnoutRequest([["HSw21", "N"], ["HSw19", "N"], ["HSw17", "N"], ["HSw15", "R"]])
 			elif bname == "HEWB5":
-				self.frame.Request({"turnout": {"name": "HSw21", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw19", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw17", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw15", "status": "N" }})
+				self.MatrixTurnoutRequest([["HSw21", "N"], ["HSw19", "N"], ["HSw17", "N"], ["HSw15", "N"]])
 
 		elif bname in self.osButtons["OSHEE"]:
 			osBlk = self.blocks["OSHEE"]
@@ -180,24 +160,15 @@ class Hyde (District):
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "HEEB1":
-				self.frame.Request({"turnout": {"name": "HSw27", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw29", "status": "N" }})
+				self.MatrixTurnoutRequest([["HSw27", "N"], ["HSw29", "N"]])
 			if bname == "HEEB2":
-				self.frame.Request({"turnout": {"name": "HSw25", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "HSw27", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "HSw29", "status": "N" }})
+				self.MatrixTurnoutRequest([["HSw25", "R"], ["HSw27", "R"], ["HSw29", "N"]])
 			elif bname == "HEEB3":
-				self.frame.Request({"turnout": {"name": "HSw23", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "HSw25", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw27", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "HSw29", "status": "N" }})
+				self.MatrixTurnoutRequest([["HSw23", "R"], ["HSw25", "N"], ["HSw27", "R"], ["HSw29", "N"]])
 			elif bname == "HEEB4":
-				self.frame.Request({"turnout": {"name": "HSw23", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw25", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "HSw27", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "HSw29", "status": "N" }})
+				self.MatrixTurnoutRequest([["HSw23", "N"], ["HSw25", "N"], ["HSw27", "R"], ["HSw29", "N"]])
 			elif bname == "HEEB5":
-				self.frame.Request({"turnout": {"name": "HSw29", "status": "R" }})
+				self.MatrixTurnoutRequest([["HSw29", "R"]])
 
 	def DefineBlocks(self, tiles):
 		self.blocks = {}

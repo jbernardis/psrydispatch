@@ -357,7 +357,9 @@ class MainFrame(wx.Frame):
 		for cmd, parms in evt.data.items():
 			print("Delivery from dispatch: %s: %s" % (cmd, parms))
 			if cmd == "turnout":
-				for turnout, state in parms.items():
+				for p in parms:
+					turnout = p["name"]
+					state = p["state"]
 					try:
 						to = self.turnouts[turnout]
 					except KeyError:
@@ -369,7 +371,9 @@ class MainFrame(wx.Frame):
 					district.DoTurnoutAction(to, st)
 
 			elif cmd == "block":
-				for block, state in parms.items():
+				for p in parms:
+					block = p["name"]
+					state = p["state"]
 					try:
 						blk = self.blocks[block]
 						blockend = None
@@ -385,72 +389,75 @@ class MainFrame(wx.Frame):
 					district = blk.GetDistrict()
 					stat = OCCUPIED if state == 1 else EMPTY
 					district.DoBlockAction(blk, blockend, stat)
-						
+					
 			elif cmd == "signal":
-				sigName = parms[0]
-				aspect = parms[1]
-				
-				try:
-					sig = self.signals[sigName]
-				except:
-					return
+				for p in parms:
+					sigName = p["name"]
+					aspect = p["aspect"]
+					
+					try:
+						sig = self.signals[sigName]
+					except:
+						return
 
-				district = sig.GetDistrict()
-				district.DoSignalAction(sig, aspect)
+					district = sig.GetDistrict()
+					district.DoSignalAction(sig, aspect)
 						
 			elif cmd == "lock":
-				lkName = parms[0]
-				stat = parms[1]
-				
-				try:
-					lk = self.locks[lkName]
-				except:
-					return
+				for p in parms:
+					lkName = p["name"]
+					state = p["state"]
+					
+					try:
+						lk = self.locks[lkName]
+					except:
+						return
 
-				district = lk.GetDistrict()
-				district.DoLockAction(lk, stat)
+					district = lk.GetDistrict()
+					district.DoLockAction(lk, state)
 
 			elif cmd == "settrain":
-				block = parms["block"]
-				name = parms["name"]
-				loco = parms["loco"]
+				for p in parms:
+					block = p["block"]
+					name = p["name"]
+					loco = p["loco"]
 
-				try:
-					blk = self.blocks[block]
-				except:
-					print("unable to identify block (%s)" % block)
-					blk = None
+					try:
+						blk = self.blocks[block]
+					except:
+						print("unable to identify block (%s)" % block)
+						blk = None
 
-				if blk:
-					tr = blk.GetTrain()
-					if name is None:
-						if tr:
-							tr.RemoveFromBlock(blk)
-						tr = None
-					else:
-						if tr:
-							oldName = tr.GetName()
-							if oldName and oldName != name:
-								tr.SetName(name)
+					if blk:
+						tr = blk.GetTrain()
+						if name is None:
+							if tr:
+								tr.RemoveFromBlock(blk)
+							tr = None
+						else:
+							if tr:
+								oldName = tr.GetName()
+								if oldName and oldName != name:
+									tr.SetName(name)
+									self.trains[name] = tr
+									try:
+										del(self.trains[oldName])
+									except:
+										print("can't delete train %s from train list" % oldName)
+							try:
+								tr = self.trains[name]
+							except:
+								tr = Train(name)
 								self.trains[name] = tr
-								try:
-									del(self.trains[oldName])
-								except:
-									print("can't delete train %s from train list" % oldName)
-						try:
-							tr = self.trains[name]
-						except:
-							tr = Train(name)
-							self.trains[name] = tr
-						tr.AddToBlock(blk)
-						if loco:
-							tr.SetLoco(loco)
+							tr.AddToBlock(blk)
+							if loco:
+								tr.SetLoco(loco)
 
-					blk.SetTrain(tr)
-					if tr:
-						tr.Draw()
-					else:
-						blk.DrawTrain()
+						blk.SetTrain(tr)
+						if tr:
+							tr.Draw()
+						else:
+							blk.DrawTrain()
 		
 	def raiseDisconnectEvent(self): # thread context
 		evt = DisconnectEvent()

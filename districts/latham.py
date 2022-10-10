@@ -480,13 +480,13 @@ class Latham (District):
 	def DefineLocks(self, tiles):
 		self.locks = {}
 
-		lk = Lock(self, self.screen, self.frame, self.blocks["L11"], "L11", (23, 10), tiles["lockdown"])
+		lk = Lock(self, self.screen, self.frame, self.blocks["L11"], "LSw11.ind", (23, 10), tiles["lockdown"])
 		self.blocks["L11"].AddLock(lk)
-		self.locks["L11"] = lk
+		self.locks["LSw11.ind"] = lk
 
-		lk = Lock(self, self.screen, self.frame, self.blocks["L31"], "L31", (27, 16), tiles["lockup"])
+		lk = Lock(self, self.screen, self.frame, self.blocks["L31"], "LSw13.ind", (27, 16), tiles["lockup"])
 		self.blocks["L31"].AddLock(lk)
-		self.locks["L31"] = lk
+		self.locks["LSw13.ind"] = lk
 		return self.locks
 
 		

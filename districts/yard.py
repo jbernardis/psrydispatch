@@ -215,18 +215,13 @@ class Yard (District):
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "YWWB1":   # Y81
-				self.frame.Request({"turnout": {"name": "YSw113", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "YSw115", "status": "N" }})
+				self.MatrixTurnoutRequest([["YSw113", "N"], ["YSw115", "N"]])
 			elif bname == "YWWB2":   # Y82
-				self.frame.Request({"turnout": {"name": "YSw113", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "YSw115", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "YSw116", "status": "R" }})
+				self.MatrixTurnoutRequest([["YSw113", "N"], ["YSw115", "R"], ["YSw116", "R"]])
 			elif bname == "YWWB3":   # Y83
-				self.frame.Request({"turnout": {"name": "YSw113", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "YSw115", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "YSw116", "status": "N" }})
+				self.MatrixTurnoutRequest([["YSw113", "N"], ["YSw115", "R"], ["YSw116", "N"]])
 			elif bname == "YWWB4":   # Y84
-				self.frame.Request({"turnout": {"name": "YSw113", "status": "R" }})
+				self.MatrixTurnoutRequest([["YSw113", "R"]])
 
 		elif bname in self.osButtons["OSYWE"]:
 			osBlk = self.blocks["OSYWE"]
@@ -237,18 +232,13 @@ class Yard (District):
 			btn.Press(refresh=True)
 			self.frame.ClearButtonAfter(2, btn)
 			if bname == "YWEB1":   # Y81
-				self.frame.Request({"turnout": {"name": "YSw134", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "YSw132", "status": "N" }})
+				self.MatrixTurnoutRequest([["YSw134", "N"], ["YSw132", "N"]])
 			elif bname == "YWEB2":   # Y82
-				self.frame.Request({"turnout": {"name": "YSw134", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "YSw132", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "YSw131", "status": "R" }})
+				self.MatrixTurnoutRequest([["YSw134", "N"], ["YSw132", "R"], ["YSw131", "R"]])
 			elif bname == "YWEB3":   # Y83
-				self.frame.Request({"turnout": {"name": "YSw134", "status": "N" }})
-				self.frame.Request({"turnout": {"name": "YSw132", "status": "R" }})
-				self.frame.Request({"turnout": {"name": "YSw131", "status": "N" }})
+				self.MatrixTurnoutRequest([["YSw134", "N"], ["YSw132", "R"], ["YSw131", "N"]])
 			elif bname == "YWEB4":   # Y84
-				self.frame.Request({"turnout": {"name": "YSw134", "status": "R" }})
+				self.MatrixTurnoutRequest([["YSw134", "R"]])
 
 	def DefineBlocks(self, tiles):
 		self.blocks = {}

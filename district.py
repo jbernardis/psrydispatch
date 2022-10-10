@@ -36,6 +36,12 @@ class District:
 	def PerformButtonAction(self, btn):
 		print("District %s does not have an implementation of PerformButtonAction" % self.name)
 
+	def MatrixTurnoutRequest(self, tolist):
+		for toname, state in tolist:
+			if (state == "R" and self.turnouts[toname].IsNormal()) or \
+					(state == "N" and self.turnouts[toname].IsReverse()):
+				self.frame.Request({"turnout": {"name": toname, "status": state}})
+
 	def PerformTurnoutAction(self, turnout):
 		blocks = [ blk for blk in self.osTurnouts if turnout.name in self.osTurnouts[blk]]
 		print(str(blocks))
