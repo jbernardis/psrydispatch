@@ -10,8 +10,8 @@ class District:
 		self.sstiles = sstiles
 		self.misctiles = misctiles
 
-		for t in self.turnouts.values():
-			t.initialize()
+		# for t in self.turnouts.values():
+		# 	t.initialize()
 
 		blist = [b.GetName() for b in self.blocks.values() if b.GetBlockType() == OVERSWITCH]
 		self.DetermineRoute(blist)
@@ -24,17 +24,19 @@ class District:
 			b.Draw()
 		for s in self.signals.values():
 			s.Draw()
+		for h in self.handswitches.values():
+			h.Draw()
 
 	def DrawOthers(self, block):
 		pass
 
 	def DetermineRoute(self, blocks):
-		print("District %s does not have an implementation of DetermineRoute" % self.name)
+		pass
 
 	#  Perform... routines handle the user clicking on track diagram components.  This includes, switches, signals, and buttons
 	# in most cases, this does not actually make any changed to the display, but instead sends requests to the dispatch server
 	def PerformButtonAction(self, btn):
-		print("District %s does not have an implementation of PerformButtonAction" % self.name)
+		pass
 
 	def MatrixTurnoutRequest(self, tolist):
 		for toname, state in tolist:
@@ -43,22 +45,15 @@ class District:
 				self.frame.Request({"turnout": {"name": toname, "status": state}})
 
 	def PerformTurnoutAction(self, turnout):
-		blocks = [ blk for blk in self.osTurnouts if turnout.name in self.osTurnouts[blk]]
-		print(str(blocks))
-		for bname in blocks:
-			print("looking at block (%s)" % bname)
-			blk = self.frame.GetBlockByName(bname)
-			if blk.IsBusy():
-				self.reportBlockBusy(bname)
-				return
-		print("past block loop")
-
 		turnout = turnout.GetControlledBy()
-		if turnout.Changeable():
-			if turnout.IsNormal():
-				self.frame.Request({"turnout": { "name": turnout.GetName(), "status": "R" }})
-			else:
-				self.frame.Request({"turnout": { "name": turnout.GetName(), "status": "N" }})
+		if turnout.IsLocked():
+			self.reportTurnoutLocked(turnout.GetName())
+			return
+
+		if turnout.IsNormal():
+			self.frame.Request({"turnout": { "name": turnout.GetName(), "status": "R" }})
+		else:
+			self.frame.Request({"turnout": { "name": turnout.GetName(), "status": "N" }})
 
 	def PerformSignalAction(self, sig):
 		aspect = sig.GetAspect()
@@ -83,7 +78,7 @@ class District:
 				self.frame.Popup("Signal %s is not for route %s" % (signm, rt.GetDescription()))
 			return
 
-		if osblk.AreLocksSet():
+		if osblk.AreHandSwitchesSet():
 			self.frame.Popup("OS Block %s is locked" % osblknm)
 			return
 
@@ -108,7 +103,7 @@ class District:
 				self.frame.Popup("OS Exit Block %s is busy" % exitBlk.GetName())
 				return
 
-			if exitBlk.AreLocksSet():
+			if exitBlk.AreHandSwitchesSet():
 				self.frame.Popup("OS Exit Block %s is locked" % exitBlk.GetName())
 				return
 
@@ -123,19 +118,19 @@ class District:
 
 		self.frame.Request({"signal": { "name": signm, "aspect": aspect }})
 
-	def PerformLockAction(self, lk):
-		if not lk.GetValue():
+	def PerformHandSwitchAction(self, hs):
+		if not hs.GetValue():
 			# currently unlocked - trying to lock
 	
-			if lk.IsBlockBusy():
-				self.frame.Popup("Block %s is busy" % lk.GetBlock().GetName())
+			if hs.IsBlockCleared():
+				self.frame.Popup("Block %s has a route cleared through it" % hs.GetBlock().GetName())
 				return
 
 			stat = 1
 		else:
 			stat = 0
 			
-		self.frame.Request({"lock": { "name": lk.GetName(), "status": stat }})
+		self.frame.Request({"handswitch": { "name": hs.GetName(), "status": stat }})
 
 	# The Do... routines handle requests that come in from the dispatch server.  The 3 objects of interest for
 	# these requests are blocks, signals, and turnouts
@@ -189,40 +184,137 @@ class District:
 		exitBlk.SetEast(nd)
 		exitBlk.SetCleared(aspect!=STOP, refresh=True)
 
-	def DoLockAction(self, lk, stat):
-		lk.SetValue(stat!=0, refresh=True)
+		self.LockSwitches(osblock.GetName(), sig, aspect!=STOP)
+
+	def LockSwitches(self, osblknm, sig, flag):
+		signm = sig.GetName()
+		if osblknm in sig.possibleRoutes:
+			osblk = self.blocks[osblknm]
+			rt = osblk.GetRoute()
+			if rt:
+				tolist = rt.GetTurnouts()
+				for t in tolist:
+					self.turnouts[t].SetLock(signm, flag)
+
+	def DoHandSwitchAction(self, hs, stat):
+		hs.SetValue(stat!=0, refresh=True)
 
 	def CrossingEastWestBoundary(self, blk1, blk2):
 		return False
 					
 	def DefineBlocks(self, tiles):
-		print("District %s does not have an implementation of DefineBlocks" % self.name)
 		self.blocks = {}
 		return({})
 
 	def DefineTurnouts(self, tiles):
-		print("District %s does not have an implementation of DefineTurnouts" % self.name)
 		self.turnouts = {}
 		return({})
 
 	def DefineSignals(self, tiles):
-		print("District %s does not have an implementation of DefineSignals" % self.name)
 		self.signals = {}
 		return({})
 
 	def DefineButtons(self, tiles):
-		print("District %s does not have an implementation of DefineButtons" % self.name)
 		self.buttons = {}
 		return({})
 
-	def DefineLocks(self, tiles):
-		print("District %s does not have an implementation of DefineLocks" % self.name)
-		self.locks = {}
+	def DefineHandSwitches(self, tiles):
+		self.handswitches = {}
 		return({})
 
 	def reportBlockBusy(self, blknm):
 		self.frame.Popup("Block %s is busy" % blknm)
 
+	def reportTurnoutLocked(self, tonm):
+		self.frame.Popup("Turnout %s is locked" % tonm)
+
+	def Audit(self):
+		passedAudit = True
+		print("Performing audit for district: %s" % self.name)
+		print("Auditing blocks:")
+		for blknm, blk in self.blocks.items():
+			if blk.GetName() != blknm:
+				print("  Block name: %s does not agree with its key: %s" % (blk.GetName(), blknm))
+				passedAudit = False
+			for t in blk.turnouts:
+				tnm = t.GetName()
+				if tnm not in self.turnouts:
+					print("  Block %s: turnout %s not defined" % (blk.GetName(), tnm))
+					passedAudit = False
+
+		print("Auditing OS blocks:")
+		for osblknm, blknmlist in self.osBlocks.items():
+			if osblknm not in self.frame.blocks:
+				print("  OS Block name: %s is not defined" % osblknm)
+				passedAudit = False
+			for blknm in blknmlist:
+				if blknm not in self.frame.blocks:
+					print("  Block name %s inside of OSBlock %s is not defined" % (blknm, osblknm))
+					passedAudit = False
+
+		print("Auditing Turnouts")
+		for tnm, t in self.turnouts.items():
+			if tnm != t.GetName():
+				print("  Turnout %s, name does not agree with key %s" % (t.GetName(), tnm))
+				passedAudit = False
+			for blknm in t.blockList:
+				if blknm not in self.frame.blocks:
+					print("  Block name %s in turnout %s is not defined" % (blknm, tnm))
+					passedAudit = False
+
+		print("Auditing Signals")
+		for snm, sig in self.signals.items():
+			if snm != sig.GetName():
+				print("  Signal %s, name does not agree with key %s" % (sig.GetName(), snm))
+				passedAudit = False
+			for blknm, rtnmlist in sig.possibleRoutes.items():
+				if blknm not in self.blocks:
+					print("  Possible routes for block %s - block is not defined" % blknm)
+					passedAudit = False
+				for rtnm in rtnmlist:
+					if rtnm not in self.routes:
+						print("Route %s for block %s is not defines" % (rtnm, blknm))
+						passedAudit = False
+
+		print("Auditing OS Signals")
+		for blknm, signmlist in self.osSignals.items():
+			if blknm not in self.blocks:
+				print("Block %s is not defined" % blknm)
+				passedAudit = False
+			
+			for signm in signmlist:
+				if signm not in self.signals:
+					print("Block %s, signal %s is not defined" % (blknm, signm))
+					passedAudit = False
+
+		print("Auditing Routes")
+		for rtnm, rt in self.routes.items():
+			if rtnm != rt.GetName():
+				print("  Route %s, name does not agree with key %s" % (rt.GetName(), rtnm))
+				passedAudit = False
+			if rt.blkin not in self.frame.blocks:
+				print("Route %s: entry block %s is not defined" % rt.GetName(), rt.blkin)
+				passedAudit = False
+			if rt.blkout not in self.frame.blocks:
+				print("Route %s: exit block %s is not defined" % rt.GetName(), rt.blkout)
+				passedAudit = False
+			for tonm in rt.turnouts:
+				if tonm not in self.frame.turnouts:
+					print("Route %s, turnout %s not defined" % (rt.GetName(), tonm))
+					passedAudit = False
+
+			validPos = [x[2] for x in rt.osblk.tiles]
+			toPos = [t.pos for t in self.turnouts.values()]
+			validPos.extend(toPos)
+			for p in rt.pos:
+				if p not in validPos:
+					print("Route %s, posiition %d, %d is not in block %s" % (rt.GetName(), p[0], p[1], rt.osblk.GetName()))
+					passedAudit = False
+
+		
+
+
+		return passedAudit
 
 class Districts:
 	def __init__(self):
@@ -267,9 +359,17 @@ class Districts:
 
 		return btns
 
-	def DefineLocks(self, tiles):
-		locks = {}
+	def DefineHandSwitches(self, tiles):
+		handswitches = {}
 		for t in self.districts.values():
-			locks.update(t.DefineLocks(tiles))
+			handswitches.update(t.DefineHandSwitches(tiles))
 
-		return locks
+		return handswitches
+
+	def Audit(self):
+		passedAudit = True
+		for d in self.districts.values():
+			if not d.Audit():
+				passedAudit = False
+
+		return passedAudit

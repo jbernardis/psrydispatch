@@ -19,12 +19,36 @@ class Turnout:
 		self.opposite = False
 		self.ttype = TURNOUT
 		self.blockList = []
+		self.locked = False
+		self.lockedBy = []
+
+	def IsLocked(self):
+		return self.locked
+
+	def SetLock(self, signame, flag=True):
+		if flag != self.locked:
+			if flag:
+				self.locked = True
+				if signame in self.lockedBy:
+					# already locked by this signal
+					return
+				self.lockedBy.append(signame)
+				if len(self.lockedBy) == 1:
+					self.frame.Request({"turnoutlock": { "name": self.name, "status": 1}})
+			else:
+				if signame not in self.lockedBy:
+					# this signal hasn't locked the turnout, so it can't unlock it
+					return
+				self.lockedBy.remove(signame)
+				if len(self.lockedBy) == 0:
+					self.locked = False
+					self.frame.Request({"turnoutlock": { "name": self.name, "status": 0}})
 
 	def GetType(self):
 		return self.ttype
 
-	def initialize(self):
-		self.blockList = [ blk for blk in self.district.osTurnouts if self.name in self.district.osTurnouts[blk]]
+	def AddBlock(self, blknm):
+		self.blockList.append(blknm)
 
 	def Draw(self, blockstat=None, east=None):
 		if east is None:
@@ -61,9 +85,6 @@ class Turnout:
 		else:
 			return self
 
-	def Changeable(self):
-		return self.statusFromBlock == EMPTY
-
 	def GetBlockStatus(self):
 		return self.statusFromBlock
 
@@ -77,8 +98,7 @@ class Turnout:
 		if not self.normal:
 			return False
 
-		if not self.Changeable():
-			# cant change a turnout in busy block
+		if self.IsLocked():
 			return False
 		
 		self.normal = False
@@ -98,8 +118,7 @@ class Turnout:
 		if self.normal:
 			return False
 
-		if not self.Changeable():
-			# cant change a turnout in busy block
+		if self.IsLocked():
 			return False
 		
 		self.normal = True
@@ -174,8 +193,7 @@ class SlipSwitch(Turnout):
 		if not self.IsNormal():
 			return False
 
-		if not self.Changeable():
-			# cant change a turnout in busy block
+		if self.IsLocked():
 			return False
 		
 		self.normal = False
@@ -200,8 +218,7 @@ class SlipSwitch(Turnout):
 		if self.IsNormal():
 			return False
 
-		if not self.Changeable():
-			# cant change a turnout in busy block
+		if self.IsLocked():
 			return False
 		
 		self.normal = True

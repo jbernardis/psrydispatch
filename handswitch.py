@@ -1,6 +1,6 @@
 from constants import RED
 
-class Lock:
+class HandSwitch:
 	def __init__(self, district, screen, frame, block, name, pos, tiles):
 		self.district = district
 		self.screen = screen
@@ -23,6 +23,9 @@ class Lock:
 
 	def IsBlockBusy(self):
 		return self.block.IsBusy()
+
+	def IsBlockCleared(self):
+		return self.block.IsCleared()
 
 	def GetName(self):
 		return self.name

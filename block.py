@@ -2,7 +2,7 @@ from turnout import Turnout
 from constants import EMPTY, OCCUPIED, CLEARED, BLOCK, OVERSWITCH, STOPPINGBLOCK, RED
 
 class Route:
-	def __init__(self, screen, osblk, name, blkin, pos, blkout, rtype):
+	def __init__(self, screen, osblk, name, blkin, pos, blkout, rtype, tolist=[]):
 		self.screen = screen
 		self.name = name
 		self.osblk = osblk
@@ -10,6 +10,7 @@ class Route:
 		self.pos = [x for x in pos]
 		self.blkout = blkout
 		self.rtype = [x for x in rtype]
+		self.turnouts = [x for x in tolist]
 
 	def GetName(self):
 		return self.name
@@ -31,6 +32,9 @@ class Route:
 		else:
 			return self.rtype[0] if reverse else self.rtype[1]
 
+	def GetTurnouts(self):
+		return self.turnouts
+
 	def GetExitBlock(self, reverse=False):
 		if self.osblk.IsReversed():
 			return self.blkout if reverse else self.blkin
@@ -44,7 +48,7 @@ class Route:
 			return self.blkout if reverse else self.blkin
 
 	def rprint(self):
-		print("%s: (%s) %s => %s => %s" % (self.name, self.osblk.GetName(), self.blkin, str(self.pos), self.blkout))
+		print("%s: (%s) %s => %s => %s %s" % (self.name, self.osblk.GetName(), self.blkin, str(self.pos), self.blkout, str(self.turnouts)))
 
 
 class Block:
@@ -59,7 +63,7 @@ class Block:
 		self.occupied = False
 		self.cleared = False
 		self.turnouts = []
-		self.locks = []
+		self.handswitches = []
 		self.train = None
 		self.trainLoc = []
 		self.blkEast = None
@@ -87,12 +91,12 @@ class Block:
 	def GetTrainLoc(self):
 		return self.trainLoc
 
-	def AddLock(self, lk):
-		self.locks.append(lk)
+	def AddHandSwitch(self, hs):
+		self.handswitches.append(hs)
 
-	def AreLocksSet(self):
-		for lk in self.locks:
-			if lk.GetValue():
+	def AreHandSwitchesSet(self):
+		for hs in self.handswitches:
+			if hs.GetValue():
 				return True
 		return False
 
@@ -183,7 +187,7 @@ class Block:
 	def SetOccupied(self, occupied=True, blockend=None, refresh=False):
 		if blockend  in ["E", "W"]:
 			b = self.sbEast if blockend == "E" else self.sbWest
-			b.SetOccupied(occupied, None, refresh)
+			b.SetOccupied(occupied, refresh)
 			return
 
 		if self.occupied == occupied:
@@ -298,6 +302,22 @@ class StoppingBlock (Block):
 
 		self.cleared = cleared
 		self.determineStatus()
+		if refresh:
+			self.Draw()
+
+	def SetOccupied(self, occupied=True, refresh=False):
+		if self.occupied == occupied:
+			# already in the requested state
+			return
+
+		self.occupied = occupied
+		if self.occupied:
+			self.cleared = False
+
+		self.determineStatus()
+		if self.status == EMPTY:
+			self.Reset()
+
 		if refresh:
 			self.Draw()
 

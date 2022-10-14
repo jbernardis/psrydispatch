@@ -111,7 +111,7 @@ class MainFrame(wx.Frame):
 		self.turnouts = self.districts.DefineTurnouts(self.totiles, self.blocks)
 		self.signals =  self.districts.DefineSignals(self.sigtiles)
 		self.buttons =  self.districts.DefineButtons(self.bitmaps.buttons)
-		self.locks   =  self.districts.DefineLocks(self.misctiles)
+		self.handswitches =  self.districts.DefineHandSwitches(self.misctiles)
 
 		self.AddBogusStuff()
 		# print("blocks")
@@ -125,6 +125,10 @@ class MainFrame(wx.Frame):
 		# print("locks")
 		# print(str(list(self.locks.keys())))
 
+		if not self.districts.Audit():
+			print("Audit failed")
+			#exit(1)
+
 		self.trains = {}
 
 		self.districts.Initialize(self.sstiles, self.misctiles)
@@ -133,12 +137,12 @@ class MainFrame(wx.Frame):
 			self.turnoutMap = { (t.GetScreen(), t.GetPos()): t for t in self.turnouts.values() if not t.IsRouteControlled() }
 			self.buttonMap = { (b.GetScreen(), b.GetPos()): b for b in self.buttons.values() }
 			self.signalMap = { (s.GetScreen(), s.GetPos()): s for s in self.signals.values() }
-			self.lockMap = { (l.GetScreen(), l.GetPos()): l for l in self.locks.values() }
+			self.handswitchMap = { (l.GetScreen(), l.GetPos()): l for l in self.handswitches.values() }
 		else:
 			self.turnoutMap = {}
 			self.buttonMap = {}
 			self.signalMap = {}
-			self.lockMap = {}
+			self.handswitchMap = {}
 
 		self.blockMap = self.BuildBlockMap(self.blocks)
 
@@ -210,7 +214,7 @@ class MainFrame(wx.Frame):
 		self.buttonsToClear.append([secs, btn])
 
 	def ProcessClick(self, screen, pos):
-		print("click %s %d, %d" % (screen, pos[0], pos[1]))
+		#print("click %s %d, %d" % (screen, pos[0], pos[1]))
 		try:
 			to = self.turnoutMap[(screen, pos)]
 		except KeyError:
@@ -238,12 +242,12 @@ class MainFrame(wx.Frame):
 			sig.GetDistrict().PerformSignalAction(sig)
 
 		try:
-			lk = self.lockMap[(screen, pos)]
+			hs = self.handswitchMap[(screen, pos)]
 		except KeyError:
-			lk = None
+			hs = None
 
-		if lk:
-			lk.GetDistrict().PerformLockAction(lk)
+		if hs:
+			hs.GetDistrict().PerformHandSwitchAction(hs)
 
 		try:
 			ln = self.blockMap[(screen, pos[1])]
@@ -355,7 +359,7 @@ class MainFrame(wx.Frame):
 
 	def onDeliveryEvent(self, evt):
 		for cmd, parms in evt.data.items():
-			print("Delivery from dispatch: %s: %s" % (cmd, parms))
+			#print("Delivery from dispatch: %s: %s" % (cmd, parms))
 			if cmd == "turnout":
 				for p in parms:
 					turnout = p["name"]
@@ -403,18 +407,18 @@ class MainFrame(wx.Frame):
 					district = sig.GetDistrict()
 					district.DoSignalAction(sig, aspect)
 						
-			elif cmd == "lock":
+			elif cmd == "handswitch":
 				for p in parms:
-					lkName = p["name"]
+					hsName = p["name"]
 					state = p["state"]
 					
 					try:
-						lk = self.locks[lkName]
+						hs = self.handswitches[hsName]
 					except:
 						return
 
-					district = lk.GetDistrict()
-					district.DoLockAction(lk, state)
+					district = hs.GetDistrict()
+					district.DoHandSwitchAction(hs, state)
 
 			elif cmd == "settrain":
 				for p in parms:

@@ -487,12 +487,12 @@ def loadTiles(bitmaps):
 			"red-diagleft": b.diagleft.occupied,
 			"cross": bmisc.cross
 		})
-	misctiles["lockdown"] = MiscTile("lockdown",
+	misctiles["handdown"] = MiscTile("handdown",
 		{
 			"locked" : bmisc.downlocked,
 			"unlocked" : bmisc.downunlocked
 		})
-	misctiles["lockup"] = MiscTile("lockup",
+	misctiles["handup"] = MiscTile("handup",
 		{
 			"locked" : bmisc.uplocked,
 			"unlocked" : bmisc.upunlocked,

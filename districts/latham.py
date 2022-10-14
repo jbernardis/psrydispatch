@@ -4,7 +4,7 @@ from block import Block, OverSwitch, Route
 from turnout import Turnout, SlipSwitch
 from signal import Signal
 from button import Button
-from lock import Lock
+from handswitch import HandSwitch
 
 from constants import HyYdPt, RESTRICTING, MAIN, DIVERGING, SLOW, NORMAL, REVERSE, EMPTY, SLIPSWITCH
 
@@ -12,17 +12,21 @@ class Latham (District):
 	def __init__(self, name, frame, screen):
 		District.__init__(self, name, frame, screen)
 
-	def DrawOthers(self, block):
-		for l in self.locks.values():
-			l.Draw()
-
 	def DetermineRoute(self, blocks):
+		s1 = 'N' if self.turnouts["LSw1"].IsNormal() else 'R'
+		s3 = 'N' if self.turnouts["LSw3"].IsNormal() else 'R'
+		s5 = 'N' if self.turnouts["LSw5"].IsNormal() else 'R'
+		s7 = 'N' if self.turnouts["LSw7"].IsNormal() else 'R'
+		s9 = 'N' if self.turnouts["LSw9"].IsNormal() else 'R'
+		s15 = 'N' if self.turnouts["LSw15"].IsNormal() else 'R'
+		s17 = 'N' if self.turnouts["LSw17"].IsNormal() else 'R'
+		self.turnouts["LSw3"].SetLock("LSw9", s9=='R')
+		self.turnouts["LSw9"].SetLock("LSw3", s3=='R')
+		self.turnouts["LSw5"].SetLock("LSw7", s7=='R')
+		self.turnouts["LSw7"].SetLock("LSw5", s5=='R')
 		for bname in blocks:
 			block = self.frame.GetBlockByName(bname)
 			if bname == "OSLLAW":
-				s5 = 'N' if self.turnouts["LSw5"].IsNormal() else 'R'
-				s7 = 'N' if self.turnouts["LSw7"].IsNormal() else 'R'
-				s9 = 'N' if self.turnouts["LSw9"].IsNormal() else 'R'
 				if s5+s7 == "NN":
 					block.SetRoute(self.routes["LRtL10L11A"])
 				elif s5+s7 == "RR":
@@ -35,11 +39,6 @@ class Latham (District):
 					block.SetRoute(None)
 
 			elif bname == "OSLLAM":
-				s1 = 'N' if self.turnouts["LSw1"].IsNormal() else 'R'
-				s3 = 'N' if self.turnouts["LSw3"].IsNormal() else 'R'
-				s5 = 'N' if self.turnouts["LSw5"].IsNormal() else 'R'
-				s7 = 'N' if self.turnouts["LSw7"].IsNormal() else 'R'
-				s9 = 'N' if self.turnouts["LSw9"].IsNormal() else 'R'
 				if s1+s3+s5+s7 == "NNNR":
 					block.SetRoute(self.routes["LRtL20L11"])
 				elif s1+s3+s5+s7+s9 == "NNNNN":
@@ -56,10 +55,6 @@ class Latham (District):
 					block.SetRoute(None)
 			
 			elif bname == "OSLLAE":
-				s3 = 'N' if self.turnouts["LSw3"].IsNormal() else 'R'
-				s5 = 'N' if self.turnouts["LSw5"].IsNormal() else 'R'
-				s7 = 'N' if self.turnouts["LSw7"].IsNormal() else 'R'
-				s9 = 'N' if self.turnouts["LSw9"].IsNormal() else 'R'
 				if s3+s5+s7 == "RNR":
 					block.SetRoute(self.routes["LRtP21L11"])
 				elif s3+s5+s7+s9 == "RNNN":
@@ -72,15 +67,12 @@ class Latham (District):
 					block.SetRoute(None)
 
 			elif bname == "OSLCAW":
-				s15 = 'N' if self.turnouts["LSw15"].IsNormal() else 'R'
 				if s15 == "N":
 					block.SetRoute(self.routes["LRtL11D10"])
 				else:
 					block.SetRoute(None)
 
 			elif bname == "OSLCAM":
-				s15 = 'N' if self.turnouts["LSw15"].IsNormal() else 'R'
-				s17 = 'N' if self.turnouts["LSw17"].IsNormal() else 'R'
 				if s15+s17 == "NN":
 					block.SetRoute(self.routes["LRtL21D20"])
 				elif s15 == "R":
@@ -89,7 +81,6 @@ class Latham (District):
 					block.SetRoute(None)
 
 			elif bname == "OSLCAE":
-				s17 = 'N' if self.turnouts["LSw17"].IsNormal() else 'R'
 				if s17 == "R":
 					block.SetRoute(self.routes["LRtL31D20"])
 				else:
@@ -343,14 +334,14 @@ class Latham (District):
 			[ "LSw3",  "toleftleft",   ["OSLLAM", "OSLLAE"], (14, 13) ],
 			[ "LSw3b", "torightupinv", ["OSLLAM", "OSLLAE"], (12, 15) ],
 			[ "LSw5",  "torightright", ["OSLLAW"], (13, 11) ],
-			[ "LSw5b", "torightleft",  ["OSLLAW"], (15, 13) ],
+			[ "LSw5b", "torightleft",  ["OSLLAW", "OSLLAM", "OSLLAE"], (15, 13) ],
 			[ "LSw7",  "toleftleft",   ["OSLLAW", "OSLLAM", "OSLLAE"], (18, 11) ],
 			[ "LSw7b", "toleftright",  ["OSLLAW", "OSLLAM", "OSLLAE"], (16, 13) ],
 			[ "LSw9",  "torightright", ["OSLLAW", "OSLLAM", "OSLLAE"], (17, 13) ],
 			[ "LSw9b", "torightleft",  ["OSLLAW", "OSLLAM", "OSLLAE"], (19, 15) ],
 
 			[ "LSw15",  "toleftleft",  ["OSLCAW", "OSLCAM"], (33, 11) ],
-			[ "LSw15b", "toleftright", ["OSLCAW", "OSLCAM"], (31, 13) ],
+			[ "LSw15b", "toleftright", ["OSLCAM"], (31, 13) ],
 			[ "LSw17",  "toleftleft",  ["OSLCAM", "OSLCAE"], (34, 13) ],
 
 			[ "LSw11", "toleftright",  ["L11"], (23, 11) ],
@@ -361,6 +352,7 @@ class Latham (District):
 			trnout = Turnout(self, self.frame, tonm, self.screen, tiles[tileSet], pos)
 			for blknm in blks:
 				blocks[blknm].AddTurnout(trnout)
+				trnout.AddBlock(blknm)
 			self.turnouts[tonm] = trnout
 
 		self.turnouts["LSw3"].SetPairedTurnout(self.turnouts["LSw3b"])
@@ -372,15 +364,6 @@ class Latham (District):
 		self.turnouts["LSw11"].SetDisabled(True)
 		self.turnouts["LSw13"].SetDisabled(True)
 
-		self.osTurnouts = {}
-		self.osTurnouts["OSLLAW"] = [ "LSw5", "LSw5b", "LSw7", "LSw7b", "LSw9", "LSw9b" ]
-		self.osTurnouts["OSLLAM"] = [ "LSw1", "LSw3", "LSw3b", "LSw5", "LSw5b", "LSw7", "LSw7b", "LSw9", "LSw9b" ]
-		self.osTurnouts["OSLLAE"] = [ "LSw3", "LSw3b", "LSw5", "LSw5b", "LSw7", "LSw7b", "LSw9", "LSw9b" ]
-
-		self.osTurnouts["OSLCAW"] = [ "LSw15", "Sw15b" ]
-		self.osTurnouts["OSLCAM"] = [ "LSw15", "LSw15b", "LSw17" ]
-		self.osTurnouts["OSLCAE"] = [ "LSw17" ]
-		
 		return self.turnouts
 
 	def DefineSignals(self, tiles):
@@ -411,24 +394,24 @@ class Latham (District):
 
 		# latham OS
 		block = self.blocks["OSLLAW"]
-		self.routes["LRtL10L11A"] = Route(self.screen, block, "LRtL10L11A", "L11", [ (8, 11), (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 11), (15, 11), (16, 11), (17, 11), (18, 11), (19, 11), (20, 11) ], "L10", [RESTRICTING, MAIN])
-		self.routes["LRtL10L11B"] = Route(self.screen, block, "LRtL10L11B", "L11", [ (8, 11), (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 12), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "L10", [RESTRICTING, RESTRICTING])
-		self.routes["LRtL10L21"] = Route(self.screen, block, "LRtL10L21", "L21",   [ (8, 11), (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 12), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "L10", [RESTRICTING, DIVERGING])
-		self.routes["LRtL10L31"] = Route(self.screen, block, "LRtL10L31", "L31",   [ (8, 11), (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 12), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "L10", [RESTRICTING, DIVERGING])
+		self.routes["LRtL10L11A"] = Route(self.screen, block, "LRtL10L11A", "L11", [ (8, 11), (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 11), (15, 11), (16, 11), (17, 11), (18, 11), (19, 11), (20, 11) ], "L10", [RESTRICTING, MAIN], ["LSw5", "LSw7"])
+		self.routes["LRtL10L11B"] = Route(self.screen, block, "LRtL10L11B", "L11", [ (8, 11), (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 12), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "L10", [RESTRICTING, RESTRICTING], ["LSw5", "LSw7"])
+		self.routes["LRtL10L21"] = Route(self.screen, block, "LRtL10L21", "L21",   [ (8, 11), (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 12), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "L10", [RESTRICTING, DIVERGING], ["LSw5", "LSw7", "LSw9"])
+		self.routes["LRtL10L31"] = Route(self.screen, block, "LRtL10L31", "L31",   [ (8, 11), (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 12), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "L10", [RESTRICTING, DIVERGING], ["LSw5", "LSw7", "LSw9"])
 
 		block=self.blocks["OSLLAM"]
-		self.routes["LRtL20L11"] = Route(self.screen, block, "LRtL20L11", "L11", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "L20", [RESTRICTING, RESTRICTING])
-		self.routes["LRtP11L11"] = Route(self.screen, block, "LRtP11L11", "L11", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "P11", [RESTRICTING, DIVERGING])
-		self.routes["LRtL20L21"] = Route(self.screen, block, "LRtL20L21", "L21", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "L20", [MAIN, RESTRICTING])
-		self.routes["LRtP11L21"] = Route(self.screen, block, "LRtP11L21", "L21", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "P11", [RESTRICTING, DIVERGING])
-		self.routes["LRtL20L31"] = Route(self.screen, block, "LRtL20L31", "L31", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "L20", [DIVERGING, RESTRICTING])
-		self.routes["LRtP11L31"] = Route(self.screen, block, "LRtP11L31", "L31", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "P11", [RESTRICTING, RESTRICTING])
+		self.routes["LRtL20L11"] = Route(self.screen, block, "LRtL20L11", "L11", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "L20", [RESTRICTING, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7"])
+		self.routes["LRtP11L11"] = Route(self.screen, block, "LRtP11L11", "L11", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "P11", [RESTRICTING, DIVERGING], ["LSw1", "LSw3", "LSw5", "LSw7"])
+		self.routes["LRtL20L21"] = Route(self.screen, block, "LRtL20L21", "L21", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "L20", [MAIN, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
+		self.routes["LRtP11L21"] = Route(self.screen, block, "LRtP11L21", "L21", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "P11", [RESTRICTING, DIVERGING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
+		self.routes["LRtL20L31"] = Route(self.screen, block, "LRtL20L31", "L31", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "L20", [DIVERGING, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
+		self.routes["LRtP11L31"] = Route(self.screen, block, "LRtP11L31", "L31", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "P11", [RESTRICTING, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
 
 		block=self.blocks["OSLLAE"]
-		self.routes["LRtP21L11"] = Route(self.screen, block, "LRtP21L11", "P21", [ (8, 17), (9, 17), (10, 17), (11, 16), (12, 15), (13, 14), (14, 13), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "L11", [RESTRICTING, RESTRICTING])
-		self.routes["LRtP21L21"] = Route(self.screen, block, "LRtP21L21", "P21", [ (8, 17), (9, 17), (10, 17), (11, 16), (12, 15), (13, 14), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "L21", [RESTRICTING, RESTRICTING])
-		self.routes["LRtP21L31A"] = Route(self.screen, block, "LRtP21L31A", "P21", [ (8, 17), (9, 17), (10, 17), (11, 16), (12, 15), (13, 15), (14, 15), (15, 15), (16, 15), (17, 15), (18, 15), (19, 15), (20, 15) ], "L31", [MAIN, RESTRICTING])
-		self.routes["LRtP21L31B"] = Route(self.screen, block, "LRtP21L31B", "P21", [ (8, 17), (9, 17), (10, 17), (11, 16), (12, 15), (13, 14), (14, 13), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "L31", [RESTRICTING, RESTRICTING])
+		self.routes["LRtP21L11"] = Route(self.screen, block, "LRtP21L11", "P21", [ (8, 17), (9, 17), (10, 17), (11, 16), (12, 15), (13, 14), (14, 13), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "L11", [RESTRICTING, RESTRICTING], ["LSw3", "LSw5", "LSw7"])
+		self.routes["LRtP21L21"] = Route(self.screen, block, "LRtP21L21", "P21", [ (8, 17), (9, 17), (10, 17), (11, 16), (12, 15), (13, 14), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "L21", [RESTRICTING, RESTRICTING], ["LSw3", "LSw5", "LSw7", "LSw9"])
+		self.routes["LRtP21L31A"] = Route(self.screen, block, "LRtP21L31A", "P21", [ (8, 17), (9, 17), (10, 17), (11, 16), (12, 15), (13, 15), (14, 15), (15, 15), (16, 15), (17, 15), (18, 15), (19, 15), (20, 15) ], "L31", [MAIN, RESTRICTING], ["LSw3", "LSw9"])
+		self.routes["LRtP21L31B"] = Route(self.screen, block, "LRtP21L31B", "P21", [ (8, 17), (9, 17), (10, 17), (11, 16), (12, 15), (13, 14), (14, 13), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "L31", [RESTRICTING, RESTRICTING], ["LSw3", "LSw5", "LSw7", "LSw9"])
 
 		self.signals["L8R"].AddPossibleRoutes("OSLLAW", [ "LRtL10L11A", "LRtL10L11B", "LRtL10L21", "LRtL10L31" ])
 		self.signals["L8L"].AddPossibleRoutes("OSLLAW", [ "LRtL10L11A", "LRtL10L11B" ])
@@ -452,14 +435,14 @@ class Latham (District):
 
 		# Carlton OS
 		block=self.blocks["OSLCAW"]
-		self.routes["LRtL11D10"] = Route(self.screen, block, "LRtL11D10", "D10", [(30, 11), (31, 11), (32, 11), (33, 11), (34, 11), (35, 11)], "L11", [RESTRICTING, MAIN])
+		self.routes["LRtL11D10"] = Route(self.screen, block, "LRtL11D10", "D10", [(30, 11), (31, 11), (32, 11), (33, 11), (34, 11), (35, 11)], "L11", [RESTRICTING, MAIN], ["LSw15"])
 
 		block=self.blocks["OSLCAM"]
-		self.routes["LRtL21D10"] = Route(self.screen, block, "LRtL21D10", "D10", [(30, 13), (31, 13), (32, 12), (33, 11), (34, 11), (35, 11)], "L21", [RESTRICTING, DIVERGING])
-		self.routes["LRtL21D20"] = Route(self.screen, block, "LRtL21D20", "D20", [(30, 13), (31, 13), (32, 13), (33, 13), (34, 13), (35, 13)], "L21", [MAIN, RESTRICTING])
+		self.routes["LRtL21D10"] = Route(self.screen, block, "LRtL21D10", "D10", [(30, 13), (31, 13), (32, 12), (33, 11), (34, 11), (35, 11)], "L21", [RESTRICTING, DIVERGING], ["LSw15"])
+		self.routes["LRtL21D20"] = Route(self.screen, block, "LRtL21D20", "D20", [(30, 13), (31, 13), (32, 13), (33, 13), (34, 13), (35, 13)], "L21", [MAIN, RESTRICTING], ["LSw15", "LSw17"])
 
 		block=self.blocks["OSLCAE"]
-		self.routes["LRtL31D20"] = Route(self.screen, block, "LRtL31D20", "L31", [(30, 15), (31, 15), (32, 15), (33, 14), (34, 13), (35, 13)], "D20", [DIVERGING, RESTRICTING])
+		self.routes["LRtL31D20"] = Route(self.screen, block, "LRtL31D20", "L31", [(30, 15), (31, 15), (32, 15), (33, 14), (34, 13), (35, 13)], "D20", [DIVERGING, RESTRICTING], ["LSw17"])
 
 		self.signals["L18R"].AddPossibleRoutes("OSLCAW", [ "LRtL11D10" ])
 		self.signals["L18L"].AddPossibleRoutes("OSLCAW", [ "LRtL11D10" ])
@@ -477,16 +460,16 @@ class Latham (District):
 
 		return self.signals
 
-	def DefineLocks(self, tiles):
-		self.locks = {}
+	def DefineHandSwitches(self, tiles):
+		self.handswitches = {}
 
-		lk = Lock(self, self.screen, self.frame, self.blocks["L11"], "LSw11.ind", (23, 10), tiles["lockdown"])
-		self.blocks["L11"].AddLock(lk)
-		self.locks["LSw11.ind"] = lk
+		hs = HandSwitch(self, self.screen, self.frame, self.blocks["L11"], "LSw11.hand", (23, 10), tiles["handdown"])
+		self.blocks["L11"].AddHandSwitch(hs)
+		self.handswitches["LSw11.hand"] = hs
 
-		lk = Lock(self, self.screen, self.frame, self.blocks["L31"], "LSw13.ind", (27, 16), tiles["lockup"])
-		self.blocks["L31"].AddLock(lk)
-		self.locks["LSw13.ind"] = lk
-		return self.locks
+		hs = HandSwitch(self, self.screen, self.frame, self.blocks["L31"], "LSw13.hand", (27, 16), tiles["handup"])
+		self.blocks["L31"].AddHandSwitch(hs)
+		self.handswitches["LSw13.hand"] = hs
+		return self.handswitches
 
 		
