@@ -13,8 +13,6 @@ class RRServer(object):
 		pprint.pprint(req)
 
 		for cmd, parms in req.items():
-			print("(%s)" % cmd)
-			print("(%s)" % str(parms))
 			try:
 				r = requests.get(self.ipAddr + "/" + cmd, params=parms)
 			except requests.exceptions.ConnectionError:
