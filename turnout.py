@@ -237,7 +237,6 @@ class SlipSwitch(Turnout):
 
 	def SetStatus(self, status):
 		self.status = status
-
 		self.district.DetermineRoute(self.blockList)
 
 	def UpdateStatus(self):

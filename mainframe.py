@@ -359,11 +359,12 @@ class MainFrame(wx.Frame):
 
 	def onDeliveryEvent(self, evt):
 		for cmd, parms in evt.data.items():
-			#print("Delivery from dispatch: %s: %s" % (cmd, parms))
+			print("Delivery from dispatch: %s: %s" % (cmd, parms))
 			if cmd == "turnout":
 				for p in parms:
 					turnout = p["name"]
 					state = p["state"]
+					to = self.turnouts[turnout]
 					try:
 						to = self.turnouts[turnout]
 					except KeyError:
