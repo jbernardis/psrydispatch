@@ -187,6 +187,9 @@ class Block:
 	def SetOccupied(self, occupied=True, blockend=None, refresh=False):
 		if blockend  in ["E", "W"]:
 			b = self.sbEast if blockend == "E" else self.sbWest
+			if b is None:
+				print("Stopping block %s not defined for block %s" % (blockend, self.GetName()))
+				return
 			b.SetOccupied(occupied, refresh)
 			return
 
@@ -385,6 +388,13 @@ class OverSwitch (Block):
 				signm = self.entrySignal.GetName()
 				self.frame.Request({"signal": { "name": signm, "aspect": RED }})
 				self.entrySignal = None
+		
+		if self.route:
+			tolist = self.route.GetTurnouts()
+			for t in tolist:
+				print("Setting turnout %s lock, part of route %s to %s" % (t, self.rtName, str(occupied)))
+				self.frame.turnouts[t].SetLock(self.name, occupied)
+
 
 	def GetTileInRoute(self, screen, pos):
 		if self.route is None:

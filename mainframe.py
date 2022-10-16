@@ -103,9 +103,9 @@ class MainFrame(wx.Frame):
 
 		self.tiles, self.totiles, self.sstiles, self.sigtiles, self.misctiles = loadTiles(self.bitmaps)
 		self.districts = Districts()
-		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
 		self.districts.AddDistrict(Yard("Yard", self, HyYdPt))
 		self.districts.AddDistrict(Latham("Latham", self, LaKr))
+		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
 
 		self.blocks =   self.districts.DefineBlocks(self.tiles)
 		self.turnouts = self.districts.DefineTurnouts(self.totiles, self.blocks)
@@ -256,7 +256,7 @@ class MainFrame(wx.Frame):
 
 		if ln:
 			for col, blk in ln:
-				if col <= pos[0] <= col+10:
+				if col <= pos[0] <= col+3:
 					break
 			else:
 				blk = None
@@ -379,6 +379,7 @@ class MainFrame(wx.Frame):
 				for p in parms:
 					block = p["name"]
 					state = p["state"]
+					print("block %s %s" % (block, str(state)))
 					try:
 						blk = self.blocks[block]
 						blockend = None

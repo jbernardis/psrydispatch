@@ -76,7 +76,9 @@ class Yard (District):
 		s131 = 'N' if self.turnouts["YSw131"].IsNormal() else 'R'
 		s132 = 'N' if self.turnouts["YSw132"].IsNormal() else 'R'
 		s134 = 'N' if self.turnouts["YSw134"].IsNormal() else 'R'
-		print("determine routes 17:%s 19:%s 21:%s" % (s17, s19, s21))
+		self.turnouts["YSw17"].SetLock("YSw21", s21=='R')
+		self.turnouts["YSw21"].SetLock("YSw17", s17=='R')
+
 		for bname in blocks:
 			print("consider block %s" % bname)
 			block = self.frame.GetBlockByName(bname)
@@ -251,8 +253,6 @@ class Yard (District):
 
 		self.blocks["Y11"] = Block(self, self.frame, "Y11",
 			[
-				(tiles["eobleft"],  self.screen, (122, 11), False),
-				(tiles["horiznc"],  self.screen, (123, 11), False),
 				(tiles["horiz"],    self.screen, (124, 11), False),
 				(tiles["horiznc"],  self.screen, (125, 11), False),
 				(tiles["horiz"],    self.screen, (126, 11), False),
@@ -260,6 +260,10 @@ class Yard (District):
 				(tiles["eobright"], self.screen, (128, 11), False),
 			], False)
 		self.blocks["Y11"].AddTrainLoc(self.screen, (123, 11))
+		self.blocks["Y11"].AddStoppingBlock([
+				(tiles["eobleft"],  self.screen, (122, 11), False),
+				(tiles["horiznc"],  self.screen, (123, 11), False),
+			], False)
 
 		self.blocks["Y20"] = Block(self, self.frame, "Y20",
 			[
@@ -268,22 +272,28 @@ class Yard (District):
 				(tiles["horiz"],    self.screen, (109, 13), False),
 				(tiles["horiznc"],  self.screen, (110, 13), False),
 				(tiles["horiz"],    self.screen, (111, 13), False),
+			], True)
+		self.blocks["Y20"].AddTrainLoc(self.screen, (108, 13))
+		self.blocks["Y20"].AddStoppingBlock([
 				(tiles["horiznc"],  self.screen, (112, 13), False),
 				(tiles["eobright"], self.screen, (113, 13), False),
 			], True)
-		self.blocks["Y20"].AddTrainLoc(self.screen, (108, 13))
 
 		self.blocks["Y21"] = Block(self, self.frame, "Y21",
 			[
-				(tiles["eobleft"],  self.screen, (122, 13), False),
-				(tiles["horiznc"],  self.screen, (123, 13), False),
 				(tiles["horiz"],    self.screen, (124, 13), False),
 				(tiles["horiznc"],  self.screen, (125, 13), False),
 				(tiles["horiz"],    self.screen, (126, 13), False),
+			], True)
+		self.blocks["Y21"].AddTrainLoc(self.screen, (123, 13))
+		self.blocks["Y21"].AddStoppingBlock([
+				(tiles["eobleft"],  self.screen, (122, 13), False),
+				(tiles["horiznc"],  self.screen, (123, 13), False),
+			], False)
+		self.blocks["Y21"].AddStoppingBlock([
 				(tiles["horiznc"],  self.screen, (127, 13), False),
 				(tiles["eobright"], self.screen, (128, 13), False),
 			], True)
-		self.blocks["Y21"].AddTrainLoc(self.screen, (123, 13))
 
 		self.blocks["Y30"] = Block(self, self.frame, "Y30",
 			[

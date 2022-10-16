@@ -26,23 +26,24 @@ class Turnout:
 		return self.locked
 
 	def SetLock(self, signame, flag=True):
-		if flag != self.locked:
-			if flag:
-				self.locked = True
-				if signame in self.lockedBy:
-					# already locked by this signal
-					return
-				self.lockedBy.append(signame)
-				if len(self.lockedBy) == 1:
-					self.frame.Request({"turnoutlock": { "name": self.name, "status": 1}})
-			else:
-				if signame not in self.lockedBy:
-					# this signal hasn't locked the turnout, so it can't unlock it
-					return
-				self.lockedBy.remove(signame)
-				if len(self.lockedBy) == 0:
-					self.locked = False
-					self.frame.Request({"turnoutlock": { "name": self.name, "status": 0}})
+		if flag:
+			print("locking to %s by %s" % (self.name, signame))
+			self.locked = True
+			if signame in self.lockedBy:
+				# already locked by this signal
+				return
+			self.lockedBy.append(signame)
+			if len(self.lockedBy) == 1:
+				self.frame.Request({"turnoutlock": { "name": self.name, "status": 1}})
+		else:
+			print("unlocking to %s by %s" % (self.name, signame))
+			if signame not in self.lockedBy:
+				# this signal hasn't locked the turnout, so it can't unlock it
+				return
+			self.lockedBy.remove(signame)
+			if len(self.lockedBy) == 0:
+				self.locked = False
+				self.frame.Request({"turnoutlock": { "name": self.name, "status": 0}})
 
 	def GetType(self):
 		return self.ttype

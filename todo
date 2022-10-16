@@ -1,17 +1,19 @@
+remaining yard inputs
 
+latham - OS verificaton and inputs
+
+    
 fleeting?
 
 deduction of train movement - reporting train location
   allow loading of initial positions of traina and locos
   allow saving current locations
-  keeping track of trains - a master list - the bility to draw a train via the master list be having a list of containing Blocks
+  keeping track of trains - a master list - the ability to draw a train via the master list be having a list of containing Blocks
   checking train for non-contiguous Blocks
   we need to have an empty train object when a train has not yet been identified so that it can move forward as block occupancy is detected
+  deal with trains that are too short to span OS/stopping blocks - may not be a problem
 
-
-write an audit method for all of a district's data - just as a development aid if nothing else
-
-verify all stopping sections and make sure I have them included in the current districts
+insert cameras into bitmap rather than have 2 bitmaps
 
 finish hyde - two remaining blocks and the hyde junction OS'es
 
