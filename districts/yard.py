@@ -80,7 +80,6 @@ class Yard (District):
 		self.turnouts["YSw21"].SetLock("YSw17", s17=='R')
 
 		for bname in blocks:
-			print("consider block %s" % bname)
 			block = self.frame.GetBlockByName(bname)
 			if bname == "YOSCJW":
 				if s3 == "N":
@@ -249,7 +248,6 @@ class Yard (District):
 				(tiles["eobright"], self.screen, (113, 11), False),
 			], False)
 		self.blocks["Y10"].AddTrainLoc(self.screen, (108, 11))
-
 
 		self.blocks["Y11"] = Block(self, self.frame, "Y11",
 			[

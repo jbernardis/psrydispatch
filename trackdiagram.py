@@ -13,6 +13,7 @@ class TrackDiagram(wx.Panel):
 
 		self.tiles = {}
 		self.text = {}
+		self.bitmaps = {}
 		self.tx = 0
 		self.ty = 0
 
@@ -55,6 +56,10 @@ class TrackDiagram(wx.Panel):
 		self.text[(x*16+offset, y*16)] = text;
 		self.Refresh()
 
+	def DrawFixedBitmap(self, x, y, offset, bmp):
+		self.bitmaps[x+offset, y] = bmp
+		self.Refresh()
+
 	def ClearText(self, x, y, offset):
 		textKey = (x*16+offset, y*16)
 		if textKey not in self.text:
@@ -69,6 +74,8 @@ class TrackDiagram(wx.Panel):
 		dc.SetBackgroundMode(wx.BRUSHSTYLE_SOLID)
 		self.DrawBackground(dc)
 		for bx, bmp in self.tiles.items():
+			dc.DrawBitmap(bmp, bx[0], bx[1])
+		for bx, bmp in self.bitmaps.items():
 			dc.DrawBitmap(bmp, bx[0], bx[1])
 		for bx, txt in self.text.items():
 			dc.DrawText(txt, bx[0], bx[1])

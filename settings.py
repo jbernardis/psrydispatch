@@ -26,7 +26,7 @@ class Settings:
 		self.ipaddr = "192.168.1.138"
 		self.serverport = 9000
 		self.socketport = 9001
-		self.usecameradiagrams = False
+		self.showcameras = False
 		
 		self.cfg = configparser.ConfigParser()
 		self.cfg.optionxform = str
@@ -52,8 +52,8 @@ class Settings:
 				elif opt == 'dispatch':
 					self.dispatch = parseBoolean(value, False)
 
-				elif opt == 'usecameradiagrams':
-					self.usecameradiagrams = parseBoolean(value, False)
+				elif opt == 'showcameras':
+					self.showcameras = parseBoolean(value, False)
 						
 				elif opt == 'ipaddr':
 					self.ipaddr = value
@@ -76,24 +76,3 @@ class Settings:
 
 		else:
 			print("Missing %s section - assuming defaults" % self.section)
-	
-	def save(self):
-		try:
-			self.cfg.add_section(self.section)
-		except configparser.DuplicateSectionError:
-			pass
-		
-		self.cfg.set(self.section, "pages", str(self.pages))
-		self.cfg.set(self.section, "dispatch", str(self.dispatch))
-		self.cfg.set(self.section, "usecameradiagrams", str(self.usecameradiagrams))
-		self.cfg.set(self.section, "ipaddr", str(self.ipaddr))
-		self.cfg.set(self.section, "socketport", str(self.socketport))
-		self.cfg.set(self.section, "serverport", str(self.serverport))
-
-		try:		
-			cfp = open(self.inifile, 'w')
-		except:
-			print("Unable to open settings file %s for writing" % self.inifile)
-			return
-		self.cfg.write(cfp)
-		cfp.close()

@@ -46,11 +46,10 @@ class MainFrame(wx.Frame):
 		hsz = wx.BoxSizer(wx.HORIZONTAL)
 		self.bitmaps = BitMaps(os.path.join(".", "bitmaps"))
 		singlePage = self.settings.pages == 1
-		cameraDiagrams = self.settings.usecameradiagrams
 		self.diagrams = {
-			HyYdPt: Node(HyYdPt, self.bitmaps.diagrams.HydeYardPortCam  if cameraDiagrams else self.bitmaps.diagrams.HydeYardPort, 0),
-			LaKr:   Node(LaKr,   self.bitmaps.diagrams.LathamKrulishCam if cameraDiagrams else self.bitmaps.diagrams.LathamKrulish, 2544 if singlePage else 0),
-			NaCl:   Node(NaCl,   self.bitmaps.diagrams.NassauCliffCam   if cameraDiagrams else self.bitmaps.diagrams.NassauCliff, 5088 if singlePage else 0)
+			HyYdPt: Node(HyYdPt, self.bitmaps.diagrams.HydeYardPort, 0),
+			LaKr:   Node(LaKr,   self.bitmaps.diagrams.LathamKrulish, 2544 if singlePage else 0),
+			NaCl:   Node(NaCl,   self.bitmaps.diagrams.NassauCliff, 5088 if singlePage else 0)
 		}
 		if self.settings.pages == 1:  # set up a single ultra-wide display accross 3 monitors
 			dp = TrackDiagram(self, [self.diagrams[sn] for sn in screensList])
@@ -114,16 +113,6 @@ class MainFrame(wx.Frame):
 		self.handswitches =  self.districts.DefineHandSwitches(self.misctiles)
 
 		self.AddBogusStuff()
-		# print("blocks")
-		# print(str(list(self.blocks.keys())))
-		# print("turnouts")
-		# print(str(list(self.turnouts.keys())))
-		# print("signals")
-		# print(str(list(self.signals.keys())))
-		# print("buttons")
-		# print(str(list(self.buttons.keys())))
-		# print("locks")
-		# print(str(list(self.locks.keys())))
 
 		if not self.districts.Audit():
 			print("Audit failed")
@@ -138,20 +127,20 @@ class MainFrame(wx.Frame):
 			self.buttonMap = { (b.GetScreen(), b.GetPos()): b for b in self.buttons.values() }
 			self.signalMap = { (s.GetScreen(), s.GetPos()): s for s in self.signals.values() }
 			self.handswitchMap = { (l.GetScreen(), l.GetPos()): l for l in self.handswitches.values() }
+			self.blockMap = self.BuildBlockMap(self.blocks)
+
 		else:
 			self.turnoutMap = {}
 			self.buttonMap = {}
 			self.signalMap = {}
 			self.handswitchMap = {}
-
-		self.blockMap = self.BuildBlockMap(self.blocks)
+			self.blockMap = {}
 
 		self.buttonsToClear = []
 
 		self.districts.Draw()
-
-		# for tr in self.trains:
-		# 	tr.Draw()
+		if self.settings.showcameras:
+			self.DrawCameras()
 		
 		self.Bind(wx.EVT_TIMER, self.onTicker)
 		self.ticker = wx.Timer(self)
@@ -159,6 +148,50 @@ class MainFrame(wx.Frame):
 
 		self.rrServer = RRServer()
 		self.rrServer.SetServerAddress(self.settings.ipaddr, self.settings.serverport)
+
+	def DrawCameras(self):
+		cams = {}
+		cams[LaKr] = [
+			[(242, 32), self.bitmaps.cameras.lakr.cam7],
+			[(464, 32), self.bitmaps.cameras.lakr.cam8],
+			[(768, 32), self.bitmaps.cameras.lakr.cam8],
+			[(890, 32), self.bitmaps.cameras.lakr.cam10],
+			[(972, 32), self.bitmaps.cameras.lakr.cam12],
+			[(1186, 32), self.bitmaps.cameras.lakr.cam3],
+			[(1424, 32), self.bitmaps.cameras.lakr.cam4],
+			[(1634, 32), self.bitmaps.cameras.lakr.cam13],
+			[(1884, 32), self.bitmaps.cameras.lakr.cam14],
+			[(2152, 32), self.bitmaps.cameras.lakr.cam15],
+			[(2198, 32), self.bitmaps.cameras.lakr.cam16],
+			[(2362, 32), self.bitmaps.cameras.lakr.cam9],
+			[(2416, 32), self.bitmaps.cameras.lakr.cam10],
+		]
+		cams[HyYdPt] = [
+			[(282, 72), self.bitmaps.cameras.hyydpt.cam15],
+			[(838, 72), self.bitmaps.cameras.hyydpt.cam16],
+			[(904, 576), self.bitmaps.cameras.hyydpt.cam1],
+			[(1712, 10), self.bitmaps.cameras.hyydpt.cam1],
+			[(1840, 10), self.bitmaps.cameras.hyydpt.cam2],
+			[(1960, 10), self.bitmaps.cameras.hyydpt.cam3],
+			[(2090, 10), self.bitmaps.cameras.hyydpt.cam4],
+			[(2272, 236), self.bitmaps.cameras.hyydpt.cam5],
+			[(2292, 444), self.bitmaps.cameras.hyydpt.cam6],
+		]
+		cams[NaCl] = [
+			[(364, 28), self.bitmaps.cameras.nacl.cam11],
+			[(670, 28), self.bitmaps.cameras.nacl.cam12],
+			[(918, 28), self.bitmaps.cameras.nacl.cam1],
+			[(998, 28), self.bitmaps.cameras.nacl.cam2],
+			[(1074, 28), self.bitmaps.cameras.nacl.cam3],
+			[(1248, 28), self.bitmaps.cameras.nacl.cam4],
+			[(1442, 28), self.bitmaps.cameras.nacl.cam7],
+			[(2492, 502), self.bitmaps.cameras.nacl.cam8],
+		]
+
+		for screen in cams:
+			offset = self.diagrams[screen].offset
+			for pos, bmp in cams[screen]:
+				self.panels[screen].DrawFixedBitmap(pos[0], pos[1], offset, bmp)
 
 	def BuildBlockMap(self, bl):
 		blkMap = {}
@@ -358,6 +391,9 @@ class MainFrame(wx.Frame):
 		wx.PostEvent(self, evt)
 
 	def onDeliveryEvent(self, evt):
+		print("================================")
+		pprint.pprint(evt.data)
+		print("================================")
 		for cmd, parms in evt.data.items():
 			print("Delivery from dispatch: %s: %s" % (cmd, parms))
 			if cmd == "turnout":
@@ -421,6 +457,12 @@ class MainFrame(wx.Frame):
 
 					district = hs.GetDistrict()
 					district.DoHandSwitchAction(hs, state)
+
+			elif cmd == "breaker":
+				for p in parms:
+					name = p["name"]
+					state = p["state"]
+					print("Set Breaker %s to %s" % (name, "TRIPPED" if state != 0 else "CLEAR"))
 
 			elif cmd == "settrain":
 				for p in parms:
