@@ -27,7 +27,6 @@ class Turnout:
 
 	def SetLock(self, signame, flag=True):
 		if flag:
-			print("locking to %s by %s" % (self.name, signame))
 			self.locked = True
 			if signame in self.lockedBy:
 				# already locked by this signal
@@ -36,7 +35,6 @@ class Turnout:
 			if len(self.lockedBy) == 1:
 				self.frame.Request({"turnoutlock": { "name": self.name, "status": 1}})
 		else:
-			print("unlocking to %s by %s" % (self.name, signame))
 			if signame not in self.lockedBy:
 				# this signal hasn't locked the turnout, so it can't unlock it
 				return
@@ -94,6 +92,9 @@ class Turnout:
 
 	def IsReverse(self):
 		return not self.normal
+
+	def GetStatus(self):
+		return "N" if self.normal else "R"
 
 	def SetReverse(self, refresh=False):
 		if not self.normal:
@@ -174,21 +175,18 @@ class SlipSwitch(Turnout):
 
 	def IsNormal(self):
 		if self.controller is None:
-			print("Do not call is normal with a slip switch")
 			return False
 
 		return self.status[self.controller] == NORMAL
 
 	def IsReverse(self):
 		if self.controller is None:
-			print("Do not call is reverse with a slip switch")
 			return False
 
 		return self.status[self.controller] != NORMAL
 
 	def SetReverse(self, refresh=False):
 		if self.controller is None:
-			print("Do not call set reverse with a slip switch")
 			return False
 
 		if not self.IsNormal():
@@ -213,7 +211,6 @@ class SlipSwitch(Turnout):
 
 	def SetNormal(self, refresh=False):
 		if self.controller is None:
-			print("Do not call set normal with a slip switch")
 			return False
 
 		if self.IsNormal():

@@ -1,6 +1,5 @@
 import requests
-
-import pprint
+import logging
 
 class RRServer(object):
 	def __init__(self):
@@ -10,11 +9,9 @@ class RRServer(object):
 		self.ipAddr = "http://%s:%s" % (ip, port)
 
 	def SendRequest(self, req):
-		pprint.pprint(req)
-
 		for cmd, parms in req.items():
 			try:
 				r = requests.get(self.ipAddr + "/" + cmd, params=parms)
 			except requests.exceptions.ConnectionError:
-				print("Unable to send request  is dispatcher running?")
+				logging.error("Unable to send request  is dispatcher running?")
 

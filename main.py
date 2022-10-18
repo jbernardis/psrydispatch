@@ -4,6 +4,9 @@ cmdFolder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( insp
 if cmdFolder not in sys.path:
 	sys.path.insert(0, cmdFolder)
 
+import logging
+logging.basicConfig(filename='pydisplay.log', format='%(asctime)s %(message)s', level=logging.DEBUG)
+
 from mainframe import MainFrame 
 
 class App(wx.App):

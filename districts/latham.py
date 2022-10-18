@@ -186,7 +186,7 @@ class Latham (District):
 				(tiles["horiznc"],   self.screen, (24, 13), False),
 				(tiles["horiz"],     self.screen, (25, 13), False),
 				(tiles["horiznc"],   self.screen, (26, 13), False),
-			], False)
+			], True)
 		self.blocks["L21"].AddStoppingBlock([
 				(tiles["eobleft"],   self.screen, (21, 13), False),
 				(tiles["horiznc"],   self.screen, (22, 13), False),
@@ -257,7 +257,7 @@ class Latham (District):
 				(tiles["turnleftright"], self.screen, (9, 15), False),
 				(tiles["diagleft"],   self.screen, (10, 14), False),
 			],
-			False)
+			True)
 
 		self.blocks["LOSLAE"] = OverSwitch(self, self.frame, "LOSLAE", 
 			[
@@ -304,7 +304,7 @@ class Latham (District):
 				(tiles["horiz"],     self.screen, (34, 11), False),
 				(tiles["eobright"],  self.screen, (35, 11), False),
 			], 
-			False)
+			True)
 
 		self.blocks["LOSCAE"] = OverSwitch(self, self.frame, "LOSCAE", 
 			[
@@ -400,12 +400,12 @@ class Latham (District):
 		self.routes["LRtL10L31"] = Route(self.screen, block, "LRtL10L31", "L31",   [ (8, 11), (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 12), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "L10", [RESTRICTING, DIVERGING], ["LSw5", "LSw7", "LSw9"])
 
 		block=self.blocks["LOSLAM"]
-		self.routes["LRtL20L11"] = Route(self.screen, block, "LRtL20L11", "L11", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "L20", [RESTRICTING, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7"])
-		self.routes["LRtP11L11"] = Route(self.screen, block, "LRtP11L11", "L11", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "P11", [RESTRICTING, DIVERGING], ["LSw1", "LSw3", "LSw5", "LSw7"])
-		self.routes["LRtL20L21"] = Route(self.screen, block, "LRtL20L21", "L21", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "L20", [MAIN, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
-		self.routes["LRtP11L21"] = Route(self.screen, block, "LRtP11L21", "L21", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "P11", [RESTRICTING, DIVERGING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
-		self.routes["LRtL20L31"] = Route(self.screen, block, "LRtL20L31", "L31", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "L20", [DIVERGING, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
-		self.routes["LRtP11L31"] = Route(self.screen, block, "LRtP11L31", "L31", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "P11", [RESTRICTING, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
+		self.routes["LRtL20L11"] = Route(self.screen, block, "LRtL20L11", "L20", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "L11", [RESTRICTING, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7"])
+		self.routes["LRtP11L11"] = Route(self.screen, block, "LRtP11L11", "P11", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "L11", [RESTRICTING, DIVERGING], ["LSw1", "LSw3", "LSw5", "LSw7"])
+		self.routes["LRtL20L21"] = Route(self.screen, block, "LRtL20L21", "L20", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "L21", [MAIN, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
+		self.routes["LRtP11L21"] = Route(self.screen, block, "LRtP11L21", "P11", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "L21", [RESTRICTING, DIVERGING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
+		self.routes["LRtL20L31"] = Route(self.screen, block, "LRtL20L31", "L20", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "L31", [DIVERGING, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
+		self.routes["LRtP11L31"] = Route(self.screen, block, "LRtP11L31", "P11", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "L31", [RESTRICTING, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
 
 		block=self.blocks["LOSLAE"]
 		self.routes["LRtP21L11"] = Route(self.screen, block, "LRtP21L11", "P21", [ (8, 17), (9, 17), (10, 17), (11, 16), (12, 15), (13, 14), (14, 13), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "L11", [RESTRICTING, RESTRICTING], ["LSw3", "LSw5", "LSw7"])
@@ -438,8 +438,8 @@ class Latham (District):
 		self.routes["LRtL11D10"] = Route(self.screen, block, "LRtL11D10", "D10", [(30, 11), (31, 11), (32, 11), (33, 11), (34, 11), (35, 11)], "L11", [RESTRICTING, MAIN], ["LSw15"])
 
 		block=self.blocks["LOSCAM"]
-		self.routes["LRtL21D10"] = Route(self.screen, block, "LRtL21D10", "D10", [(30, 13), (31, 13), (32, 12), (33, 11), (34, 11), (35, 11)], "L21", [RESTRICTING, DIVERGING], ["LSw15"])
-		self.routes["LRtL21D20"] = Route(self.screen, block, "LRtL21D20", "D20", [(30, 13), (31, 13), (32, 13), (33, 13), (34, 13), (35, 13)], "L21", [MAIN, RESTRICTING], ["LSw15", "LSw17"])
+		self.routes["LRtL21D10"] = Route(self.screen, block, "LRtL21D10", "L21", [(30, 13), (31, 13), (32, 12), (33, 11), (34, 11), (35, 11)], "D10", [RESTRICTING, DIVERGING], ["LSw15"])
+		self.routes["LRtL21D20"] = Route(self.screen, block, "LRtL21D20", "L21", [(30, 13), (31, 13), (32, 13), (33, 13), (34, 13), (35, 13)], "D20", [MAIN, RESTRICTING], ["LSw15", "LSw17"])
 
 		block=self.blocks["LOSCAE"]
 		self.routes["LRtL31D20"] = Route(self.screen, block, "LRtL31D20", "L31", [(30, 15), (31, 15), (32, 15), (33, 14), (34, 13), (35, 13)], "D20", [DIVERGING, RESTRICTING], ["LSw17"])

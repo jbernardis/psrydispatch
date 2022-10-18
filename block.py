@@ -1,3 +1,5 @@
+import logging
+
 from turnout import Turnout
 from constants import EMPTY, OCCUPIED, CLEARED, BLOCK, OVERSWITCH, STOPPINGBLOCK, RED
 
@@ -48,7 +50,7 @@ class Route:
 			return self.blkout if reverse else self.blkin
 
 	def rprint(self):
-		print("%s: (%s) %s => %s => %s %s" % (self.name, self.osblk.GetName(), self.blkin, str(self.pos), self.blkout, str(self.turnouts)))
+		logging.debug("Block %s: set route to %s: %s => %s => %s %s" % (self.osblk.GetName(), self.name, self.blkin, str(self.pos), self.blkout, str(self.turnouts)))
 
 
 class Block:
@@ -109,8 +111,14 @@ class Block:
 		else:
 			trainID = self.train.GetIDString()
 
+		anyOccupied = self.occupied
+		if self.sbEast and self.sbEast.IsOccupied():
+			anyOccupied = True
+		if self.sbWest and self.sbWest.IsOccupied():
+			anyOccupied = True
+
 		for screen, loc in self.trainLoc:
-			if self.occupied:
+			if anyOccupied:
 				self.frame.DrawText(screen, loc, trainID)
 			else:
 				self.frame.ClearText(screen, loc)
@@ -122,11 +130,11 @@ class Block:
 		self.east = self.defaultEast
 
 	def SetNextBlockEast(self, blk):
-		#print("Block %s: next east block is %s" % (self.GetName(), blk.GetName()))
+		#logging.debug("Block %s: next east block is %s" % (self.GetName(), blk.GetName()))
 		self.blkEast = blk
 
 	def SetNextBlockWest(self, blk):
-		#print("Block %s: next west block is %s" % (self.GetName(), blk.GetName()))
+		#logging.debug("Block %s: next west block is %s" % (self.GetName(), blk.GetName()))
 		self.blkWest = blk
 
 	def determineStatus(self):
@@ -191,6 +199,11 @@ class Block:
 				print("Stopping block %s not defined for block %s" % (blockend, self.GetName()))
 				return
 			b.SetOccupied(occupied, refresh)
+			if occupied and self.train is None:
+				trn, loco = self.IdentifyTrain()
+				self.frame.Request({"settrain": { "block": self.GetName(), "name": trn, "loco": loco}})
+			if refresh:
+				self.Draw()
 			return
 
 		if self.occupied == occupied:
@@ -200,15 +213,15 @@ class Block:
 		self.occupied = occupied
 		if self.occupied:
 			self.cleared = False
-			trn, loco = self.IdentifyTrain()
+			if self.train is None:
+				trn, loco = self.IdentifyTrain()
+				self.frame.Request({"settrain": { "block": self.GetName(), "name": trn, "loco": loco}})
 		else:
 			for b in [self.sbEast, self.sbWest]:
 				if b is not None:
 					b.SetCleared(False, refresh)
-			trn = None
-			loco = None
 
-		self.frame.Request({"settrain": { "block": self.GetName(), "name": trn, "loco": loco}})
+			self.CheckAllUnoccupied()
 
 		self.determineStatus()
 		if self.status == EMPTY:
@@ -216,6 +229,16 @@ class Block:
 
 		if refresh:
 			self.Draw()
+
+	def CheckAllUnoccupied(self):
+		if self.occupied:
+			return
+		if self.sbEast and self.sbEast.IsOccupied():
+			return
+		if self.sbWest and self.sbWest.IsOccupied():
+			return
+		# all unoccupied - clean up
+		self.frame.Request({"settrain": { "block": self.GetName(), "name": None, "loco": None}})
 
 	def IdentifyTrain(self):
 		if self.east:
@@ -274,6 +297,7 @@ class StoppingBlock (Block):
 		self.status = OCCUPIED if self.occupied else CLEARED if self.cleared else EMPTY
 
 	def getStatus(self):
+		self.determineStatus()
 		return self.status
 
 	def Reset(self):
@@ -316,6 +340,8 @@ class StoppingBlock (Block):
 		self.occupied = occupied
 		if self.occupied:
 			self.cleared = False
+		else:
+			self.block.CheckAllUnoccupied()
 
 		self.determineStatus()
 		if self.status == EMPTY:
@@ -336,6 +362,7 @@ class OverSwitch (Block):
 		self.route = route
 		if route is None:
 			self.rtName = "<None>"
+			logging.info("Block %s: route is None" % self.name)
 			return
 
 		self.route.rprint()
@@ -347,9 +374,9 @@ class OverSwitch (Block):
 		exitBlk = self.frame.GetBlockByName(exitBlkName)
 
 		if not entryBlk:
-			print("could not determine entry block for %s/%s from name %s" % (self.name, self.rtName, entryBlkName))
+			logging.warning("could not determine entry block for %s/%s from name %s" % (self.name, self.rtName, entryBlkName))
 		if not exitBlk:
-			print("could not determine exit block for %s/%s from name %s" % (self.name, self.rtName, exitBlkName))
+			logging.warning("could not determine exit block for %s/%s from name %s" % (self.name, self.rtName, exitBlkName))
 		if self.east:
 			if entryBlk:
 				entryBlk.SetNextBlockEast(self)
@@ -392,7 +419,6 @@ class OverSwitch (Block):
 		if self.route:
 			tolist = self.route.GetTurnouts()
 			for t in tolist:
-				print("Setting turnout %s lock, part of route %s to %s" % (t, self.rtName, str(occupied)))
 				self.frame.turnouts[t].SetLock(self.name, occupied)
 
 
@@ -401,7 +427,7 @@ class OverSwitch (Block):
 			return True, EMPTY
 		elif self.route.Contains(screen, pos):
 			return True, self.status
-		
+
 		return False, EMPTY
 
 	def Draw(self):

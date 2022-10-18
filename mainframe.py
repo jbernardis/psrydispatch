@@ -7,6 +7,7 @@ import json
 import inspect
 
 cmdFolder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
+import logging
 
 from settings import Settings
 from bitmaps import BitMaps
@@ -26,7 +27,6 @@ from rrserver import RRServer
 
 from edittraindlg import EditTrainDlg
 
-import pprint
 (DeliveryEvent, EVT_DELIVERY) = wx.lib.newevent.NewEvent() 
 (DisconnectEvent, EVT_DISCONNECT) = wx.lib.newevent.NewEvent() 
 
@@ -38,6 +38,7 @@ class Node:
 
 class MainFrame(wx.Frame):
 	def __init__(self):
+		logging.info("Display process starting")
 		wx.Frame.__init__(self, None, size=(900, 800), style=wx.DEFAULT_FRAME_STYLE)
 		self.settings = Settings(cmdFolder)
 		self.popupFont = wx.Font(wx.Font(12, wx.FONTFAMILY_ROMAN, wx.NORMAL, wx.BOLD, faceName="Arial"))
@@ -115,8 +116,7 @@ class MainFrame(wx.Frame):
 		self.AddBogusStuff()
 
 		if not self.districts.Audit():
-			print("Audit failed")
-			#exit(1)
+			logging.error("Audit failed")
 
 		self.trains = {}
 
@@ -231,6 +231,9 @@ class MainFrame(wx.Frame):
 
 	def DrawOthers(self, block):
 		print("Remove this bogus drawothers method from mainframe")
+
+	def DoBlockAction(self, blk, blockend, state):
+		print("Remove this bogus doblockaction method from mainframe")
 		
 	def onTicker(self, _):
 		collapse = False
@@ -247,7 +250,7 @@ class MainFrame(wx.Frame):
 		self.buttonsToClear.append([secs, btn])
 
 	def ProcessClick(self, screen, pos):
-		#print("click %s %d, %d" % (screen, pos[0], pos[1]))
+		logging.debug("click %s %d, %d" % (screen, pos[0], pos[1]))
 		try:
 			to = self.turnoutMap[(screen, pos)]
 		except KeyError:
@@ -373,7 +376,7 @@ class MainFrame(wx.Frame):
 		else:
 			self.listener = Listener(self, self.settings.ipaddr, self.settings.socketport)
 			if not self.listener.connect():
-				print("Unable to establish connection with server")
+				logging.error("Unable to establish connection with server")
 				self.listener = None
 				return
 
@@ -385,17 +388,14 @@ class MainFrame(wx.Frame):
 		try:
 			jdata = json.loads(data)
 		except json.decoder.JSONDecodeError:
-			print("Unable to parse (%s)" % data)
+			logging.warning("Unable to parse (%s)" % data)
 			return
 		evt = DeliveryEvent(data=jdata)
 		wx.PostEvent(self, evt)
 
 	def onDeliveryEvent(self, evt):
-		print("================================")
-		pprint.pprint(evt.data)
-		print("================================")
 		for cmd, parms in evt.data.items():
-			print("Delivery from dispatch: %s: %s" % (cmd, parms))
+			#print("Delivery from dispatch: %s: %s" % (cmd, parms))
 			if cmd == "turnout":
 				for p in parms:
 					turnout = p["name"]
@@ -404,18 +404,17 @@ class MainFrame(wx.Frame):
 					try:
 						to = self.turnouts[turnout]
 					except KeyError:
-						return
-					
-					district = to.GetDistrict()
-					st = REVERSE if state == "R" else NORMAL
+						to = None
 
-					district.DoTurnoutAction(to, st)
+					if to is not None and state != to.GetStatus():
+						district = to.GetDistrict()
+						st = REVERSE if state == "R" else NORMAL
+						district.DoTurnoutAction(to, st)
 
 			elif cmd == "block":
 				for p in parms:
 					block = p["name"]
 					state = p["state"]
-					print("block %s %s" % (block, str(state)))
 					try:
 						blk = self.blocks[block]
 						blockend = None
@@ -426,11 +425,12 @@ class MainFrame(wx.Frame):
 							try:
 								blk = self.blocks[block]
 							except KeyError:
-								return
+								blk = None
 
-					district = blk.GetDistrict()
 					stat = OCCUPIED if state == 1 else EMPTY
-					district.DoBlockAction(blk, blockend, stat)
+					if blk is not None and blk.GetStatus() != stat:
+						district = blk.GetDistrict()
+						district.DoBlockAction(blk, blockend, stat)
 					
 			elif cmd == "signal":
 				for p in parms:
@@ -440,10 +440,11 @@ class MainFrame(wx.Frame):
 					try:
 						sig = self.signals[sigName]
 					except:
-						return
+						sig = None
 
-					district = sig.GetDistrict()
-					district.DoSignalAction(sig, aspect)
+					if sig is not None and aspect != sig.GetAspect():
+						district = sig.GetDistrict()
+						district.DoSignalAction(sig, aspect)
 						
 			elif cmd == "handswitch":
 				for p in parms:
@@ -453,16 +454,17 @@ class MainFrame(wx.Frame):
 					try:
 						hs = self.handswitches[hsName]
 					except:
-						return
+						hs = None
 
-					district = hs.GetDistrict()
-					district.DoHandSwitchAction(hs, state)
+					if hs is not None and state != hs.GetValue():
+						district = hs.GetDistrict()
+						district.DoHandSwitchAction(hs, state)
 
 			elif cmd == "breaker":
 				for p in parms:
 					name = p["name"]
 					state = p["state"]
-					print("Set Breaker %s to %s" % (name, "TRIPPED" if state != 0 else "CLEAR"))
+					logging.debug("Set Breaker %s to %s" % (name, "TRIPPED" if state != 0 else "CLEAR"))
 
 			elif cmd == "settrain":
 				for p in parms:
@@ -473,7 +475,7 @@ class MainFrame(wx.Frame):
 					try:
 						blk = self.blocks[block]
 					except:
-						print("unable to identify block (%s)" % block)
+						logging.warning("unable to identify block (%s)" % block)
 						blk = None
 
 					if blk:
@@ -491,7 +493,7 @@ class MainFrame(wx.Frame):
 									try:
 										del(self.trains[oldName])
 									except:
-										print("can't delete train %s from train list" % oldName)
+										logging.warning("can't delete train %s from train list" % oldName)
 							try:
 								tr = self.trains[name]
 							except:
@@ -513,13 +515,14 @@ class MainFrame(wx.Frame):
 
 	def Request(self, req):
 		if self.settings.dispatch:
+			logging.debug(json.dumps(req))
 			self.rrServer.SendRequest(req)
 	
 	def onDisconnectEvent(self, _):
 		self.listener = None
 		self.subscribed = False
 		self.bSubscribe.SetLabel("Subscribe")
-		print("Server socket closed")
+		logging.info("Server socket closed")
 
 	def OnClose(self, evt):
 		print("Trains:")
@@ -531,3 +534,5 @@ class MainFrame(wx.Frame):
 		except:
 			pass
 		self.Destroy()
+		logging.info("Display process ending")
+
