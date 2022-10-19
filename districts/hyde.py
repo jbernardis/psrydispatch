@@ -589,12 +589,14 @@ class Hyde (District):
 				(tiles["horiz"],   LaKr,        (40, 15), False),
 				(tiles["horiznc"], LaKr,        (41, 15), False),
 				(tiles["horiz"],   LaKr,        (42, 15), False),
-				(tiles["horiznc"], LaKr,        (43, 15), False),
-				(tiles["horiz"],   LaKr,        (44, 15), False),
-				(tiles["eobright"], LaKr,       (45, 15), False),
 			], True)
 		self.blocks["H23"].AddTrainLoc(self.screen, (58, 15))
 		self.blocks["H23"].AddTrainLoc(LaKr, (41, 15))
+		self.blocks["H23"].AddStoppingBlock([
+				(tiles["horiznc"], LaKr,        (43, 15), False),
+				(tiles["horiz"],   LaKr,        (44, 15), False),
+				(tiles["eobright"], LaKr,       (45, 15), False),
+				], True)
 
 		self.blocks["HOSEE"] = OverSwitch(self, self.frame, "HOSEE", 
 			[

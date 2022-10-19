@@ -20,6 +20,7 @@ from train import Train
 from districts.hyde import Hyde
 from districts.yard import Yard
 from districts.latham import Latham
+from districts.dell import Dell
 
 from constants import HyYdPt, LaKr, NaCl, screensList, EMPTY, OCCUPIED, NORMAL, REVERSE
 from listener import Listener
@@ -38,8 +39,9 @@ class Node:
 
 class MainFrame(wx.Frame):
 	def __init__(self):
-		logging.info("Display process starting")
 		wx.Frame.__init__(self, None, size=(900, 800), style=wx.DEFAULT_FRAME_STYLE)
+		self.sessionid = None
+		logging.info("Display process starting")
 		self.settings = Settings(cmdFolder)
 		self.popupFont = wx.Font(wx.Font(12, wx.FONTFAMILY_ROMAN, wx.NORMAL, wx.BOLD, faceName="Arial"))
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
@@ -82,6 +84,10 @@ class MainFrame(wx.Frame):
 		self.bSubscribe = wx.Button(self, wx.ID_ANY, "Subscribe", pos=(100, 10))
 		self.Bind(wx.EVT_BUTTON, self.OnSubscribe, self.bSubscribe)
 
+		self.bRefresh = wx.Button(self, wx.ID_ANY, "Refresh", pos=(400, 10))
+		self.Bind(wx.EVT_BUTTON, self.OnRefresh, self.bRefresh)
+		self.bRefresh.Enable(False)
+
 		self.xpos = wx.TextCtrl(self, wx.ID_ANY, "", size=(40, -1), pos=(100, 50), style=wx.TE_READONLY)
 		self.ypos = wx.TextCtrl(self, wx.ID_ANY, "", size=(40, -1), pos=(160, 50), style=wx.TE_READONLY)
 
@@ -105,6 +111,7 @@ class MainFrame(wx.Frame):
 		self.districts = Districts()
 		self.districts.AddDistrict(Yard("Yard", self, HyYdPt))
 		self.districts.AddDistrict(Latham("Latham", self, LaKr))
+		self.districts.AddDistrict(Dell("Dell", self, LaKr))
 		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
 
 		self.blocks =   self.districts.DefineBlocks(self.tiles)
@@ -208,14 +215,6 @@ class MainFrame(wx.Frame):
 	def AddBogusStuff(self):
 		#this is to add bogus entries for block that we need before we get to their district
 
-		if "D10" in self.blocks:
-			print("You can remove bogus entry for block D10")
-		else:
-			self.blocks["D10"] = Block(self, self, "D10",	[], False)
-		if "D20" in self.blocks:
-			print("You can remove bogus entry for block D20")
-		else:
-			self.blocks["D20"] = Block(self, self, "D20",	[], False)
 		if "P11" in self.blocks:
 			print("You can remove bogus entry for block P11")
 		else:
@@ -373,6 +372,7 @@ class MainFrame(wx.Frame):
 			self.listener = None
 			self.subscribed = False
 			self.bSubscribe.SetLabel("Subscribe")
+			self.bRefresh.Enable(False)
 		else:
 			self.listener = Listener(self, self.settings.ipaddr, self.settings.socketport)
 			if not self.listener.connect():
@@ -383,6 +383,10 @@ class MainFrame(wx.Frame):
 			self.listener.start()
 			self.subscribed = True
 			self.bSubscribe.SetLabel("Unsubscribe")
+			self.bRefresh.Enable(True)
+
+	def OnRefresh(self, _):
+		self.rrServer.SendRequest({"refresh": {"SID": self.sessionid}})
 
 	def raiseDeliveryEvent(self, data): # thread context
 		try:
@@ -395,7 +399,8 @@ class MainFrame(wx.Frame):
 
 	def onDeliveryEvent(self, evt):
 		for cmd, parms in evt.data.items():
-			#print("Delivery from dispatch: %s: %s" % (cmd, parms))
+			logging.info("Dispatch: %s: %s" % (cmd, parms))
+			print("Dispatch: %s: %s" % (cmd, parms))
 			if cmd == "turnout":
 				for p in parms:
 					turnout = p["name"]
@@ -415,6 +420,7 @@ class MainFrame(wx.Frame):
 				for p in parms:
 					block = p["name"]
 					state = p["state"]
+					blk = None
 					try:
 						blk = self.blocks[block]
 						blockend = None
@@ -428,7 +434,7 @@ class MainFrame(wx.Frame):
 								blk = None
 
 					stat = OCCUPIED if state == 1 else EMPTY
-					if blk is not None and blk.GetStatus() != stat:
+					if blk is not None and blk.GetStatus(blockend) != stat:
 						district = blk.GetDistrict()
 						district.DoBlockAction(blk, blockend, stat)
 					
@@ -508,6 +514,10 @@ class MainFrame(wx.Frame):
 							tr.Draw()
 						else:
 							blk.DrawTrain()
+			elif cmd == "sessionID":
+				self.sessionid = int(parms)
+				print("got session id %d" % self.sessionid)
+				logging.info("connected t railroad server with session ID %d" % self.sessionid)
 		
 	def raiseDisconnectEvent(self): # thread context
 		evt = DisconnectEvent()
@@ -522,6 +532,7 @@ class MainFrame(wx.Frame):
 		self.listener = None
 		self.subscribed = False
 		self.bSubscribe.SetLabel("Subscribe")
+		self.bRefresh.Enable(False)
 		logging.info("Server socket closed")
 
 	def OnClose(self, evt):

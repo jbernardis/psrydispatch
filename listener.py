@@ -1,6 +1,7 @@
 
 import threading
 import socket
+import logging
 
 class Listener(threading.Thread):
 	def __init__(self, parent, ip, port):
@@ -32,7 +33,7 @@ class Listener(threading.Thread):
 
 	def run(self):
 		if not self.connected:
-			print("Unable to start thread: socket listener does not exist")
+			logging.error("Unable to start thread: socket listener does not exist")
 			self.endOfLife = True
 			return
 
@@ -94,9 +95,7 @@ class Listener(threading.Thread):
 						totalRead += len(b)
 			
 				if self.isRunning:
-					if totalRead != msgSize:
-						print("did not receive expected number of bytes: expected %d received %d" % (msgSize, totalRead))
-					else:
+					if totalRead == msgSize:
 						self.parent.raiseDeliveryEvent(msgBuf)
 	
 		self.endOfLife = True

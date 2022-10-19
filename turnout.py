@@ -1,5 +1,4 @@
 from constants import NORMAL, REVERSE, EMPTY, TURNOUT, SLIPSWITCH
-import traceback
 
 class Turnout:
 	def __init__(self, district, frame, name, screen, tiles, pos):

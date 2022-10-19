@@ -149,9 +149,17 @@ class Block:
 	def GetDistrict(self):
 		return self.district
 
-	def GetStatus(self):
+	def GetStatus(self, blockend=None):
 		self.determineStatus()
-		return self.status
+		if blockend is None:
+			return self.status
+		elif blockend == 'E' and self.sbEast is not None:
+			return self.sbEast.GetStatus()
+		elif blockend == 'W' and self.sbWest is not None:
+			return self.sbWest.GetStatus()
+		else:
+			# this should never happen
+			return self.status
 
 	def GetEast(self):
 		return self.east
@@ -177,6 +185,9 @@ class Block:
 		return self.occupied
 
 	def Draw(self):
+		if self.name.startswith("D"):
+			print("drawing block %s" % self.name)
+			print("turnouts = (%s)" % str([t.GetName() for t in self.turnouts]))
 		for t, screen, pos, revflag in self.tiles:
 			bmp = t.getBmp(self.status, self.east, revflag)
 			self.frame.DrawTile(screen, pos, bmp)
@@ -196,7 +207,7 @@ class Block:
 		if blockend  in ["E", "W"]:
 			b = self.sbEast if blockend == "E" else self.sbWest
 			if b is None:
-				print("Stopping block %s not defined for block %s" % (blockend, self.GetName()))
+				logging.warning("Stopping block %s not defined for block %s" % (blockend, self.GetName()))
 				return
 			b.SetOccupied(occupied, refresh)
 			if occupied and self.train is None:
@@ -296,7 +307,7 @@ class StoppingBlock (Block):
 	def determineStatus(self):
 		self.status = OCCUPIED if self.occupied else CLEARED if self.cleared else EMPTY
 
-	def getStatus(self):
+	def GetStatus(self):
 		self.determineStatus()
 		return self.status
 
@@ -364,8 +375,6 @@ class OverSwitch (Block):
 			self.rtName = "<None>"
 			logging.info("Block %s: route is None" % self.name)
 			return
-
-		self.route.rprint()
 			
 		self.rtName = self.route.GetName()
 		entryBlkName = self.route.GetEntryBlock()
@@ -431,6 +440,9 @@ class OverSwitch (Block):
 		return False, EMPTY
 
 	def Draw(self):
+		if self.name.startswith("D"):
+			print("Draw OS %s" % self.name)
+			print("turnouts = (%s)" % str([t.GetName() for t in self.turnouts]))
 		for t, screen, pos, revflag in self.tiles:
 			draw, stat = self.GetTileInRoute(screen, pos)
 			if draw:

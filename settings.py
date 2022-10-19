@@ -1,5 +1,6 @@
 import configparser
 import os
+import logging
 
 INIFILE = "psrydisplay.ini"
 
@@ -31,7 +32,7 @@ class Settings:
 		self.cfg = configparser.ConfigParser()
 		self.cfg.optionxform = str
 		if not self.cfg.read(self.inifile):
-			print("Settings file %s does not exist.  Using default values" % INIFILE)
+			logging.warning("Settings file %s does not exist.  Using default values" % INIFILE)
 			self.save()
 			return
 
@@ -41,11 +42,11 @@ class Settings:
 					try:
 						s = int(value)
 					except:
-						print("invalid value in ini file for pages: (%s)" % value)
+						logging.warning("invalid value in ini file for pages: (%s)" % value)
 						s = 3
 
 					if s not in [1, 3]:
-						print("Invalid values for pages: %d" % s)
+						logging.warning("Invalid values for pages: %d" % s)
 						s = 3
 					self.pages = s
 
@@ -62,7 +63,7 @@ class Settings:
 					try:
 						s = int(value)
 					except:
-						print("invalid value in ini file for socket port: (%s)" % value)
+						logging.warning("invalid value in ini file for socket port: (%s)" % value)
 						s = 9001
 					self.socketport = s
 						
@@ -70,9 +71,9 @@ class Settings:
 					try:
 						s = int(value)
 					except:
-						print("invalid value in ini file for server port: (%s)" % value)
+						logging.warning("invalid value in ini file for server port: (%s)" % value)
 						s = 9000
 					self.serverport = s
 
 		else:
-			print("Missing %s section - assuming defaults" % self.section)
+			logging.warning("Missing %s section - assuming defaults" % self.section)

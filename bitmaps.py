@@ -1,5 +1,6 @@
 import wx
 import os
+import logging
 
 class Node:
 	def __init__(self):
@@ -14,7 +15,7 @@ class BitMaps:
 			pdir = os.path.expandvars(idir)
 			l = os.listdir(pdir)
 		except:
-			print ("Unable to get listing from directory: %s" % idir)
+			logging.error("Unable to get bitmap listing from directory: %s" % idir)
 			return
 
 		subdirs = []

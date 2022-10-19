@@ -474,6 +474,41 @@ def loadTiles(bitmaps):
 		}
 
 	)
+	turnouts["ssright"] = SlipSwitchTile("ssright",
+		{ # NN
+			"white": b.slipright.nn.normal,
+			"green": b.slipright.nn.routed,
+			"red":   b.slipright.nn.occupied,
+			"white-dis": b.slipright.nn.normaldis,
+			"green-dis": b.slipright.nn.routeddis,
+			"red-dis":   b.slipright.nn.occupieddis
+		},
+		{ # NR
+			"white": b.slipright.nr.normal,
+			"green": b.slipright.nr.routed,
+			"red":   b.slipright.nr.occupied,
+			"white-dis": b.slipright.nr.normaldis,
+			"green-dis": b.slipright.nr.routeddis,
+			"red-dis":   b.slipright.nr.occupieddis
+		},
+		{ # RN
+			"white": b.slipright.rn.normal,
+			"green": b.slipright.rn.routed,
+			"red":   b.slipright.rn.occupied,
+			"white-dis": b.slipright.rn.normaldis,
+			"green-dis": b.slipright.rn.routeddis,
+			"red-dis":   b.slipright.rn.occupieddis
+		},
+		{ # RR
+			"white": b.slipright.rr.normal,
+			"green": b.slipright.rr.routed,
+			"red":   b.slipright.rr.occupied,
+			"white-dis": b.slipright.rr.normaldis,
+			"green-dis": b.slipright.rr.routeddis,
+			"red-dis":   b.slipright.rr.occupieddis
+		}
+
+	)
 
 	bmisc = bitmaps.misc
 	misctiles = {}
