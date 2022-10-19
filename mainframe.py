@@ -215,6 +215,14 @@ class MainFrame(wx.Frame):
 	def AddBogusStuff(self):
 		#this is to add bogus entries for block that we need before we get to their district
 
+		if "S10" in self.blocks:
+			print("You can remove bogus entry for block S10")
+		else:
+			self.blocks["S10"] = Block(self, self, "S10",	[], False)
+		if "S20" in self.blocks:
+			print("You can remove bogus entry for block S20")
+		else:
+			self.blocks["S20"] = Block(self, self, "S20",	[], False)
 		if "P11" in self.blocks:
 			print("You can remove bogus entry for block P11")
 		else:

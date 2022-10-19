@@ -1,7 +1,73 @@
-remaining yard inputs
+inputs/outputs unused or uncertain of:
+    DELL: DXO, RXO, H13.ind, D10.ind, S20.ind, R10, R11, R12, R10W, D10L
 
-latham - OS verificaton and inputs
+    HYDE: H30.ind, H10.ind, H23.ind, N25.ind, H21.srel, H31.srel
+          CBHydeJct, CBHydeEast, CBHydeWest, HydeEastPower, HydeWestPower (outputs)
 
+    LATHAM: L11.srel, L20.srel, L21.srel, P21.srel, P50.srel, L31.srel, D10.srel, S21.srel, N25.srel, L10.ind, L31.ind, P11.ind
+          CBCliveden, CBLatham, CBCornellJct, CBParsonsJct, CBSouthJct, CBCircusJct, CBSouthport, CBLavinYard, CBReverserP31, CBReverserP41, CBReverserP50, CBReverserC22C23 (inputs)
+
+    YARD: Y11.srel, Y20.srel, Y21.srel, L10.srel
+          CBKale, CBEastEnd, CBCornell, CBEngineYard, CBWaterman (outputs)
+          #     KAOut[1].bit.b1 = Y22Ra;
+          #     KAOut[1].bit.b2 = Y22Rb;
+          #     KAOut[0].bit.b6 = Y20H;
+          #     KAOut[0].bit.b7 = Y20D;
+          #     YDOut[4].bit.b1 = L20.Blk;          //Adjacent block indicators
+          #     YDOut[4].bit.b2 = P50.Blk;
+          # 		if(RBYard->Checked)
+          # 		{
+          # 			YSigL2.R = YDIn[0].bit.b2;      //Signals
+          # 			YSigL2.Callon = YDIn[0].bit.b3;
+          # 			YSigL2.L = YDIn[0].bit.b4;
+          # 			YSigL4.R = YDIn[0].bit.b5;
+          # 			YSigL4.Callon = YDIn[0].bit.b6;
+          # 			YSigL4.L = YDIn[0].bit.b7;
+
+          # 			YSigL8.R = YDIn[1].bit.b0;
+          # 			YSigL8.Callon = YDIn[1].bit.b1;
+          # 			YSigL8.L = YDIn[1].bit.b2;
+          # 			YSigL10.R = YDIn[1].bit.b3;
+          # 			YSigL10.Callon = YDIn[1].bit.b4;
+          # 			YSigL10.L = YDIn[1].bit.b5;
+          # 			YSigL22.R = YDIn[1].bit.b6;
+          # 			YSigL22.Callon = YDIn[1].bit.b7;
+
+          # 			YSigL22.L = YDIn[2].bit.b0;
+          # 			YSigL24.Callon = YDIn[2].bit.b1;
+          # 			YSigL24.L = YDIn[2].bit.b2;
+          # 			YSigL26.R = YDIn[2].bit.b3;
+          # 			YSigL26.Callon = YDIn[2].bit.b4;
+          # 			YSigL26.L = YDIn[2].bit.b5;
+          # 			YSigL34.R = YDIn[2].bit.b6;
+          # 			YSigL34.Callon = YDIn[2].bit.b7;
+
+          # 			YSigL34.L = YDIn[3].bit.b0;
+          # 		}
+
+          # 		YRelease = YDIn[3].bit.b1;
+          # 		WOS1Norm = YDIn[3].bit.b2;      //switches normal for WOS1 into Y70
+
+          # 	YSWOut[3].bit.b0 = SBY51W;
+          # 	YSWOut[3].bit.b1 = SBY50W;
+          # //	YSWOut[3].bit.b2 = ;
+          # //	YSWOut[3].bit.b3 = ;
+          # //	YSWOut[3].bit.b4 = ;
+          # //	YSWOut[3].bit.b5 = ;
+          # //	YSWOut[3].bit.b6 = ;
+          # //	YSWOut[3].bit.b7 = ;
+
+          # 	YSWOut[4].bit.b0 = SBY81W;
+          # 	YSWOut[4].bit.b1 = SBY82W;
+          # 	YSWOut[4].bit.b2 = SBY83W;
+          # 	YSWOut[4].bit.b3 = SBY84W;
+          # 	YSWOut[4].bit.b4 = SBY81E;
+          # 	YSWOut[4].bit.b5 = SBY82E;
+          # 	YSWOut[4].bit.b6 = SBY83E;
+          # 	YSWOut[4].bit.b7 = SBY84E;
+
+
+currently not doing anything with Breakers, srel outputs, indicator outputs
     
 fleeting?
 
@@ -12,10 +78,6 @@ deduction of train movement - reporting train location
   checking train for non-contiguous Blocks
   we need to have an empty train object when a train has not yet been identified so that it can move forward as block occupancy is detected
   deal with trains that are too short to span OS/stopping blocks - may not be a problem
-
-insert cameras into bitmap rather than have 2 bitmaps
-
-finish hyde - two remaining blocks and the hyde junction OS'es
 
 ATC
 

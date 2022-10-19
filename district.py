@@ -146,6 +146,7 @@ class District:
 				self.blocks[osblknm].Draw()
 
 	def DoTurnoutAction(self, turnout, state):
+		print("DTA: %s %s" % (turnout.GetName(), str(state)))
 		if state == NORMAL:
 			turnout.SetNormal(refresh=True)
 		else:
@@ -300,10 +301,10 @@ class District:
 				logging.info("  Route %s, name does not agree with key %s" % (rt.GetName(), rtnm))
 				passedAudit = False
 			if rt.blkin not in self.frame.blocks:
-				logging.info("Route %s: entry block %s is not defined" % rt.GetName(), rt.blkin)
+				logging.info("Route %s: entry block %s is not defined" % (rt.GetName(), rt.blkin))
 				passedAudit = False
 			if rt.blkout not in self.frame.blocks:
-				logging.info("Route %s: exit block %s is not defined" % rt.GetName(), rt.blkout)
+				logging.info("Route %s: exit block %s is not defined" % (rt.GetName(), rt.blkout))
 				passedAudit = False
 			for tonm in rt.turnouts:
 				if tonm not in self.frame.turnouts:
