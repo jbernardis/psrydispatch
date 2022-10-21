@@ -72,6 +72,8 @@ class Block:
 		self.blkWest = None
 		self.sbEast = None
 		self.sbWest = None
+		self.sigWest = None
+		self.sigEast = None
 		self.determineStatus()
 
 	def SetTrain(self, train):
@@ -92,6 +94,13 @@ class Block:
 
 	def GetTrainLoc(self):
 		return self.trainLoc
+
+	def SetSignals(self, sigs):
+		self.sigWest = sigs[0]
+		self.sigEast = sigs[1]
+
+	def GetSignals(self):
+		return self.sigWest, self.sigEast
 
 	def AddHandSwitch(self, hs):
 		self.handswitches.append(hs)
@@ -117,11 +126,22 @@ class Block:
 		if self.sbWest and self.sbWest.IsOccupied():
 			anyOccupied = True
 
+		if self.StoppingRelayActivated():
+			trainID = "* " + trainID
+
 		for screen, loc in self.trainLoc:
 			if anyOccupied:
 				self.frame.DrawText(screen, loc, trainID)
 			else:
 				self.frame.ClearText(screen, loc)
+
+	def StoppingRelayActivated(self):
+		active = False
+		if self.sbEast and self.sbEast.IsActive():
+			active = True
+		if self.sbWest and self.sbWest.IsActive():
+			active = True
+		return active
 
 	def DrawTurnouts(self):
 		pass
@@ -130,11 +150,11 @@ class Block:
 		self.east = self.defaultEast
 
 	def SetNextBlockEast(self, blk):
-		#logging.debug("Block %s: next east block is %s" % (self.GetName(), blk.GetName()))
+		logging.debug("Block %s: next east block is %s" % (self.GetName(), blk.GetName()))
 		self.blkEast = blk
 
 	def SetNextBlockWest(self, blk):
-		#logging.debug("Block %s: next west block is %s" % (self.GetName(), blk.GetName()))
+		logging.debug("Block %s: next west block is %s" % (self.GetName(), blk.GetName()))
 		self.blkWest = blk
 
 	def determineStatus(self):
@@ -182,12 +202,18 @@ class Block:
 		return self.cleared
 
 	def IsOccupied(self):
-		return self.occupied
+		if self.occupied:
+			return True
+
+		if self.sbEast and self.sbEast.IsOccupied():
+			return True
+
+		if self.sbWest and self.sbWest.IsOccupied():
+			return True
+
+		return False
 
 	def Draw(self):
-		if self.name.startswith("D"):
-			print("drawing block %s" % self.name)
-			print("turnouts = (%s)" % str([t.GetName() for t in self.turnouts]))
 		for t, screen, pos, revflag in self.tiles:
 			bmp = t.getBmp(self.status, self.east, revflag)
 			self.frame.DrawTile(screen, pos, bmp)
@@ -224,6 +250,7 @@ class Block:
 		self.occupied = occupied
 		if self.occupied:
 			self.cleared = False
+
 			if self.train is None:
 				trn, loco = self.IdentifyTrain()
 				self.frame.Request({"settrain": { "block": self.GetName(), "name": trn, "loco": loco}})
@@ -250,6 +277,13 @@ class Block:
 			return
 		# all unoccupied - clean up
 		self.frame.Request({"settrain": { "block": self.GetName(), "name": None, "loco": None}})
+		self.EvaluateStoppingSections()
+
+	def EvaluateStoppingSections(self):
+		if self.east and self.sbEast:
+			self.sbEast.EvaluateStoppingSection()
+		elif (not self.east) and self.sbWest:
+			self.sbWest.EvaluateStoppingSection()
 
 	def IdentifyTrain(self):
 		if self.east:
@@ -294,9 +328,32 @@ class StoppingBlock (Block):
 		self.eastend = eastend
 		self.type = STOPPINGBLOCK
 		self.frame = self.block.frame
+		self.active = False
 		self.occupied = False
 		self.cleared = False
 		self.determineStatus()
+
+	def EvaluateStoppingSection(self):
+		if self.block.east and self.eastend:
+			sv = self.frame.GetSignalByName(self.block.sigEast).GetAspect()
+			self.Activate(sv == 0 and self.occupied)
+		elif (not self.block.east) and (not self.eastend):
+			sv = self.frame.GetSignalByName(self.block.sigWest).GetAspect()
+
+			self.Activate(sv == 0 and self.occupied)
+
+	def Activate(self, flag=True):
+		if flag == self.active:
+			return
+
+		self.active = flag
+		logging.debug("Block %s stopping relay %s by %s end" % (self.block.GetName(), "activated" if flag else "cleared", "east" if self.eastend else "west"))
+		self.frame.Request({"relay": { "block": self.block.GetName(), "status": 1 if flag else 0}})
+
+		self.block.DrawTrain()
+
+	def IsActive(self):
+		return self.active
 
 	def Draw(self):
 		self.east = self.block.east
@@ -316,6 +373,9 @@ class StoppingBlock (Block):
 
 	def GetEast(self):
 		return self.block.east
+
+	def IsOccupied(self):
+		return self.occupied
 
 	def IsReversed(self):
 		return self.block.east != self.block.defaultEast
@@ -351,8 +411,13 @@ class StoppingBlock (Block):
 		self.occupied = occupied
 		if self.occupied:
 			self.cleared = False
+			self.EvaluateStoppingSection()
+			if self.active:
+				print("show on screen that train is stopped in block")
+
 		else:
 			self.block.CheckAllUnoccupied()
+
 
 		self.determineStatus()
 		if self.status == EMPTY:
@@ -382,6 +447,8 @@ class OverSwitch (Block):
 		exitBlkName = self.route.GetExitBlock()
 		exitBlk = self.frame.GetBlockByName(exitBlkName)
 
+		print("OS %s.  Entry block %s, exti block %s" % (self.GetName(), entryBlkName, exitBlkName))
+
 		if not entryBlk:
 			logging.warning("could not determine entry block for %s/%s from name %s" % (self.name, self.rtName, entryBlkName))
 		if not exitBlk:
@@ -401,6 +468,9 @@ class OverSwitch (Block):
 				exitBlk.SetNextBlockEast(self)
 			self.SetNextBlockWest(exitBlk)
 		self.Draw()
+
+	def SetSignals(self, signms):
+		pass # does not apply to OS blocks
 
 	def GetRoute(self):
 		return self.route

@@ -389,6 +389,17 @@ class Latham (District):
 		for signm, east, tileSet, pos in sigList:
 			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, east, pos, tiles[tileSet])  
 
+		blockSigs = {
+			"L10": ("Y2R",  "L8R"),
+			"L11": ("L8L",  "L18R"),
+			"L20": ("Y4RB", "L6RA"),
+			"L21": ("L6L",  "L16R"),
+			"L31": ("L4L",  "L14R")
+		}
+
+		for blknm, siglist in blockSigs.items():
+			self.blocks[blknm].SetSignals(siglist)
+
 		self.routes = {}
 		self.osSignals = {}
 

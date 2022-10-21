@@ -1,10 +1,18 @@
-inputs/outputs unused or uncertain of:
-    DELL: DXO, RXO, H13.ind, D10.ind, S20.ind, R10, R11, R12, R10W, D10L
+figure out how to handle signal aspects
 
-    HYDE: H30.ind, H10.ind, H23.ind, N25.ind, H21.srel, H31.srel
+block indicators commented out until district is implemented:
+      hyde: shore and nassau
+      dell: shore
+      latham: port
+      yard: port
+
+inputs/outputs unused or uncertain of:
+    DELL: R10, R11, R12, R10W, D10L
+
+    HYDE: H21.srel, H31.srel
           CBHydeJct, CBHydeEast, CBHydeWest, HydeEastPower, HydeWestPower (outputs)
 
-    LATHAM: L11.srel, L20.srel, L21.srel, P21.srel, P50.srel, L31.srel, D10.srel, S21.srel, N25.srel, L10.ind, L31.ind, P11.ind
+    LATHAM: L11.srel, L20.srel, L21.srel, P21.srel, P50.srel, L31.srel, D10.srel, S21.srel, N25.srel
           CBCliveden, CBLatham, CBCornellJct, CBParsonsJct, CBSouthJct, CBCircusJct, CBSouthport, CBLavinYard, CBReverserP31, CBReverserP41, CBReverserP50, CBReverserC22C23 (inputs)
 
     YARD: Y11.srel, Y20.srel, Y21.srel, L10.srel
@@ -13,9 +21,7 @@ inputs/outputs unused or uncertain of:
           #     KAOut[1].bit.b2 = Y22Rb;
           #     KAOut[0].bit.b6 = Y20H;
           #     KAOut[0].bit.b7 = Y20D;
-          #     YDOut[4].bit.b1 = L20.Blk;          //Adjacent block indicators
-          #     YDOut[4].bit.b2 = P50.Blk;
-          # 		if(RBYard->Checked)
+           # 		if(RBYard->Checked)
           # 		{
           # 			YSigL2.R = YDIn[0].bit.b2;      //Signals
           # 			YSigL2.Callon = YDIn[0].bit.b3;
@@ -50,13 +56,7 @@ inputs/outputs unused or uncertain of:
 
           # 	YSWOut[3].bit.b0 = SBY51W;
           # 	YSWOut[3].bit.b1 = SBY50W;
-          # //	YSWOut[3].bit.b2 = ;
-          # //	YSWOut[3].bit.b3 = ;
-          # //	YSWOut[3].bit.b4 = ;
-          # //	YSWOut[3].bit.b5 = ;
-          # //	YSWOut[3].bit.b6 = ;
-          # //	YSWOut[3].bit.b7 = ;
-
+       
           # 	YSWOut[4].bit.b0 = SBY81W;
           # 	YSWOut[4].bit.b1 = SBY82W;
           # 	YSWOut[4].bit.b2 = SBY83W;

@@ -14,11 +14,9 @@ class Dell (District):
 
 	def DoTurnoutAction(self, turnout, state):
 		tn = turnout.GetName()
-		print("dell dta, tn=%s" % tn)
 		if turnout.GetType() == SLIPSWITCH:
 			if tn == "DSw3":
 				bstat = NORMAL if self.turnouts["DSw5"].IsNormal() else REVERSE
-				print("set slipswitch status to %d %d" % (state, bstat))
 				turnout.SetStatus([state, bstat])
 				turnout.Draw()
 
@@ -284,6 +282,16 @@ class Dell (District):
 		]
 		for signm, east, tileSet, pos in sigList:
 			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, east, pos, tiles[tileSet])  
+
+		blockSigs = {
+			"D10": ("L18L", "D6RB"),
+			"D11": ("D6L",  "D12R"),
+			"D20": ("L14L", "D4RA"),
+			"D21": ("D4L",  "D10R")
+		}
+
+		for blknm, siglist in blockSigs.items():
+			self.blocks[blknm].SetSignals(siglist)
 
 		self.routes = {}
 		self.osSignals = {}

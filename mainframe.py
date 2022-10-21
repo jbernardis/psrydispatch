@@ -120,10 +120,13 @@ class MainFrame(wx.Frame):
 		self.buttons =  self.districts.DefineButtons(self.bitmaps.buttons)
 		self.handswitches =  self.districts.DefineHandSwitches(self.misctiles)
 
-		self.AddBogusStuff()
-
 		if not self.districts.Audit():
 			logging.error("Audit failed")
+
+		self.resolveObjectNames()
+
+		self.AddBogusStuff()
+
 
 		self.trains = {}
 
@@ -156,6 +159,25 @@ class MainFrame(wx.Frame):
 		self.rrServer = RRServer()
 		self.rrServer.SetServerAddress(self.settings.ipaddr, self.settings.serverport)
 
+	def resolveObjectNames(self):
+		for bknm, bk in self.blocks.items():
+			sgWest, sgEast = bk.GetSignals()
+			if sgWest is not None:
+				try:
+					self.signals[sgWest].SetGuardBlock(bk)
+				except KeyError:
+					print("Block %s: Unable to find west signal %s - using None" % (bknm, sgWest))
+					sgWest = None
+
+			if sgEast is not None:
+				try:
+					self.signals[sgEast].SetGuardBlock(bk)
+				except KeyError:
+					print("Block %s: Unable to find east signal %s - using None" % (bknm, sgEast))
+					sgEast = None
+			bk.SetSignals((sgWest, sgEast))
+
+			
 	def DrawCameras(self):
 		cams = {}
 		cams[LaKr] = [
@@ -258,6 +280,7 @@ class MainFrame(wx.Frame):
 
 	def ProcessClick(self, screen, pos):
 		logging.debug("click %s %d, %d" % (screen, pos[0], pos[1]))
+		print("click %s %d, %d" % (screen, pos[0], pos[1]))
 		try:
 			to = self.turnoutMap[(screen, pos)]
 		except KeyError:
@@ -363,7 +386,7 @@ class MainFrame(wx.Frame):
 		tb = TB.ToasterBox(self, TB.TB_SIMPLE, TB.TB_DEFAULT_STYLE, TB.TB_ONTIME,
 			scrollType=TB.TB_SCR_TYPE_FADE)
 
-		tb.SetPopupSize((400, 60))
+		tb.SetPopupSize((700, 60))
 		tb.CenterOnParent(wx.BOTH)
 		tb.SetPopupPauseTime(5000)
 		tb.SetPopupScrollSpeed(8)
@@ -408,7 +431,6 @@ class MainFrame(wx.Frame):
 	def onDeliveryEvent(self, evt):
 		for cmd, parms in evt.data.items():
 			logging.info("Dispatch: %s: %s" % (cmd, parms))
-			print("Dispatch: %s: %s" % (cmd, parms))
 			if cmd == "turnout":
 				for p in parms:
 					turnout = p["name"]
@@ -525,7 +547,7 @@ class MainFrame(wx.Frame):
 			elif cmd == "sessionID":
 				self.sessionid = int(parms)
 				print("got session id %d" % self.sessionid)
-				logging.info("connected t railroad server with session ID %d" % self.sessionid)
+				logging.info("connected to railroad server with session ID %d" % self.sessionid)
 		
 	def raiseDisconnectEvent(self): # thread context
 		evt = DisconnectEvent()

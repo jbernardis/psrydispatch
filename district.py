@@ -62,7 +62,9 @@ class District:
 		aspect = sig.GetAspect()
 		color = GREEN if aspect == 0 else RED # the color we are trying to change to
 		signm = sig.GetName()
+		print("PSA signal %s" % signm)
 		rt = None
+		desc = []
 		for blknm, siglist in self.osSignals.items():
 			if signm in siglist:
 				osblk = self.frame.blocks[blknm]
@@ -73,12 +75,14 @@ class District:
 				rt = self.routes[rname]
 				if sig.IsPossibleRoute(blknm, rname):
 					break
+				desc.append(rt.GetDescription())
+
 
 		else:
-			if rt is None:
+			if len(desc) == 0:
 				self.frame.Popup("No routes found for Signal %s" % (signm))
 			else:
-				self.frame.Popup("Signal %s is not for route %s" % (signm, rt.GetDescription()))
+				self.frame.Popup("Signal %s is not for route(s) %s" % (signm, ",".join(desc)))
 			return
 
 		if osblk.AreHandSwitchesSet():

@@ -723,6 +723,15 @@ class Hyde (District):
 		for signm, east, tileSet, pos in sigList:
 			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, east, pos, tiles[tileSet])  
 
+		blockSigs = {
+			"H13": ("H12L",  "D6RA"),
+			"H21": ("S18LA", "H4R"),
+			"H23": ("H10L",  "D4RB")
+		}
+
+		for blknm, siglist in blockSigs.items():
+			self.blocks[blknm].SetSignals(siglist)
+
 		self.routes = {}
 		block = self.blocks["HOSWW"]
 		self.routes["HRtH11H12"] = Route(self.screen, block, "HRtH11H12", "H12", [ (21, 13), (22, 13), (23, 13), (24, 13), (25, 13), (26, 13), (27, 13), (28, 13), (29, 13), (30, 13), (31, 13) ], "H11", [RESTRICTING, RESTRICTING], ["HSw1", "HSw3"])

@@ -835,6 +835,16 @@ class Yard (District):
 		for signm, east, tileSet, pos in sigList:
 			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, east, pos, tiles[tileSet])  
 
+		blockSigs = {
+			"Y11": ("Y8R",  "Y2L"),
+			"Y20": ("Y26R", "Y10L"),
+			"Y21": ("Y10R", "Y4L"),
+		}
+
+		for blknm, siglist in blockSigs.items():
+			self.blocks[blknm].SetSignals(siglist)
+
+
 		self.routes = {}
 		self.osSignals = {}
 

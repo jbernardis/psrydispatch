@@ -11,6 +11,7 @@ class Signal:
 		self.aspect = RED
 		self.east = east
 		self.possibleRoutes = {}
+		self.guardBlock = None # block that the signal is guarding exit from
 
 	def AddPossibleRoutes(self, blk, rtList):
 		self.possibleRoutes[blk] = rtList
@@ -50,5 +51,15 @@ class Signal:
 		self.aspect = aspect
 		if refresh:
 			self.Draw()
+
+		if self.guardBlock is not None:
+			self.guardBlock.EvaluateStoppingSections()
 		return True
+
+	def SetGuardBlock(self, blk):
+		self.guardBlock = blk
+		print("Signal %s is guarding exit from %s" % (self.GetName(), blk.GetName()))
+
+	def GetGuardBlock(self):
+		return self.guardBlock
 
