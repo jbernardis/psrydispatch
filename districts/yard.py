@@ -4,6 +4,7 @@ from block import Block, OverSwitch, Route
 from turnout import Turnout, SlipSwitch
 from signal import Signal
 from button import Button
+from indicator import Indicator
 
 from constants import HyYdPt, RESTRICTING, MAIN, DIVERGING, SLOW, NORMAL, REVERSE, EMPTY, SLIPSWITCH
 
@@ -18,13 +19,13 @@ class Yard (District):
 
 	def Draw(self):
 		District.Draw(self)
-		self.drawCrossing()
+		self.drawCrossover()
 
 	def DrawOthers(self, block):
 		if block.GetName() in ["YOSKL1", "YOSKL2", "YOSKL3"]:
-			self.drawCrossing()
+			self.drawCrossover()
 
-	def drawCrossing(self):
+	def drawCrossover(self):
 		s17 = NORMAL if self.sw17.IsNormal() else REVERSE
 		s21 = NORMAL if self.sw21.IsNormal() else REVERSE
 
@@ -36,7 +37,7 @@ class Yard (District):
 			blkstat = EMPTY
 
 		bmp = "diagright" if s17 == REVERSE else "diagleft" if s21 == REVERSE else "cross"
-		bmp = self.misctiles["crossing"].getBmp(blkstat, bmp)
+		bmp = self.misctiles["crossover"].getBmp(blkstat, bmp)
 		self.frame.DrawTile(self.screen, (104, 12), bmp)
 
 	def DoTurnoutAction(self, turnout, state):
@@ -51,7 +52,7 @@ class Yard (District):
 			District.DoTurnoutAction(self, turnout, state)
 
 		if tn in [ "YSw17", "YSw19", "YSw21" ]:
-			self.drawCrossing()
+			self.drawCrossover()
 			if tn == "YSw17":
 				trnout = self.turnouts["YSw19"]
 				trnout.UpdateStatus()
@@ -76,11 +77,12 @@ class Yard (District):
 		s131 = 'N' if self.turnouts["YSw131"].IsNormal() else 'R'
 		s132 = 'N' if self.turnouts["YSw132"].IsNormal() else 'R'
 		s134 = 'N' if self.turnouts["YSw134"].IsNormal() else 'R'
-		self.turnouts["YSw17"].SetLock("YSw21", s21=='R')
-		self.turnouts["YSw21"].SetLock("YSw17", s17=='R')
+		self.turnouts["YSw17"].SetLock("YSw21", s21=='R', refresh=True)
+		self.turnouts["YSw21"].SetLock("YSw17", s17=='R', refresh=True)
+		self.turnouts["YSw21b"].SetLock("YSw17", s17=='R', refresh=True)
 
-		for bname in blocks:
-			block = self.frame.GetBlockByName(bname)
+		for block in blocks:
+			bname = block.GetName()
 			if bname == "YOSCJW":
 				if s3 == "N":
 					block.SetRoute(self.routes["YRtY11L10"])
@@ -202,7 +204,7 @@ class Yard (District):
 		if bname in self.osButtons["YOSWYW"]:
 			osBlk = self.blocks["YOSWYW"]
 			if osBlk.IsBusy():
-				self.reportBlockBusy("YOSWYW")
+				self.ReportBlockBusy("YOSWYW")
 				return
 
 			btn.Press(refresh=True)
@@ -219,7 +221,7 @@ class Yard (District):
 		elif bname in self.osButtons["YOSWYE"]:
 			osBlk = self.blocks["YOSWYE"]
 			if osBlk.IsBusy():
-				self.reportBlockBusy("YOSWYE")
+				self.ReportBlockBusy("YOSWYE")
 				return
 
 			btn.Press(refresh=True)
@@ -725,7 +727,7 @@ class Yard (District):
 		self.osBlocks["YOSWYW"] = [ "Y70", "Y81", "Y82", "Y83", "Y84" ]
 		self.osBlocks["YOSWYE"] = [ "Y81", "Y82", "Y83", "Y84", "Y87" ]
 
-		return self.blocks
+		return self.blocks, self.osBlocks
 
 	def DefineTurnouts(self, tiles, blocks):
 		self.turnouts = {}
@@ -1009,3 +1011,11 @@ class Yard (District):
 		self.osButtons["YOSWYE"] = [ "YWEB1", "YWEB2", "YWEB3", "YWEB4" ]
 
 		return self.buttons
+
+	def DefineIndicators(self):
+		self.indicators = {}
+		indNames = [ "CBKale", "CBEastEnd", "CBCornellJct", "CBEngineYard", "CBWaterman" ]
+		for ind in indNames:
+			self.indicators[ind] = Indicator(self.frame, self, ind)
+
+		return self.indicators

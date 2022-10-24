@@ -28,8 +28,8 @@ class Hyde (District):
 		s27 = 'N' if self.turnouts["HSw27"].IsNormal() else 'R'
 		s29 = 'N' if self.turnouts["HSw29"].IsNormal() else 'R'
 
-		for bname in blocks:
-			block = self.frame.GetBlockByName(bname)
+		for block in blocks:
+			bname = block.GetName()
 			if bname == "HOSWW":
 				if s1 + s3 == "NN":
 					block.SetRoute(self.routes["HRtH11H12"])
@@ -85,7 +85,7 @@ class Hyde (District):
 		if bname in self.osButtons["HOSWW"]:
 			osBlk = self.blocks["HOSWW"]
 			if osBlk.IsBusy():
-				self.reportBlockBusy("HOSWW")
+				self.ReportBlockBusy("HOSWW")
 				return
 
 			btn.Press(refresh=True)
@@ -104,7 +104,7 @@ class Hyde (District):
 		elif bname in self.osButtons["HOSWW2"]:
 			osBlk = self.blocks["HOSWW2"]
 			if osBlk.IsBusy():
-				self.reportBlockBusy("HOSWW2")
+				self.ReportBlockBusy("HOSWW2")
 				return
 
 			btn.Press(refresh=True)
@@ -115,7 +115,7 @@ class Hyde (District):
 		elif bname in self.osButtons["HOSWE"]:
 			osBlk = self.blocks["HOSWE"]
 			if osBlk.IsBusy():
-				self.reportBlockBusy("HOSWE")
+				self.ReportBlockBusy("HOSWE")
 				return
 
 			btn.Press(refresh=True)
@@ -132,7 +132,7 @@ class Hyde (District):
 		elif bname in self.osButtons["HOSEW"]:
 			osBlk = self.blocks["HOSEW"]
 			if osBlk.IsBusy():
-				self.reportBlockBusy("HOSEW")
+				self.ReportBlockBusy("HOSEW")
 				return
 
 			btn.Press(refresh=True)
@@ -151,7 +151,7 @@ class Hyde (District):
 		elif bname in self.osButtons["HOSEE"]:
 			osBlk = self.blocks["HOSEE"]
 			if osBlk.IsBusy():
-				self.reportBlockBusy("HOSEE")
+				self.ReportBlockBusy("HOSEE")
 				return
 
 			btn.Press(refresh=True)
@@ -221,9 +221,6 @@ class Hyde (District):
 				(tiles["turnleftleft"], self.screen, (25, 5), True),
 				(tiles["horiz"], self.screen, (26, 5), False),
 
-				(tiles["eobleft"], LaKr, (106, 9), False),
-				(tiles["horiznc"], LaKr, (107, 9), False),
-				(tiles["horiz"], LaKr, (108, 9), False),
 				(tiles["horiznc"], LaKr, (109, 9), False),
 				(tiles["horiz"], LaKr, (110, 9), False),
 				(tiles["horiznc"], LaKr, (111, 9), False),
@@ -245,6 +242,11 @@ class Hyde (District):
 				(tiles["horiznc"], LaKr, (127, 9), False),
 			],
 			False)
+		self.blocks["H30"].AddStoppingBlock([
+				(tiles["eobleft"], LaKr, (106, 9), False),
+				(tiles["horiznc"], LaKr, (107, 9), False),
+				(tiles["horiz"], LaKr, (108, 9), False),
+			], False)
 		self.blocks["H30"].AddTrainLoc(self.screen, (14, 11))
 		self.blocks["H30"].AddTrainLoc(LaKr, (108, 9))
 
@@ -648,7 +650,38 @@ class Hyde (District):
 
 		self.osBlocks["HOSEE"] = [ "H23" ]
 
-		return self.blocks
+		# Blocks H10 and H20 are managed by shore district
+		self.blocks["H10"] = Block(self, self.frame, "H10",
+			[
+				(tiles["horiznc"],  self.screen, (108, 11), False),
+				(tiles["horiz"],    self.screen, (109, 11), False),
+				(tiles["horiznc"],  self.screen, (110, 11), False),
+				(tiles["horiz"],    self.screen, (111, 11), False),
+				(tiles["horiznc"],  self.screen, (112, 11), False),
+				(tiles["eobright"], self.screen, (113, 11), False),
+			], False)
+		self.blocks["H10"].AddStoppingBlock([
+				(tiles["eobleft"],  self.screen, (106, 11), False),
+				(tiles["horiz"],    self.screen, (107, 11), False),
+			], False)
+		self.blocks["H10"].AddTrainLoc(self.screen, (108, 11))
+
+		self.blocks["H20"] = Block(self, self.frame, "H20",
+			[
+				(tiles["eobleft"],  self.screen, (106, 13), False),
+				(tiles["horiz"],    self.screen, (107, 13), False),
+				(tiles["horiznc"],  self.screen, (108, 13), False),
+				(tiles["horiz"],    self.screen, (109, 13), False),
+				(tiles["horiznc"],  self.screen, (110, 13), False),
+				(tiles["horiz"],    self.screen, (111, 13), False),
+			], True)
+		self.blocks["H20"].AddStoppingBlock([
+				(tiles["horiznc"],  self.screen, (112, 13), False),
+				(tiles["eobright"], self.screen, (113, 13), False),
+			], True)
+		self.blocks["H20"].AddTrainLoc(self.screen, (108, 13))
+
+		return self.blocks, self.osBlocks
 
 	def DefineTurnouts(self, tiles, blocks):
 		self.turnouts = {}
@@ -726,7 +759,10 @@ class Hyde (District):
 		blockSigs = {
 			"H13": ("H12L",  "D6RA"),
 			"H21": ("S18LA", "H4R"),
-			"H23": ("H10L",  "D4RB")
+			"H23": ("H10L",  "D4RB"),
+			"H30": ("S12LB", "H8L"),
+			"H10": ("S12LC", "S20R"),
+			"H20": ("S4LA", "S18E"),
 		}
 
 		for blknm, siglist in blockSigs.items():

@@ -58,7 +58,6 @@ class Signal:
 
 	def SetGuardBlock(self, blk):
 		self.guardBlock = blk
-		print("Signal %s is guarding exit from %s" % (self.GetName(), blk.GetName()))
 
 	def GetGuardBlock(self):
 		return self.guardBlock

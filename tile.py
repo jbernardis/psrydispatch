@@ -512,7 +512,7 @@ def loadTiles(bitmaps):
 
 	bmisc = bitmaps.misc
 	misctiles = {}
-	misctiles["crossing"] = MiscTile("crossing",
+	misctiles["crossover"] = MiscTile("crossover",
 		{
 			"white-diagright": b.diagright.normal,
 			"green-diagright": b.diagright.routed,
@@ -531,6 +531,15 @@ def loadTiles(bitmaps):
 		{
 			"locked" : bmisc.uplocked,
 			"unlocked" : bmisc.upunlocked,
+		})
+	misctiles["crossing"] = MiscTile("crossing",
+		{
+			"white-main": b.straight.normal,
+			"green-main": b.straight.routed,
+			"red-main": b.straight.occupied,
+			"white-cross": b.diagright.normal,
+			"green-cross": b.diagright.routed,
+			"red-cross": b.diagright.occupied,
 		})
 
 

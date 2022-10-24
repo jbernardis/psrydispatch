@@ -24,7 +24,7 @@ class Turnout:
 	def IsLocked(self):
 		return self.locked
 
-	def SetLock(self, signame, flag=True):
+	def SetLock(self, signame, flag=True, refresh=False):
 		if flag:
 			self.locked = True
 			if signame in self.lockedBy:
@@ -41,12 +41,22 @@ class Turnout:
 			if len(self.lockedBy) == 0:
 				self.locked = False
 				self.frame.Request({"turnoutlock": { "name": self.name, "status": 0}})
+		if refresh:
+			self.Draw()
 
 	def GetType(self):
 		return self.ttype
 
+	def GetPaired(self):
+		if self.pairedTurnout is not None:
+			return self.pairedTurnout
+		if self.controllingTurnout is not None:
+			return self.controllingTurnout
+
+		return None
+
 	def AddBlock(self, blknm):
-		self.blockList.append(blknm)
+		self.blockList.append(self.frame.blocks[blknm])
 
 	def Draw(self, blockstat=None, east=None):
 		if east is None:
@@ -55,7 +65,7 @@ class Turnout:
 			blockstat = self.statusFromBlock
 
 		tostat = NORMAL if self.normal else REVERSE
-		bmp = self.tiles.getBmp(tostat, blockstat, east, self.routeControlled or self.disabled)
+		bmp = self.tiles.getBmp(tostat, blockstat, east, self.routeControlled or self.disabled or self.locked)
 		self.frame.DrawTile(self.screen, self.pos, bmp)
 		self.statusFromBlock = blockstat
 		self.eastFromBlock = east
@@ -250,7 +260,7 @@ class SlipSwitch(Turnout):
 	def Draw(self, blkStat=None, east=None):
 		if blkStat is None:
 			blkStat = self.statusFromBlock
-		bmp = self.tiles.getBmp(self.status, blkStat, self.disabled)
+		bmp = self.tiles.getBmp(self.status, blkStat, self.routeControlled or self.disabled or self.locked)
 		self.frame.DrawTile(self.screen, self.pos, bmp)
 		self.statusFromBlock = blkStat
 

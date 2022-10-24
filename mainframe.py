@@ -1,3 +1,4 @@
+from tkinter.tix import PopupMenu
 import wx
 import wx.lib.newevent
 import wx.lib.agw.toasterbox as TB
@@ -17,10 +18,13 @@ from tile import loadTiles
 from block import Block
 from train import Train
 
+from breaker import BreakerDisplay
+
 from districts.hyde import Hyde
 from districts.yard import Yard
 from districts.latham import Latham
 from districts.dell import Dell
+from districts.shore import Shore
 
 from constants import HyYdPt, LaKr, NaCl, screensList, EMPTY, OCCUPIED, NORMAL, REVERSE
 from listener import Listener
@@ -41,6 +45,7 @@ class MainFrame(wx.Frame):
 	def __init__(self):
 		wx.Frame.__init__(self, None, size=(900, 800), style=wx.DEFAULT_FRAME_STYLE)
 		self.sessionid = None
+		self.subscribed = False
 		logging.info("Display process starting")
 		self.settings = Settings(cmdFolder)
 		self.popupFont = wx.Font(wx.Font(12, wx.FONTFAMILY_ROMAN, wx.NORMAL, wx.BOLD, faceName="Arial"))
@@ -58,6 +63,7 @@ class MainFrame(wx.Frame):
 			dp = TrackDiagram(self, [self.diagrams[sn] for sn in screensList])
 			dp.SetPosition((20, 120))
 			w, h = dp.GetSize()
+			h += 120
 			self.panels = {self.diagrams[sn].screen : dp for sn in screensList}  # all 3 screens just point to the same diagram
 
 		else:  # set up three separate screens for a single monitor
@@ -91,10 +97,13 @@ class MainFrame(wx.Frame):
 		self.xpos = wx.TextCtrl(self, wx.ID_ANY, "", size=(40, -1), pos=(100, 50), style=wx.TE_READONLY)
 		self.ypos = wx.TextCtrl(self, wx.ID_ANY, "", size=(40, -1), pos=(160, 50), style=wx.TE_READONLY)
 
+		w += 50
+		h += 200
+		self.breakerDisplay = BreakerDisplay(self, pos=(int(w/2-400/2), 50), size=(400, 40))
 
-		self.SetMaxSize((w+50, h+200))
-		self.SetSize((w+50, h+200))
-		w, h = self.GetSize()
+		self.SetMaxSize((w, h))
+		self.SetSize((w, h))
+
 		wx.CallAfter(self.Initialize)
 
 	def UpdatePositionDisplay(self, x, y):
@@ -103,7 +112,6 @@ class MainFrame(wx.Frame):
 
 	def Initialize(self):
 		self.listener = None
-		self.subscribed = False
 		self.Bind(EVT_DELIVERY, self.onDeliveryEvent)
 		self.Bind(EVT_DISCONNECT, self.onDisconnectEvent)
 
@@ -112,18 +120,20 @@ class MainFrame(wx.Frame):
 		self.districts.AddDistrict(Yard("Yard", self, HyYdPt))
 		self.districts.AddDistrict(Latham("Latham", self, LaKr))
 		self.districts.AddDistrict(Dell("Dell", self, LaKr))
+		self.districts.AddDistrict(Shore("Shore", self, LaKr))
 		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
 
-		self.blocks =   self.districts.DefineBlocks(self.tiles)
+		self.blocks, self.osBlocks = self.districts.DefineBlocks(self.tiles)
 		self.turnouts = self.districts.DefineTurnouts(self.totiles, self.blocks)
 		self.signals =  self.districts.DefineSignals(self.sigtiles)
 		self.buttons =  self.districts.DefineButtons(self.bitmaps.buttons)
 		self.handswitches =  self.districts.DefineHandSwitches(self.misctiles)
+		self.indicators = self.districts.DefineIndicators()
 
 		if not self.districts.Audit():
 			logging.error("Audit failed")
 
-		self.resolveObjectNames()
+		self.resolveObjects()
 
 		self.AddBogusStuff()
 
@@ -159,7 +169,7 @@ class MainFrame(wx.Frame):
 		self.rrServer = RRServer()
 		self.rrServer.SetServerAddress(self.settings.ipaddr, self.settings.serverport)
 
-	def resolveObjectNames(self):
+	def resolveObjects(self):
 		for bknm, bk in self.blocks.items():
 			sgWest, sgEast = bk.GetSignals()
 			if sgWest is not None:
@@ -177,6 +187,20 @@ class MainFrame(wx.Frame):
 					sgEast = None
 			bk.SetSignals((sgWest, sgEast))
 
+		# invert osBlocks so the we can easily map a block into the OS's it interconnects
+		self.blockOSMap = {}
+		for osblknm, blklist in self.osBlocks.items():
+			for blknm in blklist:
+				if blknm in self.blockOSMap:
+					self.blockOSMap[blknm].append(self.blocks[osblknm])
+				else:
+					self.blockOSMap[blknm] = [ self.blocks[osblknm] ]
+
+	def GetOSForBlock(self, blknm):
+		if blknm not in self.blockOSMap:
+			return []
+		else:
+			return self.blockOSMap[blknm]
 			
 	def DrawCameras(self):
 		cams = {}
@@ -222,6 +246,10 @@ class MainFrame(wx.Frame):
 			for pos, bmp in cams[screen]:
 				self.panels[screen].DrawFixedBitmap(pos[0], pos[1], offset, bmp)
 
+		self.panels[LaKr].DrawFixedBitmap(1000, 560, 0, self.bitmaps.USS.si4)
+		self.panels[LaKr].DrawFixedBitmap(1017, 616, 0, self.bitmaps.USS.leverv)
+		self.panels[LaKr].DrawFixedBitmap(1021, 563, 0, self.bitmaps.USS.lampw)
+
 	def BuildBlockMap(self, bl):
 		blkMap = {}
 		for b in bl.values():
@@ -237,14 +265,6 @@ class MainFrame(wx.Frame):
 	def AddBogusStuff(self):
 		#this is to add bogus entries for block that we need before we get to their district
 
-		if "S10" in self.blocks:
-			print("You can remove bogus entry for block S10")
-		else:
-			self.blocks["S10"] = Block(self, self, "S10",	[], False)
-		if "S20" in self.blocks:
-			print("You can remove bogus entry for block S20")
-		else:
-			self.blocks["S20"] = Block(self, self, "S20",	[], False)
 		if "P11" in self.blocks:
 			print("You can remove bogus entry for block P11")
 		else:
@@ -253,6 +273,10 @@ class MainFrame(wx.Frame):
 			print("You can remove bogus entry for block P21")
 		else:
 			self.blocks["P21"] = Block(self, self, "P21",	[], False)
+		if "P32" in self.blocks:
+			print("You can remove bogus entry for block P32")
+		else:
+			self.blocks["P32"] = Block(self, self, "P32",	[], False)
 		if "P50" in self.blocks:
 			print("You can remove bogus entry for block P50")
 		else:
@@ -275,12 +299,13 @@ class MainFrame(wx.Frame):
 		if collapse:
 			self.buttonsToClear = [x for x in self.buttonsToClear if x[0] != 0]
 
+		self.breakerDisplay.ticker()
+
 	def ClearButtonAfter(self, secs, btn):
 		self.buttonsToClear.append([secs, btn])
 
 	def ProcessClick(self, screen, pos):
 		logging.debug("click %s %d, %d" % (screen, pos[0], pos[1]))
-		print("click %s %d, %d" % (screen, pos[0], pos[1]))
 		try:
 			to = self.turnoutMap[(screen, pos)]
 		except KeyError:
@@ -340,6 +365,29 @@ class MainFrame(wx.Frame):
 
 					self.Request({"settrain": { "block": blk.GetName(), "name": trainid, "loco": locoid}})
 
+		if pos[0] == 64 and pos[1] == 35:
+			self.panels[LaKr].DrawFixedBitmap(1017, 616, 0, self.bitmaps.USS.leverv)
+			self.panels[LaKr].DrawFixedBitmap(1021, 563, 0, self.bitmaps.USS.lampw)
+			self.panels[LaKr].DrawFixedBitmap(1003, 577, 0, self.bitmaps.USS.lampd)
+			self.panels[LaKr].DrawFixedBitmap(1036, 577, 0, self.bitmaps.USS.lampd)
+			sig = self.signals["D4L"]
+			sig.GetDistrict().PerformSignalLeverAction("D4", 0)
+		elif pos[0] == 63 and pos[1] == 36:
+			self.panels[LaKr].DrawFixedBitmap(1017, 616, 0, self.bitmaps.USS.leverl)
+			self.panels[LaKr].DrawFixedBitmap(1003, 577, 0, self.bitmaps.USS.lampg)
+			self.panels[LaKr].DrawFixedBitmap(1021, 563, 0, self.bitmaps.USS.lampd)
+			self.panels[LaKr].DrawFixedBitmap(1036, 577, 0, self.bitmaps.USS.lampd)
+			sig = self.signals["D4L"]
+			sig.GetDistrict().PerformSignalLeverAction("D4", -1)
+		elif pos[0] == 65 and pos[1] == 36:
+			self.panels[LaKr].DrawFixedBitmap(1017, 616, 0, self.bitmaps.USS.leverr)
+			self.panels[LaKr].DrawFixedBitmap(1021, 563, 0, self.bitmaps.USS.lampd)
+			self.panels[LaKr].DrawFixedBitmap(1003, 577, 0, self.bitmaps.USS.lampd)
+			self.panels[LaKr].DrawFixedBitmap(1036, 577, 0, self.bitmaps.USS.lampg)
+			sig = self.signals["D4L"]
+			sig.GetDistrict().PerformSignalLeverAction("D4", 1)
+
+
 	def DrawTile(self, screen, pos, bmp):
 		offset = self.diagrams[screen].offset
 		self.panels[screen].DrawTile(pos[0], pos[1], offset, bmp)
@@ -382,7 +430,7 @@ class MainFrame(wx.Frame):
 		except:
 			return None
 
-	def Popup(self, message):
+	def Popup(self, message, background=None, text=None):
 		tb = TB.ToasterBox(self, TB.TB_SIMPLE, TB.TB_DEFAULT_STYLE, TB.TB_ONTIME,
 			scrollType=TB.TB_SCR_TYPE_FADE)
 
@@ -390,8 +438,8 @@ class MainFrame(wx.Frame):
 		tb.CenterOnParent(wx.BOTH)
 		tb.SetPopupPauseTime(5000)
 		tb.SetPopupScrollSpeed(8)
-		tb.SetPopupBackgroundColour(wx.Colour(255, 179, 154))
-		tb.SetPopupTextColour(wx.Colour(0, 0, 0))
+		tb.SetPopupBackgroundColour(wx.Colour(255, 179, 154) if background is None else background)
+		tb.SetPopupTextColour(wx.Colour(0, 0, 0) if text is None else text)
 		tb.SetPopupText(message)
 		tb.SetPopupTextFont(self.popupFont)
 		tb.Play()
@@ -415,6 +463,7 @@ class MainFrame(wx.Frame):
 			self.subscribed = True
 			self.bSubscribe.SetLabel("Unsubscribe")
 			self.bRefresh.Enable(True)
+		self.breakerDisplay.UpdateDisplay()
 
 	def OnRefresh(self, _):
 		self.rrServer.SendRequest({"refresh": {"SID": self.sessionid}})
@@ -426,11 +475,12 @@ class MainFrame(wx.Frame):
 			logging.warning("Unable to parse (%s)" % data)
 			return
 		evt = DeliveryEvent(data=jdata)
-		wx.PostEvent(self, evt)
+		wx.QueueEvent(self, evt)
 
 	def onDeliveryEvent(self, evt):
 		for cmd, parms in evt.data.items():
 			logging.info("Dispatch: %s: %s" % (cmd, parms))
+			print("Dispatch: %s: %s" % (cmd, parms))
 			if cmd == "turnout":
 				for p in parms:
 					turnout = p["name"]
@@ -499,8 +549,21 @@ class MainFrame(wx.Frame):
 			elif cmd == "breaker":
 				for p in parms:
 					name = p["name"]
-					state = p["state"]
-					logging.debug("Set Breaker %s to %s" % (name, "TRIPPED" if state != 0 else "CLEAR"))
+					val = p["value"]
+					logging.debug("Set Breaker %s to %s" % (name, "TRIPPED" if val != 0 else "CLEAR"))
+					if val == 1:
+						self.breakerDisplay.AddBreaker(name)
+					else:
+						self.breakerDisplay.DelBreaker(name)
+
+					if name in self.indicators:
+						print("breaker %s is also an indicator" % name)
+						ind = self.indicators[name]
+						print("current value is %d, new value is %d" % (ind.GetValue(), val))
+						if val != ind.GetValue():
+							ind.SetValue(val)
+					else:
+						print("breaker %s is NOT an indicator" % name)
 
 			elif cmd == "settrain":
 				for p in parms:
@@ -546,7 +609,6 @@ class MainFrame(wx.Frame):
 							blk.DrawTrain()
 			elif cmd == "sessionID":
 				self.sessionid = int(parms)
-				print("got session id %d" % self.sessionid)
 				logging.info("connected to railroad server with session ID %d" % self.sessionid)
 		
 	def raiseDisconnectEvent(self): # thread context
@@ -556,6 +618,7 @@ class MainFrame(wx.Frame):
 	def Request(self, req):
 		if self.settings.dispatch:
 			logging.debug(json.dumps(req))
+			print(json.dumps(req))
 			self.rrServer.SendRequest(req)
 	
 	def onDisconnectEvent(self, _):

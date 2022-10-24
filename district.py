@@ -13,10 +13,7 @@ class District:
 		self.sstiles = sstiles
 		self.misctiles = misctiles
 
-		# for t in self.turnouts.values():
-		# 	t.initialize()
-
-		blist = [b.GetName() for b in self.blocks.values() if b.GetBlockType() == OVERSWITCH]
+		blist = [self.frame.GetBlockByName(n) for n in self.osBlocks.keys()]
 		self.DetermineRoute(blist)
 
 	def Draw(self):
@@ -50,7 +47,7 @@ class District:
 	def PerformTurnoutAction(self, turnout):
 		turnout = turnout.GetControlledBy()
 		if turnout.IsLocked():
-			self.reportTurnoutLocked(turnout.GetName())
+			self.ReportTurnoutLocked(turnout.GetName())
 			return
 
 		if turnout.IsNormal():
@@ -58,13 +55,8 @@ class District:
 		else:
 			self.frame.Request({"turnout": { "name": turnout.GetName(), "status": "N" }})
 
-	def PerformSignalAction(self, sig):
-		aspect = sig.GetAspect()
-		color = GREEN if aspect == 0 else RED # the color we are trying to change to
+	def FindRoute(self, sig):
 		signm = sig.GetName()
-		print("PSA signal %s" % signm)
-		rt = None
-		desc = []
 		for blknm, siglist in self.osSignals.items():
 			if signm in siglist:
 				osblk = self.frame.blocks[blknm]
@@ -74,17 +66,20 @@ class District:
 					continue
 				rt = self.routes[rname]
 				if sig.IsPossibleRoute(blknm, rname):
-					break
-				desc.append(rt.GetDescription())
+					return rt, osblk
+		return None, None
 
+	def PerformSignalAction(self, sig):
+		aspect = sig.GetAspect()
+		signm = sig.GetName()
+		color = GREEN if aspect == 0 else RED # the color we are trying to change to
+		rt, osblk = self.FindRoute(sig)
 
-		else:
-			if len(desc) == 0:
-				self.frame.Popup("No routes found for Signal %s" % (signm))
-			else:
-				self.frame.Popup("Signal %s is not for route(s) %s" % (signm, ",".join(desc)))
+		if rt is None:
+			self.frame.Popup("No routes found for Signal %s" % (signm))
 			return
 
+		osblknm = osblk.GetName()
 		if osblk.AreHandSwitchesSet():
 			self.frame.Popup("OS Block %s is locked" % osblknm)
 			return
@@ -92,7 +87,7 @@ class District:
 		# this is a valid signal for the current route	
 		if color == GREEN:	
 			if osblk.IsBusy():
-				self.frame.Popup("OS Block %s is busy" % osblk.GetName())
+				self.frame.Popup("OS Block %s is busy" % osblknm)
 				return
 
 			sigE = sig.GetEast()
@@ -117,7 +112,7 @@ class District:
 		else: # color == RED
 			esig = osblk.GetEntrySignal()	
 			if esig is not None and esig.GetName() != signm:
-				self.frame.Popup("Signal %s is not for route %s" % (signm, rt.GetDescription()))
+				self.frame.Popup("Signal %s is not for route %s" % (sig.GetName(), rt.GetDescription()))
 				return
 			aspect = STOP
 
@@ -145,12 +140,11 @@ class District:
 		bname = blk.GetName()
 		blk.SetOccupied(occupied = state == OCCUPIED, blockend=blockend, refresh=True)
 
-		for osblknm, blkList in self.osBlocks.items():
-			if bname in blkList:
-				self.blocks[osblknm].Draw()
+		osList = self.frame.GetOSForBlock(bname)
+		for osblk in osList:
+			osblk.Draw()
 
 	def DoTurnoutAction(self, turnout, state):
-		print("DTA: %s %s" % (turnout.GetName(), str(state)))
 		if state == NORMAL:
 			turnout.SetNormal(refresh=True)
 		else:
@@ -175,6 +169,7 @@ class District:
 			return
 
 		# all checking was done on the sending side, so this is a valid request - just do it
+
 		osblock.SetEast(sig.GetEast())
 		sig.SetAspect(aspect, refresh=True)
 		osblock.SetEntrySignal(sig)
@@ -189,6 +184,7 @@ class District:
 		if exitBlk.IsOccupied():
 			return
 
+
 		if self.CrossingEastWestBoundary(osblock, exitBlk):
 			nd = not sig.GetEast()
 		else:
@@ -198,6 +194,7 @@ class District:
 
 		self.LockSwitches(osblock.GetName(), sig, aspect!=STOP)
 
+
 	def LockSwitches(self, osblknm, sig, flag):
 		signm = sig.GetName()
 		if osblknm in sig.possibleRoutes:
@@ -206,7 +203,11 @@ class District:
 			if rt:
 				tolist = rt.GetTurnouts()
 				for t in tolist:
-					self.turnouts[t].SetLock(signm, flag)
+					to = self.turnouts[t]
+					to.SetLock(signm, flag, refresh=True)
+					tp = to.GetPaired()
+					if tp:
+						tp.SetLock(signm, flag, refresh=True)
 
 	def DoHandSwitchAction(self, hs, stat):
 		hs.SetValue(stat!=0, refresh=True)
@@ -216,10 +217,15 @@ class District:
 					
 	def DefineBlocks(self, tiles):
 		self.blocks = {}
-		return({})
+		self.osBlocks = {}
+		return({}, {})
 
 	def DefineTurnouts(self, tiles):
 		self.turnouts = {}
+		return({})
+
+	def DefineIndicators(self):
+		self.indicators = {}
 		return({})
 
 	def DefineSignals(self, tiles):
@@ -234,10 +240,13 @@ class District:
 		self.handswitches = {}
 		return({})
 
-	def reportBlockBusy(self, blknm):
+	def ReportBlockBusy(self, blknm):
 		self.frame.Popup("Block %s is busy" % blknm)
 
-	def reportTurnoutLocked(self, tonm):
+	def ReportOSBusy(self):
+		self.frame.Popup("OS Block is busy")
+
+	def ReportTurnoutLocked(self, tonm):
 		self.frame.Popup("Turnout %s is locked" % tonm)
 
 	def Audit(self):
@@ -345,10 +354,13 @@ class Districts:
 
 	def DefineBlocks(self, tiles):
 		blocks = {}
+		osBlocks = {}
 		for t in self.districts.values():
-			blocks.update(t.DefineBlocks(tiles))
+			bl, osbl = t.DefineBlocks(tiles)
+			blocks.update(bl)
+			osBlocks.update(osbl)
 
-		return blocks
+		return blocks, osBlocks
 
 	def DefineTurnouts(self, tiles, blocks):
 		tos = {}
@@ -377,6 +389,14 @@ class Districts:
 			handswitches.update(t.DefineHandSwitches(tiles))
 
 		return handswitches
+
+
+	def DefineIndicators(self):
+		indicators = {}
+		for t in self.districts.values():
+			indicators.update(t.DefineIndicators())
+
+		return indicators
 
 	def Audit(self):
 		passedAudit = True

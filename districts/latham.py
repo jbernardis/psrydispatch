@@ -20,12 +20,16 @@ class Latham (District):
 		s9 = 'N' if self.turnouts["LSw9"].IsNormal() else 'R'
 		s15 = 'N' if self.turnouts["LSw15"].IsNormal() else 'R'
 		s17 = 'N' if self.turnouts["LSw17"].IsNormal() else 'R'
-		self.turnouts["LSw3"].SetLock("LSw9", s9=='R')
-		self.turnouts["LSw9"].SetLock("LSw3", s3=='R')
-		self.turnouts["LSw5"].SetLock("LSw7", s7=='R')
-		self.turnouts["LSw7"].SetLock("LSw5", s5=='R')
-		for bname in blocks:
-			block = self.frame.GetBlockByName(bname)
+		self.turnouts["LSw3"].SetLock("LSw9", s9=='R', refresh=True)
+		self.turnouts["LSw3b"].SetLock("LSw9", s9=='R', refresh=True)
+		self.turnouts["LSw9"].SetLock("LSw3", s3=='R', refresh=True)
+		self.turnouts["LSw9b"].SetLock("LSw3", s3=='R', refresh=True)
+		self.turnouts["LSw5"].SetLock("LSw7", s7=='R', refresh=True)
+		self.turnouts["LSw5b"].SetLock("LSw7", s7=='R', refresh=True)
+		self.turnouts["LSw7"].SetLock("LSw5", s5=='R', refresh=True)
+		self.turnouts["LSw7b"].SetLock("LSw5", s5=='R', refresh=True)
+		for block in blocks:
+			bname = block.GetName()
 			if bname == "LOSLAW":
 				if s5+s7 == "NN":
 					block.SetRoute(self.routes["LRtL10L11A"])
@@ -324,7 +328,7 @@ class Latham (District):
 		self.osBlocks["LOSCAM"] = [ "L21", "D10", "D20" ]
 		self.osBlocks["LOSCAE"] = [ "L31", "D20" ]
 
-		return self.blocks
+		return self.blocks, self.osBlocks
 
 	def DefineTurnouts(self, tiles, blocks):
 		self.turnouts = {}

@@ -12,6 +12,23 @@ class Dell (District):
 	def __init__(self, name, frame, screen):
 		District.__init__(self, name, frame, screen)
 
+	def PerformSignalLeverAction(self, prefix, direction):
+		if direction < 0:
+			sigList = [sn for sn in self.signals.keys() if sn.startswith(prefix+"L")]
+		elif direction > 0:
+			sigList = [sn for sn in self.signals.keys() if sn.startswith(prefix+"R")]
+		else:
+			sigList = [sn for sn in self.signals.keys() if sn.startswith(prefix+"L") or sn.startswith(prefix+"R")]
+		print(str(sigList))
+		if direction != 0:
+			for signm in sigList:
+				sig = self.signals[signm]
+				print("aspect = %d" % sig.GetAspect())
+				rt, osblk = self.FindRoute(sig)
+				if rt:
+					print("Route %s found for OO %s and signal %s" % (rt.GetName(), osblk.GetName(), signm))
+
+
 	def DoTurnoutAction(self, turnout, state):
 		tn = turnout.GetName()
 		if turnout.GetType() == SLIPSWITCH:
@@ -34,11 +51,12 @@ class Dell (District):
 		s5 = 'N' if self.turnouts["DSw5"].IsNormal() else 'R'
 		s7 = 'N' if self.turnouts["DSw7"].IsNormal() else 'R'
 		s11 = 'N' if self.turnouts["DSw11"].IsNormal() else 'R'
-		self.turnouts["DSw5"].SetLock("DSw7", s7=='R')
-		self.turnouts["DSw7"].SetLock("DSw5", s5=='R')
+		self.turnouts["DSw5"].SetLock("DSw7", s7=='R', refresh=True)
+		self.turnouts["DSw7"].SetLock("DSw5", s5=='R', refresh=True)
+		self.turnouts["DSw7b"].SetLock("DSw5", s5=='R', refresh=True)
 
-		for bname in blocks:
-			block = self.frame.GetBlockByName(bname)
+		for block in blocks:
+			bname = block.GetName()
 			if bname == "DOSVJE":
 				if s1+s5+s7 == "RNR":
 					block.SetRoute(self.routes["DRtH13D21"])
@@ -224,7 +242,7 @@ class Dell (District):
 		self.osBlocks["DOSFOE"] = [ "D21", "S10", "S20" ]
 		self.osBlocks["DOSFOW"] = [ "S10", "D11", "D21" ]
 
-		return self.blocks
+		return self.blocks, self.osBlocks
 
 	def DefineTurnouts(self, tiles, blocks):
 		self.turnouts = {}
