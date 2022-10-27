@@ -5,7 +5,7 @@ from turnout import Turnout
 from signal import Signal
 from button import Button
 
-from constants import LaKr, RESTRICTING, MAIN, DIVERGING
+from constants import LaKr, RESTRICTING, MAIN, DIVERGING, RegAspects
 
 class Hyde (District):
 	def __init__(self, name, frame, screen):
@@ -182,11 +182,13 @@ class Hyde (District):
 				(tiles["horiz"], self.screen, (19,13), False),
 				(tiles["horiznc"], self.screen, (20,13), False),
 
+				(tiles["horiz"], LaKr, (126,11), False),
+				(tiles["horiznc"], LaKr, (127,11), False),
+			], False)
+		self.blocks["H11"].AddStoppingBlock([
 				(tiles["eobleft"], LaKr, (123,11), False),
 				(tiles["horiz"], LaKr, (124,11), False),
 				(tiles["horiznc"], LaKr, (125,11), False),
-				(tiles["horiz"], LaKr, (126,11), False),
-				(tiles["horiznc"], LaKr, (127,11), False),
 			], False)
 		self.blocks["H11"].AddTrainLoc(self.screen, (14, 13))
 		self.blocks["H11"].AddTrainLoc(LaKr, (124, 11))
@@ -353,6 +355,9 @@ class Hyde (District):
 
 		self.blocks["H21"] = Block(self, self.frame, "H21",
 			[
+				(tiles["eobleft"], LaKr,        (123,13), False),
+				(tiles["horiz"],   LaKr,        (124,13), False),
+				(tiles["horiznc"], LaKr,        (125,13), False),
 				(tiles["horiz"],   self.screen, (13, 15), False),
 				(tiles["horiznc"], self.screen, (14, 15), False),
 				(tiles["horiz"],   self.screen, (15, 15), False),
@@ -653,33 +658,33 @@ class Hyde (District):
 		# Blocks H10 and H20 are managed by shore district
 		self.blocks["H10"] = Block(self, self.frame, "H10",
 			[
-				(tiles["horiznc"],  self.screen, (108, 11), False),
-				(tiles["horiz"],    self.screen, (109, 11), False),
-				(tiles["horiznc"],  self.screen, (110, 11), False),
-				(tiles["horiz"],    self.screen, (111, 11), False),
-				(tiles["horiznc"],  self.screen, (112, 11), False),
-				(tiles["eobright"], self.screen, (113, 11), False),
+				(tiles["horiznc"],  LaKr,    (108, 11), False),
+				(tiles["horiz"],    LaKr,    (109, 11), False),
+				(tiles["horiznc"],  LaKr,    (110, 11), False),
+				(tiles["horiz"],    LaKr,    (111, 11), False),
+				(tiles["horiznc"],  LaKr,    (112, 11), False),
+				(tiles["eobright"], LaKr,    (113, 11), False),
 			], False)
 		self.blocks["H10"].AddStoppingBlock([
-				(tiles["eobleft"],  self.screen, (106, 11), False),
-				(tiles["horiz"],    self.screen, (107, 11), False),
+				(tiles["eobleft"],  LaKr,    (106, 11), False),
+				(tiles["horiz"],    LaKr,    (107, 11), False),
 			], False)
-		self.blocks["H10"].AddTrainLoc(self.screen, (108, 11))
+		self.blocks["H10"].AddTrainLoc(LaKr, (108, 11))
 
 		self.blocks["H20"] = Block(self, self.frame, "H20",
 			[
-				(tiles["eobleft"],  self.screen, (106, 13), False),
-				(tiles["horiz"],    self.screen, (107, 13), False),
-				(tiles["horiznc"],  self.screen, (108, 13), False),
-				(tiles["horiz"],    self.screen, (109, 13), False),
-				(tiles["horiznc"],  self.screen, (110, 13), False),
-				(tiles["horiz"],    self.screen, (111, 13), False),
+				(tiles["eobleft"],  LaKr,    (106, 13), False),
+				(tiles["horiz"],    LaKr,    (107, 13), False),
+				(tiles["horiznc"],  LaKr,    (108, 13), False),
+				(tiles["horiz"],    LaKr,    (109, 13), False),
+				(tiles["horiznc"],  LaKr,    (110, 13), False),
+				(tiles["horiz"],    LaKr,    (111, 13), False),
 			], True)
 		self.blocks["H20"].AddStoppingBlock([
-				(tiles["horiznc"],  self.screen, (112, 13), False),
-				(tiles["eobright"], self.screen, (113, 13), False),
+				(tiles["horiznc"],  LaKr,    (112, 13), False),
+				(tiles["eobright"], LaKr,    (113, 13), False),
 			], True)
-		self.blocks["H20"].AddTrainLoc(self.screen, (108, 13))
+		self.blocks["H20"].AddTrainLoc(LaKr, (108, 13))
 
 		return self.blocks, self.osBlocks
 
@@ -728,41 +733,43 @@ class Hyde (District):
 		self.signals = {}
 
 		sigList = [
-			[ "H4LA", False, "left",  (32, 14) ],
-			[ "H4LB", False, "left",  (32, 16) ],
-			[ "H4LC", False, "left",  (32, 18) ],
-			[ "H4LD", False, "left",  (32, 20) ],
-			[ "H4R",  True,  "right", (21, 16) ],
-			[ "H6LA", False, "left",  (32, 6) ],
-			[ "H6LB", False, "left",  (32, 8) ],
-			[ "H6LC", False, "left",  (32,10) ],
-			[ "H6LD", False, "left",  (32, 12) ],
-			[ "H6R",  True,  "right", (21, 14) ],
-			[ "H8L",  False, "left",  (32, 4) ],
-			[ "H8R",  True,  "right", (27, 6) ],
-			[ "H10L", False, "left",  (56, 14) ],
-			[ "H10RA", True, "right", (41, 16) ],
-			[ "H10RB", True, "right", (41, 18) ],
-			[ "H10RC", True, "right", (41, 20) ],
-			[ "H10RD", True, "right", (41, 22) ],
-			[ "H10RE", True, "right", (41, 24) ],
-			[ "H12RA", True, "right", (41, 6) ],
-			[ "H12RB", True, "right", (41, 8) ],
-			[ "H12RC", True, "right", (41, 10) ],
-			[ "H12RD", True, "right", (41, 12) ],
-			[ "H12RE", True, "right", (41, 14) ],
-			[ "H12L", False, "left", (56, 12) ],
+			[ "H4LA", RegAspects, False, "left",  (32, 14) ],
+			[ "H4LB", RegAspects, False, "left",  (32, 16) ],
+			[ "H4LC", RegAspects, False, "left",  (32, 18) ],
+			[ "H4LD", RegAspects, False, "left",  (32, 20) ],
+			[ "H4R",  RegAspects, True,  "rightlong", (21, 16) ],
+			[ "H6LA", RegAspects, False, "leftlong",  (32, 6) ],
+			[ "H6LB", RegAspects, False, "leftlong",  (32, 8) ],
+			[ "H6LC", RegAspects, False, "leftlong",  (32,10) ],
+			[ "H6LD", RegAspects, False, "leftlong",  (32, 12) ],
+			[ "H6R",  RegAspects, True,  "right", (21, 14) ],
+			[ "H8L",  RegAspects, False, "leftlong",  (32, 4) ],
+			[ "H8R",  RegAspects, True,  "right", (27, 6) ],
+			[ "H10L", RegAspects, False, "left",  (56, 14) ],
+			[ "H10RA", RegAspects, True, "rightlong", (41, 16) ],
+			[ "H10RB", RegAspects, True, "rightlong", (41, 18) ],
+			[ "H10RC", RegAspects, True, "rightlong", (41, 20) ],
+			[ "H10RD", RegAspects, True, "rightlong", (41, 22) ],
+			[ "H10RE", RegAspects, True, "rightlong", (41, 24) ],
+			[ "H12RA", RegAspects, True, "right", (41, 6) ],
+			[ "H12RB", RegAspects, True, "right", (41, 8) ],
+			[ "H12RC", RegAspects, True, "right", (41, 10) ],
+			[ "H12RD", RegAspects, True, "right", (41, 12) ],
+			[ "H12RE", RegAspects, True, "right", (41, 14) ],
+			[ "H12L", RegAspects, False, "leftlong", (56, 12) ],
 		]
-		for signm, east, tileSet, pos in sigList:
-			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, east, pos, tiles[tileSet])  
+		for signm, atype, east, tileSet, pos in sigList:
+			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])  
 
 		blockSigs = {
-			"H13": ("H12L",  "D6RA"),
-			"H21": ("S18LA", "H4R"),
-			"H23": ("H10L",  "D4RB"),
-			"H30": ("S12LB", "H8L"),
-			"H10": ("S12LC", "S20R"),
-			"H20": ("S4LA", "S18E"),
+			# which signals govern stopping sections, west and east
+			"H11": ("S20L", None),
+			"H13": ("H12L",  None),
+			"H21": (None, "H4R"),
+			"H23": (None,  "D4RB"),
+			"H30": ("S12LB", None),
+			"H10": ("S12LC", None),
+			"H20": (None, "S18R"),
 		}
 
 		for blknm, siglist in blockSigs.items():

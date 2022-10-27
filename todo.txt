@@ -4,25 +4,23 @@ Districts:
 	YardInOut.cpp  		Done
 	LathamInOut.cpp 	Done
 	DellInOut.cpp 		Done
-	ShoreInOut.cpp
+	ShoreInOut.cpp    Done
 	KrulishInOut.cpp 
 	NassauInOut.cpp
 	BankInOut.cpp  
 	ClivedenInOut.cpp 
 	CliffInOut.cpp  
+
 	PortInOut.cpp
+
 	HydeInOut.cpp 		Done
 
 inputs/outputs unused or uncertain of
- DELL:
-		#outb[2] = setBit(outb[2], 1, self.rr.GetInput("S20").GetValue()) uncomment after shore is implemented
-
+ 
     HYDE:
           HydeEastPower, HydeWestPower (outputs) - need implementation in display - dispatcher is done
           		#outb[4] = setBit(outb[4], 0, self.rr.GetInput("CBHydeJct").GetValue())   Clivedon  #Circuit breakers
-		#outb[4] = setBit(outb[4], 1, self.rr.GetInput("CBHydeWest").GetValue())  Clivedon
-		#outb[4] = setBit(outb[4], 2, self.rr.GetInput("CBHydeEast").GetValue())  Clivedon
-
+		
 		# outb[3] = setBit(outb[3], 2, self.rr.GetInput("H30").GetValue())     shore   # block indicators
 		# outb[3] = setBit(outb[3], 3, self.rr.GetInput("H10").GetValue())     shore
 		# outb[3] = setBit(outb[3], 5, self.rr.GetInput("N25").GetValue())     nassau
@@ -85,11 +83,9 @@ inputs/outputs unused or uncertain of
           # 	YSWOut[4].bit.b5 = SBY82E;
           # 	YSWOut[4].bit.b6 = SBY83E;
           # 	YSWOut[4].bit.b7 = SBY84E;
-
-
-currently not doing anything with indicator outputs
     
-fleeting?
+fleeting
+            basic fleeting implemented, but some questions: 1) should it be limited or restricted from certain signals, 2) should signals operate in fleeting "Groups" instead of individually
 
 deduction of train movement - reporting train location
   allow loading of initial positions of traina and locos

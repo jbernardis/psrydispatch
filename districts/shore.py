@@ -6,7 +6,7 @@ from signal import Signal
 from button import Button
 from handswitch import HandSwitch
 
-from constants import LaKr, RESTRICTING, MAIN, DIVERGING, REVERSE, EMPTY, OCCUPIED, CLEARED, GREEN, RED, STOP
+from constants import LaKr, RESTRICTING, MAIN, DIVERGING, REVERSE, EMPTY, OCCUPIED, CLEARED, STOP, RegAspects
 
 class Shore (District):
 	def __init__(self, name, frame, screen):
@@ -25,14 +25,14 @@ class Shore (District):
 
 		aspect = sig.GetAspect()
 		signm = sig.GetName()
-		color = GREEN if aspect == 0 else RED # the color we are trying to change to
+		movement = aspect == 0  # do we want the signal to allow movement
 		print("trying to set signal %s to %d" % (signm, aspect))
-		if color == GREEN:
+		if movement:
 			if osblk.IsBusy() or self.blocks["SOSW"].IsBusy() or self.blocks["SOSE"].IsBusy():
 				self.ReportOSBusy()
 				return
 			aspect = RESTRICTING
-		else: # color == RED
+		else: # stopping
 			esig = osblk.GetEntrySignal()	
 			if esig is not None and esig.GetName() != signm:
 				self.frame.Popup("Signal %s is not entry signal" % signm)
@@ -113,6 +113,9 @@ class Shore (District):
 		s9 = 'N' if self.turnouts["SSw9"].IsNormal() else 'R'
 		s11 = 'N' if self.turnouts["SSw11"].IsNormal() else 'R'
 		s13 = 'N' if self.turnouts["SSw13"].IsNormal() else 'R'
+		s15 = 'N' if self.turnouts["SSw15"].IsNormal() else 'R'
+		s17 = 'N' if self.turnouts["SSw17"].IsNormal() else 'R'
+		s19 = 'N' if self.turnouts["SSw19"].IsNormal() else 'R'
 		self.turnouts["SSw3"].SetLock("SSw5", s5=='R', refresh=True)
 		self.turnouts["SSw3b"].SetLock("SSw5", s5=='R', refresh=True)
 		self.turnouts["SSw5"].SetLock("SSw3", s3=='R', refresh=True)
@@ -154,12 +157,35 @@ class Shore (District):
 			elif bname == "SOSHF":
 				s8r = self.signals["S8R"].GetAspect()
 				s8l = self.signals["S8L"].GetAspect()
-				print("signal 8: %d %d" % (s8r, s8l))
 				block.SetRoute(self.routes["SRtF10F11"])
-				# if s8r != 0 or s8l != 0:
-				# 	block.SetRoute(self.routes["SRtF10F11"])
-				# else:
-				# 	block.SetRoute(None)
+
+			elif bname == "SOSHJW":
+				if s19 == "N":
+					block.SetRoute(self.routes["SRtH10H11"])
+				else:
+					block.SetRoute(None)
+
+			elif bname == "SOSHJM":
+				if s15+s17+s19 == "NNR":
+					block.SetRoute(self.routes["SRtH20H11"])
+				elif s15+s17+s19 == "NNN":
+					block.SetRoute(self.routes["SRtH20H21"])
+				elif s15+s17 == "NR":
+					block.SetRoute(self.routes["SRtH20H40"])
+				else:
+					block.SetRoute(None)
+
+			elif bname == "SOSHJE":
+				if s15+s17+s19 == "RNR":
+					block.SetRoute(self.routes["SRtP42H11"])
+				elif s15+s17+s19 == "RNN":
+					block.SetRoute(self.routes["SRtP42H21"])
+				elif s15+s17 == "RR":
+					block.SetRoute(self.routes["SRtP42H40"])
+				elif s15 == "N":
+					block.SetRoute(self.routes["SRtP42P43"])
+				else:
+					block.SetRoute(None)
 
 
 	def DefineBlocks(self, tiles):
@@ -400,7 +426,7 @@ class Shore (District):
 				(tiles["horiz"],    self.screen, (97, 15), False),
 				(tiles["horiznc"],  self.screen, (98, 15), False),
 				(tiles["horiz"],    self.screen, (99, 15), False),
-			], True)
+			], False)
 		self.blocks["F11"].AddStoppingBlock([
 				(tiles["eobleft"], self.screen, (96, 15), False),
 				(tiles["horiz"],    self.screen, (97, 15), False),
@@ -434,10 +460,10 @@ class Shore (District):
 		self.blocks["SOSHJM"] = OverSwitch(self, self.frame, "SOSHJM",
 			[
 				(tiles["eobright"],  self.screen, (122, 11), False),
-				(tiles["diagleft"],  self.screen, (120, 13), False),
-				(tiles["eobleft"],   self.screen, (114, 11), False),
-				(tiles["horiznc"],   self.screen, (115, 11), False),
-				(tiles["horiz"],     self.screen, (116, 11), False),
+				(tiles["diagleft"],  self.screen, (120, 12), False),
+				(tiles["eobleft"],   self.screen, (114, 13), False),
+				(tiles["horiznc"],   self.screen, (115, 13), False),
+				(tiles["horiz"],     self.screen, (116, 13), False),
 				(tiles["horiz"],     self.screen, (120, 13), False),
 				(tiles["horiznc"],   self.screen, (121, 13), False),
 				(tiles["eobright"],  self.screen, (122, 13), False),
@@ -517,24 +543,36 @@ class Shore (District):
 		self.signals = {}
 
 		sigList = [
-			[ "S12R", True,    "right", (83, 12) ],
-			[ "S4R",  True,    "right", (83, 14) ],
+			[ "S12R", RegAspects, True,    "rightlong", (83, 12) ],
+			[ "S4R",  RegAspects, True,    "rightlong", (83, 14) ],
 
-			[ "S12LA",False,   "left",  (105, 6) ],
-			[ "S12LB",False,   "left",  (105, 8) ],
-			[ "S12LC",False,   "left",  (105, 10) ],
+			[ "S12LA",RegAspects, False,   "leftlong",  (105, 6) ],
+			[ "S12LB",RegAspects, False,   "left",  (105, 8) ],
+			[ "S12LC",RegAspects, False,   "leftlong",  (105, 10) ],
 
-			[ "S4LA", False,    "left", (105, 12) ],
-			[ "S4LB", False,    "left", (109, 18) ],
-			[ "S4LC", False,    "left", (109, 20) ],
+			[ "S4LA", RegAspects, False,    "left", (105, 12) ],
+			[ "S4LB", RegAspects, False,    "leftlong", (109, 18) ],
+			[ "S4LC", RegAspects, False,    "leftlong", (109, 20) ],
 
-			[ "S8R",  True,    "right",  (87, 10) ],
-			[ "S8L",  False,   "left",  (95, 14) ]
+			[ "S8R",  RegAspects, True,    "rightlong",  (87, 10) ],
+			[ "S8L",  RegAspects, False,   "leftlong",  (95, 14) ],
+
+			[ "S16R", RegAspects, True,    "rightlong", (114, 16) ],
+			[ "S16L", RegAspects, False,   "leftlong",  (120, 16) ],
+
+			[ "S18R", RegAspects, True,    "rightlong", (114, 14) ],
+			[ "S18LA",RegAspects, False,   "left",  (122, 12) ],
+			[ "S18LB",RegAspects, False,   "left",  (122, 14) ],
+
+			[ "S20R", RegAspects, True,    "right", (114, 12) ],
+			[ "S20L", RegAspects, False,   "leftlong",  (122, 10) ]
+
 		]
-		for signm, east, tileSet, pos in sigList:
-			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, east, pos, tiles[tileSet])  
+		for signm, atype, east, tileSet, pos in sigList:
+			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])  
 
 		blockSigs = {
+			# which signals govern stopping sections, west and east
 			"S10": ("D12L", "S12R"),
 			"S20": ("D10L", "S4R"),
 			"S11": ("S12LA", "S11E"),
@@ -611,7 +649,37 @@ class Shore (District):
 
 		self.osSignals["SOSW"] = [ "S12LA", "S12LB", "S12LC", "S12R", "S4LA", "S4LB", "S4LC", "S4R", "S8L", "S8R" ]
 		self.osSignals["SOSE"] = [ "S12LA", "S12LB", "S12LC", "S12R", "S4LA", "S4LB", "S4LC", "S4R", "S8L", "S8R" ]
-		self.osSignals["SOSHF"] = [ "S8L", "S8R", "S12R" ]
+		self.osSignals["SOSHF"] = [ "S12LA", "S12LB", "S12LC", "S12R", "S4LA", "S4LB", "S4LC", "S4R", "S8L", "S8R" ]
+
+		block = self.blocks["SOSHJW"]
+		self.routes["SRtH10H11"] = Route(self.screen, block, "SRtH10H11", "H11", [  (114, 11), (115, 11), (116, 11), (117, 11), (118, 11), (119, 11), (120, 11), (121, 11), (122, 11)   ], "H10", [RESTRICTING, MAIN], ["SSw19"])
+
+		block = self.blocks["SOSHJM"]
+		self.routes["SRtH20H11"] = Route(self.screen, block, "SRtH20H11", "H20", [  (114, 13), (115, 13), (116, 13), (117, 13), (118, 13), (119, 13), (120, 12), (121, 11), (122, 11)   ], "H11", [RESTRICTING, RESTRICTING], ["SSw15", "SSw17", "SSw19"])
+		self.routes["SRtH20H21"] = Route(self.screen, block, "SRtH20H21", "H20", [  (114, 13), (115, 13), (116, 13), (117, 13), (118, 13), (119, 13), (120, 13), (121, 13), (122, 13)   ], "H21", [MAIN, RESTRICTING], ["SSw15", "SSw17", "SSw19"])
+		self.routes["SRtH20H40"] = Route(self.screen, block, "SRtH20H40", "H20", [  (114, 13), (115, 13), (116, 13), (117, 13), (118, 13), (119, 14), (120, 15), (121, 15), (122, 15)   ], "H40", [DIVERGING, RESTRICTING], ["SSw15", "SSw17"])
+
+		block = self.blocks["SOSHJE"]
+		self.routes["SRtP42H11"] = Route(self.screen, block, "SRtP42H11", "P42", [  (114, 15), (115, 15), (116, 14), (117, 13), (118, 13), (119, 13), (120, 12), (121, 11), (122, 11)   ], "H11", [RESTRICTING, DIVERGING], ["SSw15", "SSw17", "SSw19"])
+		self.routes["SRtP42H21"] = Route(self.screen, block, "SRtP42H21", "P42", [  (114, 15), (115, 15), (116, 14), (117, 13), (118, 13), (119, 13), (120, 13), (121, 13), (122, 13)   ], "H21", [RESTRICTING, DIVERGING], ["SSw15", "SSw17", "SSw19"])
+		self.routes["SRtP42H40"] = Route(self.screen, block, "SRtP42H40", "P42", [  (114, 15), (115, 15), (116, 14), (117, 13), (118, 13), (119, 14), (120, 15), (121, 15), (122, 15)   ], "H40", [RESTRICTING, RESTRICTING], ["SSw15", "SSw17"])
+		self.routes["SRtP42P43"] = Route(self.screen, block, "SRtP42P43", "P42", [  (114, 15), (115, 15), (116, 15), (117, 15), (118, 16), (119, 17), (120, 17)   ], "P43", [MAIN, MAIN], ["SSw15"])
+
+		self.signals["S20R"].AddPossibleRoutes("SOSHJW", [ "SRtH10H11" ])
+		self.signals["S18R"].AddPossibleRoutes("SOSHJM", [ "SRtH20H11", "SRtH20H21", "SRtH20H40" ])
+		self.signals["S16R"].AddPossibleRoutes("SOSHJE", [ "SRtP42H11", "SRtP42H21", "SRtP42H40", "SRtP42P43" ])
+		self.signals["S20L"].AddPossibleRoutes("SOSHJW", [ "SRtH10H11" ])
+		self.signals["S20L"].AddPossibleRoutes("SOSHJM", [ "SRtH20H11" ])
+		self.signals["S20L"].AddPossibleRoutes("SOSHJE", [ "SRtP42H11" ])
+		self.signals["S18LA"].AddPossibleRoutes("SOSHJM", [ "SRtH20H21" ])
+		self.signals["S18LA"].AddPossibleRoutes("SOSHJE", [ "SRtP42H21" ])
+		self.signals["S18LB"].AddPossibleRoutes("SOSHJM", [ "SRtH20H40" ])
+		self.signals["S18LB"].AddPossibleRoutes("SOSHJE", [ "SRtP42H40" ])
+		self.signals["S16L"].AddPossibleRoutes("SOSHJE", [ "SRtP42P43" ])
+
+		self.osSignals["SOSHJW"] = [ "S20R", "S20L" ]
+		self.osSignals["SOSHJM"] = [ "S18R", "S20L", "S18LA", "S18LB" ]
+		self.osSignals["SOSHJE"] = [ "S16R", "S20L", "S18LA", "S18LB", "S16L" ]
 
 		return self.signals
 

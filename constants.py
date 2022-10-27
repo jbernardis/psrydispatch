@@ -10,25 +10,30 @@ OCCUPIED = 1
 CLEARED = 2
 
 # block types
-BLOCK = 0
-OVERSWITCH = 1
-STOPPINGBLOCK = 2
+BLOCK = 10
+OVERSWITCH = 11
+STOPPINGBLOCK = 12
 
 # turnout status
-NORMAL = 0
-REVERSE = 1
+NORMAL = 20
+REVERSE = 21
 
 # turnout types
-TURNOUT = 0
-SLIPSWITCH = 1
+TURNOUT = 30
+SLIPSWITCH = 31
 
-# signal aspects
-RED = 0
-GREEN = 1
+# basic signal aspects
+STOP = 0b000
+CLEAR= 0b011
 
 # route types
-STOP = 0
-MAIN = 1
-SLOW = 2
-DIVERGING = 3
-RESTRICTING = 4
+MAIN = 40
+SLOW = 41
+DIVERGING = 42
+RESTRICTING = 43
+
+# aspect types
+RegAspects = 50
+RegSloAspects = 51
+AdvAspects = 52
+SloAspects = 53

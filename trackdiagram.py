@@ -30,6 +30,7 @@ class TrackDiagram(wx.Panel):
 		self.Bind(wx.EVT_PAINT, self.OnPaint)
 		self.Bind(wx.EVT_MOTION, self.OnMotion)
 		self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
+		self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
 
 	def DrawBackground(self, dc):
 		for i in range(len(self.bgbmps)):
@@ -47,6 +48,9 @@ class TrackDiagram(wx.Panel):
 
 	def OnLeftUp(self, evt):
 		self.frame.ProcessClick(self.screens[0], (self.tx, self.ty))
+
+	def OnRightUp(self, evt):
+		self.frame.ProcessRightClick(self.screens[0], (self.tx, self.ty))
 
 	def DrawTile(self, x, y, offset, bmp):
 		self.tiles[(x*16+offset, y*16)] = bmp;

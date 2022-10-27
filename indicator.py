@@ -1,5 +1,3 @@
-from constants import RED
-import json
 
 class Indicator:
 	def __init__(self, frame, district, name):

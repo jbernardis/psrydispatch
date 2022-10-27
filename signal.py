@@ -1,17 +1,25 @@
-from constants import RED
+from constants import STOP
 
 class Signal:
-	def __init__(self, district, screen, frame, name, east, pos, tiles):
+	def __init__(self, district, screen, frame, name, aspecttype, east, pos, tiles):
 		self.district = district
 		self.screen = screen
 		self.frame = frame
 		self.name = name
 		self.tiles = tiles
 		self.pos = pos
-		self.aspect = RED
+		self.aspect = STOP
+		self.aspectType = aspecttype
 		self.east = east
 		self.possibleRoutes = {}
 		self.guardBlock = None # block that the signal is guarding exit from
+		self.fleetEnabled = False
+		self.lastAspect = 0
+
+	def EnableFleeting(self):
+		self.fleetEnabled = not self.fleetEnabled
+		self.frame.Popup("Fleet %s for signal %s" % ("enabled" if self.fleetEnabled else "disabled", self.name))
+		self.Draw()
 
 	def AddPossibleRoutes(self, blk, rtList):
 		self.possibleRoutes[blk] = rtList
@@ -31,6 +39,9 @@ class Signal:
 	def GetName(self):
 		return self.name
 
+	def GetAspectType(self):
+		return self.aspectType
+
 	def GetPos(self):
 		return self.pos
 
@@ -49,12 +60,26 @@ class Signal:
 			return False
 		
 		self.aspect = aspect
+		if aspect != 0:
+			self.lastAspect = aspect
 		if refresh:
 			self.Draw()
 
 		if self.guardBlock is not None:
 			self.guardBlock.EvaluateStoppingSections()
 		return True
+
+	def SetFleetPending(self, flag, blk):
+		if not self.fleetEnabled:
+			return
+
+		if not flag:
+			self.frame.DelPendingFleet(blk)
+		else:
+			self.frame.AddPendingFleet(blk, self)
+
+	def DoFleeting(self):
+		self.frame.Request({"signal": { "name": self.GetName(), "aspect": self.lastAspect }})
 
 	def SetGuardBlock(self, blk):
 		self.guardBlock = blk

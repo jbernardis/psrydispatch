@@ -1,7 +1,13 @@
 class Train:
+	tx = 0
 	def __init__(self, name=None):
 		print("creating new train object for train %s" % name)
-		self.name = name
+		self.index = Train.tx
+		Train.tx += 1
+		if name:
+			self.name = name
+		else:
+			self.name = "??%d??" % self.index
 		self.loco = None
 		self.blocks = {}
 
@@ -40,7 +46,7 @@ class Train:
 			return
 
 		self.blocks[bn] = blk
-		print("train %s added to block %s cound %d" % (self.name, bn, len(self.blocks)))
+		print("train %s added to block %s count %d" % (self.name, bn, len(self.blocks)))
 
 	def RemoveFromBlock(self, blk):
 		bn = blk.GetName()

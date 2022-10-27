@@ -1,5 +1,3 @@
-from constants import RED
-
 class HandSwitch:
 	def __init__(self, district, screen, frame, block, name, pos, tiles):
 		self.district = district

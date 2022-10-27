@@ -1,6 +1,9 @@
 import logging
 
-from constants import OCCUPIED, EMPTY, NORMAL, REVERSE, GREEN, OVERSWITCH, RED, STOP
+from constants import RegAspects, RegSloAspects, AdvAspects, SloAspects, \
+			MAIN, SLOW, DIVERGING, RESTRICTING, \
+			CLEARED, OCCUPIED, STOP, NORMAL, OVERSWITCH
+
 
 class District:
 	def __init__(self, name, frame, screen):
@@ -70,9 +73,8 @@ class District:
 		return None, None
 
 	def PerformSignalAction(self, sig):
-		aspect = sig.GetAspect()
+		currentMovement = sig.GetAspect() != 0  # does the CURRENT signal status allow movement
 		signm = sig.GetName()
-		color = GREEN if aspect == 0 else RED # the color we are trying to change to
 		rt, osblk = self.FindRoute(sig)
 
 		if rt is None:
@@ -85,7 +87,7 @@ class District:
 			return
 
 		# this is a valid signal for the current route	
-		if color == GREEN:	
+		if not currentMovement:	  # we are trying to change the signal to allow movement
 			if osblk.IsBusy():
 				self.frame.Popup("OS Block %s is busy" % osblknm)
 				return
@@ -95,30 +97,159 @@ class District:
 				# the block will need to be reversed, but it's premature
 				# to do so now - so force return values as if reversed
 				exitBlkNm = rt.GetExitBlock(reverse=True)
-				aspect = rt.GetRouteType(reverse=True)
+				rType = rt.GetRouteType(reverse=True)
 			else:
 				exitBlkNm = rt.GetExitBlock()
-				aspect = rt.GetRouteType()
+				rType = rt.GetRouteType()
 
 			exitBlk = self.frame.blocks[exitBlkNm]
-			if exitBlk.IsBusy():
+			if exitBlk.IsOccupied():
 				self.frame.Popup("OS Exit Block %s is busy" % exitBlk.GetName())
+				return
+
+			
+			if exitBlk.IsCleared() and sigE != exitBlk.GetEast():
+				self.frame.Popup("OS Exit block is cleared in opposite direction")
 				return
 
 			if exitBlk.AreHandSwitchesSet():
 				self.frame.Popup("OS Exit Block %s is locked" % exitBlk.GetName())
 				return
 
-		else: # color == RED
+			nb = exitBlk.NextBlock()
+			if nb:
+				nbStatus = nb.GetStatus()
+				nbRType = nb.GetRouteType()
+				# try to go one more block, skipping past an OS block
+
+
+				if sigE != nb.GetEast():
+				# the block will need to be reversed, but it's premature
+				# to do so now - so force return values as if reversed
+					nxbNm = nb.GetExitBlock(reverse=True)
+				else:
+					nxbNm = nb.GetExitBlock()
+
+
+				nxb = self.frame.blocks[nxbNm]
+				if nxb:
+					nnb = nxb.NextBlock()
+				else:
+					nnb = None
+
+				if nnb:
+					nnbClear = nnb.GetStatus() == CLEARED
+				else:
+					nnbClear = False
+			else:
+				nbStatus = None
+				nbRType = None
+				nnbClear = False
+
+		else: # we are trying to change the signal to stop the train
 			esig = osblk.GetEntrySignal()	
 			if esig is not None and esig.GetName() != signm:
 				self.frame.Popup("Signal %s is not for route %s" % (sig.GetName(), rt.GetDescription()))
 				return
-			aspect = STOP
+			rType = None
+			nbStatus = None
+			nbRType = None
+			nnbClear = False
 
 		# better logic here to determine signal aspect - no need to send color
+		if currentMovement:
+			aspect = 0
+		else:
+			aspect = self.GetAspect(sig.GetAspectType(), rType, nbStatus, nbRType, nnbClear)
 
 		self.frame.Request({"signal": { "name": signm, "aspect": aspect }})
+
+	def GetAspect(self, atype, rtype, nbstatus, nbrtype, nnbclear):
+		if atype == RegAspects:
+			if rtype == MAIN and nbstatus == CLEARED and nbrtype == MAIN:
+				return 0b011  #Clear
+
+			elif rtype == MAIN and nbstatus == CLEARED and nbrtype == DIVERGING:
+				return 0b010  #Approach Medium
+
+			elif rtype == DIVERGING and nbstatus == CLEARED and nbrtype == MAIN:
+				return 0b111  # Medium Clear
+
+			elif rtype in [MAIN, DIVERGING] and nbstatus == CLEARED and nbrtype == SLOW:
+				return 0b110  # Approach Slow
+
+			elif rtype == MAIN and  (nbstatus != CLEARED or nbrtype == RESTRICTING):
+				return 0b001  # Approach
+
+			elif rtype == DIVERGING and (nbstatus != CLEARED or nbrtype  != MAIN):
+				return 0b101  # Medium Approach
+
+			elif rtype == RESTRICTING:
+				return 0b100  # Restricting
+
+			else:
+				return 0  # Stop
+
+		elif atype == RegSloAspects:
+			if rtype == MAIN and nbstatus == CLEARED:
+				return 0b011  # Clear
+
+			elif rtype == SLOW and nbstatus == CLEARED:
+				return 0b111  # Slow clear
+
+			elif rtype == MAIN:
+				return 0b001  # Approach
+
+			elif rtype == SLOW:
+				return 0b101  # Slow Approach
+
+			elif rtype == RESTRICTING:
+				return 0b100  # Restricting
+
+			else:
+				return 0  # Stop
+
+		elif atype == AdvAspects:
+			if rtype == MAIN and nbstatus == CLEARED and nbrtype == MAIN and nnbclear:
+				return 0b011  # Clear
+
+			elif rtype == MAIN and nbstatus == CLEARED and nbrtype == DIVERGING:
+				return 0b010  # Approach Medium
+
+			elif rtype == DIVERGING and nbstatus == CLEARED and nbrtype == MAIN:
+				return 0b111  # Clear
+
+			elif rtype == MAIN and nbstatus == CLEARED and nbrtype == MAIN and not nnbclear: 
+				return 0b110  # Advance Approach
+
+			elif rtype == MAIN and (nbstatus != CLEARED or nbrtype == RESTRICTING):
+				return 0b001  # Approach
+
+			elif rtype == DIVERGING and (nbstatus != CLEARED or nbrtype != MAIN):
+				return 0b101  # Medium Approach
+
+			elif rtype == RESTRICTING:
+				return 0b100  # Restricting
+
+			else:
+				return 0  # Stop
+
+		elif atype == SloAspects:
+			if nbstatus == CLEARED and rtype in [SLOW, DIVERGING]:
+				return 0b01  # Slow Clear
+
+			elif nbstatus != CLEARED and rtype == SLOW:
+				return 0b11  # Slow Approach
+
+			elif rtype == RESTRICTING:
+				return 0b10  # Restricting
+
+			else:
+				return 0  # Stop
+
+		else:
+			print("Unknown aspect type: %d" % atype)
+			return 0
 
 	def PerformHandSwitchAction(self, hs):
 		if not hs.GetValue():
@@ -175,7 +306,6 @@ class District:
 		osblock.SetEntrySignal(sig)
 		osblock.SetCleared(aspect != STOP, refresh=True)
 
-		# now see if it should be propagated to the exit block
 		if osblock.IsBusy() and aspect == STOP:
 			return
 
@@ -184,16 +314,15 @@ class District:
 		if exitBlk.IsOccupied():
 			return
 
-
 		if self.CrossingEastWestBoundary(osblock, exitBlk):
 			nd = not sig.GetEast()
 		else:
 			nd = sig.GetEast()
+
 		exitBlk.SetEast(nd)
 		exitBlk.SetCleared(aspect!=STOP, refresh=True)
 
 		self.LockSwitches(osblock.GetName(), sig, aspect!=STOP)
-
 
 	def LockSwitches(self, osblknm, sig, flag):
 		signm = sig.GetName()

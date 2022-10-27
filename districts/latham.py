@@ -6,7 +6,7 @@ from signal import Signal
 from button import Button
 from handswitch import HandSwitch
 
-from constants import HyYdPt, RESTRICTING, MAIN, DIVERGING, SLOW, NORMAL, REVERSE, EMPTY, SLIPSWITCH
+from constants import HyYdPt, RESTRICTING, MAIN, DIVERGING, SLOW, NORMAL, REVERSE, EMPTY, SLIPSWITCH, RegAspects, AdvAspects
 
 class Latham (District):
 	def __init__(self, name, frame, screen):
@@ -374,31 +374,32 @@ class Latham (District):
 		self.signals = {}
 
 		sigList = [
-			[ "L8R",  True,    "right", (8, 12) ],
-			[ "L6RA", True,    "right", (8, 14) ],
-			[ "L6RB", True,    "right", (8, 16) ],
-			[ "L4R",  True,    "right", (8, 18) ],
+			[ "L8R",  RegAspects, True,    "right", (8, 12) ],
+			[ "L6RA", RegAspects, True,    "rightlong", (8, 14) ],
+			[ "L6RB", RegAspects, True,    "right", (8, 16) ],
+			[ "L4R",  RegAspects, True,    "rightlong", (8, 18) ],
 
-			[ "L8L",  False,   "left",  (20, 10) ],
-			[ "L6L",  False,   "left",  (20, 12) ],
-			[ "L4L",  False,   "left",  (20, 14) ],
+			[ "L8L",  RegAspects, False,   "leftlong",  (20, 10) ],
+			[ "L6L",  RegAspects, False,   "leftlong",  (20, 12) ],
+			[ "L4L",  RegAspects, False,   "left",  (20, 14) ],
 
-			[ "L18R", True,    "right", (30, 12) ],
-			[ "L16R", True,    "right", (30, 14) ],
-			[ "L14R", True,    "right", (30, 16) ],
+			[ "L18R", RegAspects, True,    "right", (30, 12) ],
+			[ "L16R", RegAspects, True,    "rightlong", (30, 14) ],
+			[ "L14R", RegAspects, True,    "rightlong", (30, 16) ],
 
-			[ "L18L", False,   "left",  (35, 10) ],
-			[ "L14L", False,   "left",  (35, 12) ]
+			[ "L18L", AdvAspects, False,   "left",  (35, 10) ],
+			[ "L14L", RegAspects, False,   "left",  (35, 12) ]
 		]
-		for signm, east, tileSet, pos in sigList:
-			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, east, pos, tiles[tileSet])  
+		for signm, atype, east, tileSet, pos in sigList:
+			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])  
 
 		blockSigs = {
-			"L10": ("Y2R",  "L8R"),
-			"L11": ("L8L",  "L18R"),
-			"L20": ("Y4RB", "L6RA"),
+			# which signals govern stopping sections, west and east
+			"L10": ("Y2R",  None),
+			"L11": ("L8L",  None),
+			"L20": (None, "L6RA"),
 			"L21": ("L6L",  "L16R"),
-			"L31": ("L4L",  "L14R")
+			"L31": (None,  "L14R")
 		}
 
 		for blknm, siglist in blockSigs.items():

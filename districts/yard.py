@@ -6,7 +6,7 @@ from signal import Signal
 from button import Button
 from indicator import Indicator
 
-from constants import HyYdPt, RESTRICTING, MAIN, DIVERGING, SLOW, NORMAL, REVERSE, EMPTY, SLIPSWITCH
+from constants import HyYdPt, RESTRICTING, MAIN, DIVERGING, SLOW, NORMAL, REVERSE, EMPTY, SLIPSWITCH, RegAspects, AdvAspects, RegSloAspects
 
 CJBlocks = ["YOSCJE", "YOSCJW"]
 EEBlocks = ["YOSEJE", "YOSEJW"]
@@ -796,50 +796,51 @@ class Yard (District):
 		self.signals = {}
 
 		sigList = [
-			[ "Y2L",  True,    "right", (129, 12) ],
-			[ "Y2R",  False,   "left",  (136, 10) ],
-			[ "Y4L",  True,    "right", (129, 14) ],
-			[ "Y4RA", False,   "left",  (136, 14) ],
-			[ "Y4RB", False,   "left",  (136, 12) ],
+			[ "Y2L",  RegAspects, True,    "right", (129, 12) ],
+			[ "Y2R",  RegAspects, False,   "leftlong",  (136, 10) ],
+			[ "Y4L",  RegAspects, True,    "rightlong", (129, 14) ],
+			[ "Y4RA", RegAspects, False,   "leftlong",  (136, 14) ],
+			[ "Y4RB", RegAspects, False,   "left",  (136, 12) ],
 
-			[ "Y8LA", True,    "right", (114, 12) ],
-			[ "Y8LB", True,    "right", (113, 10) ],
-			[ "Y8LC", True,    "right", (112, 8)  ],
-			[ "Y8R",  False,   "left",  (121, 10) ],
-			[ "Y10L", True,    "right", (114, 14) ],
-			[ "Y10R", False,   "left",  (121, 12) ],
+			[ "Y8LA", RegAspects, True,    "right", (114, 12) ],
+			[ "Y8LB", RegAspects, True,    "right", (113, 10) ],
+			[ "Y8LC", RegAspects, True,    "right", (112, 8)  ],
+			[ "Y8R",  RegAspects, False,   "leftlong",  (121, 10) ],
+			[ "Y10L", AdvAspects, True,    "rightlong", (114, 14) ],
+			[ "Y10R", RegAspects, False,   "left",  (121, 12) ],
 
-			[ "Y22L",  True,   "right", (95, 6) ],
-			[ "Y22R",  False,  "left",  (106, 10) ],
-			[ "Y24LA", True,   "right", (95, 10) ],
-			[ "Y24LB", True,   "right", (95, 8) ],
-			[ "Y26LA", True,   "right", (96, 16) ],
-			[ "Y26LB", True,   "right", (96, 14) ],
-			[ "Y26LC", True,   "right", (96, 12) ],
-			[ "Y26R",  False,  "left",  (106, 12)],
+			[ "Y22L",  RegAspects, True,   "right", (95, 6) ],
+			[ "Y22R",  RegSloAspects, False,  "leftlong",  (106, 10) ],
+			[ "Y24LA", RegAspects, True,   "right", (95, 10) ],
+			[ "Y24LB", RegAspects, True,   "right", (95, 8) ],
+			[ "Y26LA", RegAspects, True,   "right", (96, 16) ],
+			[ "Y26LB", RegAspects, True,   "right", (96, 14) ],
+			[ "Y26LC", RegAspects, True,   "right", (96, 12) ],
+			[ "Y26R",  RegAspects, False,  "left",  (106, 12)],
 
-			[ "Y34L",  True,   "right", (84, 14) ],
-			[ "Y34RA", False,  "left",  (88, 14) ],
-			[ "Y34RB", False,  "left",  (88, 12) ],
+			[ "Y34L",  RegAspects, True,   "rightlong", (84, 14) ],
+			[ "Y34RA", RegAspects, False,  "left",  (88, 14) ],
+			[ "Y34RB", RegAspects, False,  "left",  (88, 12) ],
 
-			[ "Y40LA", False,  "left",  (32, 29) ],
-			[ "Y40LB", False,  "left",  (32, 31) ],
-			[ "Y40LC", False,  "left",  (32, 33) ],
-			[ "Y40LD", False,  "left",  (32, 35) ],
-			[ "Y40R",  True,   "right", (21, 31) ],
+			[ "Y40LA", RegAspects, False,  "left",  (32, 29) ],
+			[ "Y40LB", RegAspects, False,  "left",  (32, 31) ],
+			[ "Y40LC", RegAspects, False,  "left",  (32, 33) ],
+			[ "Y40LD", RegAspects, False,  "left",  (32, 35) ],
+			[ "Y40R",  RegAspects, True,   "right", (21, 31) ],
 
-			[ "Y42L",  False,  "left",  (55, 29) ],
-			[ "Y42RA", True,   "right", (45, 31) ],
-			[ "Y42RB", True,   "right", (45, 33) ],
-			[ "Y42RC", True,   "right", (45, 35) ],
-			[ "Y42RD", True,   "right", (45, 37) ],
+			[ "Y42L",  RegAspects, False,  "left",  (55, 29) ],
+			[ "Y42RA", RegAspects, True,   "right", (45, 31) ],
+			[ "Y42RB", RegAspects, True,   "right", (45, 33) ],
+			[ "Y42RC", RegAspects, True,   "right", (45, 35) ],
+			[ "Y42RD", RegAspects, True,   "right", (45, 37) ],
 		]
-		for signm, east, tileSet, pos in sigList:
-			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, east, pos, tiles[tileSet])  
+		for signm, atype, east, tileSet, pos in sigList:
+			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])  
 
 		blockSigs = {
-			"Y11": ("Y8R",  "Y2L"),
-			"Y20": ("Y26R", "Y10L"),
+			# which signals govern stopping sections, west and east
+			"Y11": ("Y8R",  None),
+			"Y20": (None, "Y10L"),
 			"Y21": ("Y10R", "Y4L"),
 		}
 

@@ -130,6 +130,8 @@ class MainFrame(wx.Frame):
 		self.handswitches =  self.districts.DefineHandSwitches(self.misctiles)
 		self.indicators = self.districts.DefineIndicators()
 
+		self.pendingFleets = {}
+
 		if not self.districts.Audit():
 			logging.error("Audit failed")
 
@@ -201,6 +203,29 @@ class MainFrame(wx.Frame):
 			return []
 		else:
 			return self.blockOSMap[blknm]
+
+	def AddPendingFleet(self, block, sig):
+		self.pendingFleets[block.GetName()] = sig
+
+	def DelPendingFleet(self, block):
+		bname = block.GetName()
+		if bname not in self.pendingFleets:
+			return
+
+		del(self.pendingFleets[bname])
+
+	def DoFleetPending(self, block):
+		bname = block.GetName()
+		if bname not in self.pendingFleets:
+			return
+
+		sig = self.pendingFleets[bname]
+		del(self.pendingFleets[bname])
+
+		sig.DoFleeting()
+		
+
+		
 			
 	def DrawCameras(self):
 		cams = {}
@@ -277,6 +302,14 @@ class MainFrame(wx.Frame):
 			print("You can remove bogus entry for block P32")
 		else:
 			self.blocks["P32"] = Block(self, self, "P32",	[], False)
+		if "P42" in self.blocks:
+			print("You can remove bogus entry for block P42")
+		else:
+			self.blocks["P42"] = Block(self, self, "P42",	[], False)
+		if "P43" in self.blocks:
+			print("You can remove bogus entry for block P43")
+		else:
+			self.blocks["P43"] = Block(self, self, "P43",	[], False)
 		if "P50" in self.blocks:
 			print("You can remove bogus entry for block P50")
 		else:
@@ -386,6 +419,16 @@ class MainFrame(wx.Frame):
 			self.panels[LaKr].DrawFixedBitmap(1036, 577, 0, self.bitmaps.USS.lampg)
 			sig = self.signals["D4L"]
 			sig.GetDistrict().PerformSignalLeverAction("D4", 1)
+
+	def ProcessRightClick(self, screen, pos):
+		logging.debug("right click %s %d, %d" % (screen, pos[0], pos[1]))
+		try:
+			sig = self.signalMap[(screen, pos)]
+		except KeyError:
+			sig = None
+
+		if sig:
+			sig.EnableFleeting()
 
 
 	def DrawTile(self, screen, pos, bmp):

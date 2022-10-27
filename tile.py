@@ -1,7 +1,7 @@
 import os
 
 from bitmaps import BitMaps
-from constants import EMPTY, OCCUPIED, CLEARED, NORMAL, REVERSE, RED, GREEN, STOP
+from constants import EMPTY, OCCUPIED, CLEARED, NORMAL, REVERSE, STOP, CLEAR
 
 class Tile:
 	def __init__(self, name, bmps):
@@ -127,11 +127,15 @@ class SignalTile:
 
 	def getBmp(self, sig):
 		if sig.aspect == STOP:
-			return self.bmps["red"]
-		elif sig.aspect == GREEN:
-			return self.bmps["green"]
+			return self.bmps["red-fleet"] if sig.fleetEnabled else self.bmps["red"]
+		elif sig.aspect != CLEAR:
+			try:
+				bmp =  self.bmps["restr-fleet"] if sig.fleetEnabled else self.bmps["restr"]
+			except:
+				bmp =  self.bmps["green-fleet"] if sig.fleetEnabled else self.bmps["green"]
+			return bmp
 		else:
-			return self.bmps["green"]
+			return self.bmps["green-fleet"] if sig.fleetEnabled else self.bmps["green"]
 
 
 def loadTiles(bitmaps):
@@ -545,15 +549,37 @@ def loadTiles(bitmaps):
 
 	b = bitmaps.signals
 	signals = {}
-	signals["left"] = SignalTile("C11", 
+	signals["left"] = SignalTile("left", 
 		{
 			"green": b.left.green,
-			"red": b.left.red
+			"red": b.left.red,
+			"green-fleet": b.left.greenfleet,
+			"red-fleet": b.left.redfleet
 		})
-	signals["right"] = SignalTile("C12", 
+	signals["leftlong"] = SignalTile("leftlong", 
+		{
+			"green": b.leftlong.green,
+			"red": b.leftlong.red,
+			"restr": b.leftlong.restr,
+			"green-fleet": b.leftlong.greenfleet,
+			"red-fleet": b.leftlong.redfleet,
+			"restr-fleet": b.leftlong.restrfleet,
+		})
+	signals["right"] = SignalTile("right", 
 		{
 			"green": b.right.green,
-			"red": b.right.red
+			"red": b.right.red,
+			"green-fleet": b.right.greenfleet,
+			"red-fleet": b.right.redfleet
+		})
+	signals["rightlong"] = SignalTile("rightlong", 
+		{
+			"green": b.rightlong.green,
+			"red": b.rightlong.red,
+			"restr": b.rightlong.restr,
+			"green-fleet": b.rightlong.greenfleet,
+			"red-fleet": b.rightlong.redfleet,
+			"restr-fleet": b.rightlong.restrfleet,
 		})
 
 	return tiles, turnouts, slipswitches, signals, misctiles

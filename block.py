@@ -1,7 +1,7 @@
 import logging
 
 from turnout import Turnout
-from constants import EMPTY, OCCUPIED, CLEARED, BLOCK, OVERSWITCH, STOPPINGBLOCK, RED
+from constants import EMPTY, OCCUPIED, CLEARED, BLOCK, OVERSWITCH, STOPPINGBLOCK, MAIN, STOP
 
 class Route:
 	def __init__(self, screen, osblk, name, blkin, pos, blkout, rtype, tolist=[]):
@@ -161,6 +161,15 @@ class Block:
 	def determineStatus(self):
 		self.status = OCCUPIED if self.occupied else CLEARED if self.cleared else EMPTY
 
+	def NextBlock(self):
+		if self.east:
+			return self.blkEast
+		else:
+			return self.blkWest
+
+	def GetRouteType(self):
+		return MAIN
+
 	def GetBlockType(self):
 		return self.type
 
@@ -231,7 +240,6 @@ class Block:
 		self.turnouts.append(turnout)
 
 	def SetOccupied(self, occupied=True, blockend=None, refresh=False):
-		print("set occupied %s %s" % (self.GetName(), str(occupied)))
 		if blockend  in ["E", "W"]:
 			b = self.sbEast if blockend == "E" else self.sbWest
 			if b is None:
@@ -269,7 +277,6 @@ class Block:
 
 		if refresh:
 			self.Draw()
-		print("end of set occupied")
 
 	def CheckAllUnoccupied(self):
 		if self.occupied:
@@ -278,18 +285,16 @@ class Block:
 			return
 		if self.sbWest and self.sbWest.IsOccupied():
 			return
-		print("all unoccupied")
 		# all unoccupied - clean up
 		self.frame.Request({"settrain": { "block": self.GetName(), "name": None, "loco": None}})
 		self.EvaluateStoppingSections()
+		self.frame.DoFleetPending(self)
+
 
 	def EvaluateStoppingSections(self):
-		print("eva;uating stopping sections %s" % str(self.east))
 		if self.east and self.sbEast:
-			print("evaluating east stopping section")
 			self.sbEast.EvaluateStoppingSection()
 		elif (not self.east) and self.sbWest:
-			print("evaluating west stopping section")
 			self.sbWest.EvaluateStoppingSection()
 
 	def IdentifyTrain(self):
@@ -311,8 +316,6 @@ class Block:
 				return None, None
 
 	def SetCleared(self, cleared=True, refresh=False):
-		if self.name == "F11":
-			print("entering set occupied for F11")
 		if cleared and self.occupied:
 			# can't mark an occupied block as cleared
 			return
@@ -323,8 +326,6 @@ class Block:
 
 		self.cleared = cleared
 		self.determineStatus()
-		if self.name == "F11":
-			print("calling draw for F11, status = %d cleared = %s" % (self.status, str(self.cleared)))
 		if refresh:
 			self.Draw()
 
@@ -343,22 +344,37 @@ class StoppingBlock (Block):
 		self.occupied = False
 		self.cleared = False
 		self.determineStatus()
+		self.lastSignalGreen = False
+		self.lastBlockEmpty = False
 
 	def EvaluateStoppingSection(self):
-		print("Evaluate stopping section for %s" % self.GetName())
-		print("%s %s" % (str(self.block.east), str(self.eastend)))
 		if not self.occupied:
 			self.Activate(False)
 			return
 
 		if self.block.east and self.eastend:
 			if self.block.sigEast:
+				if self.block.blkEast:
+					blkOccupied = self.block.blkEast.IsOccupied()
+				else:
+					blkOccupied = True
 				sv = self.frame.GetSignalByName(self.block.sigEast).GetAspect()
-				self.Activate(sv == 0)
+				# do not rearm the stopping relay if we transition from Green Light/Empty OS to Red Light/Occupied OS
+				if not(self.lastSignalGreen and self.lastBlockEmpty and sv == 0 and blkOccupied):
+					self.Activate(sv == 0)
+				self.lastSignalGreen = sv != 0
+				self.lastBlockEmpty = not blkOccupied
 		elif (not self.block.east) and (not self.eastend):
 			if self.block.sigWest:
+				if self.block.blkWest:
+					blkOccupied = self.block.blkWest.IsOccupied()
+				else:
+					blkOccupied = True
 				sv = self.frame.GetSignalByName(self.block.sigWest).GetAspect()
-				self.Activate(sv == 0)
+				if not(self.lastSignalGreen and self.lastBlockEmpty and sv == 0 and blkOccupied):
+					self.Activate(sv == 0)
+				self.lastSignalGreen = sv != 0
+				self.lastBlockEmpty = not blkOccupied
 
 	def Activate(self, flag=True):
 		if flag == self.active:
@@ -385,6 +401,9 @@ class StoppingBlock (Block):
 	def GetStatus(self):
 		self.determineStatus()
 		return self.status
+
+	def GetRouteType(self):
+		return self.block.GetRouteType()
 
 	def Reset(self):
 		pass
@@ -456,10 +475,8 @@ class OverSwitch (Block):
 		if route is None:
 			self.rtName = "<None>"
 			logging.info("Block %s: route is None" % self.name)
-			print("OS %s Route None" % self.name)
 			return
 			
-		print("OS %s Route:" % self.name)
 		self.route.rprint()
 
 		self.rtName = self.route.GetName()
@@ -488,6 +505,12 @@ class OverSwitch (Block):
 			self.SetNextBlockWest(exitBlk)
 		self.Draw()
 
+	def GetExitBlock(self, reverse=False):
+		if self.route is None:
+			return None
+
+		return self.route.GetExitBlock(reverse)
+
 	def SetSignals(self, signms):
 		pass # does not apply to OS blocks
 
@@ -497,12 +520,13 @@ class OverSwitch (Block):
 	def GetRouteName(self):
 		return self.rtName
 
+	def GetRouteType(self):
+		if self.route is None:
+			return None
+
+		return self.route.GetRouteType()
+
 	def SetEntrySignal(self, sig):
-		if self.name == "SOSHF":
-			if sig is None:
-				print("set entry sig to NOne")
-			else:
-				print("set entry signal to %s" % sig.GetName())
 		self.entrySignal = sig
 
 	def GetEntrySignal(self):
@@ -519,7 +543,13 @@ class OverSwitch (Block):
 		if occupied:
 			if self.entrySignal is not None:
 				signm = self.entrySignal.GetName()
-				self.frame.Request({"signal": { "name": signm, "aspect": RED }})
+				if self.route:
+					exitBlkName = self.route.GetExitBlock()
+					exitBlk = self.frame.GetBlockByName(exitBlkName)
+					self.entrySignal.SetFleetPending(self.entrySignal.GetAspect() != 0, exitBlk)
+				else:
+					self.entrySignal.SetFleetPending(False, None)
+				self.frame.Request({"signal": { "name": signm, "aspect": STOP }})
 				self.entrySignal = None
 		
 		if self.route:

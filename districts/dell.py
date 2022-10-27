@@ -6,7 +6,7 @@ from signal import Signal
 from button import Button
 from handswitch import HandSwitch
 
-from constants import HyYdPt, LaKr, RESTRICTING, MAIN, DIVERGING, SLOW, NORMAL, REVERSE, EMPTY, SLIPSWITCH
+from constants import HyYdPt, LaKr, RESTRICTING, MAIN, DIVERGING, SLOW, NORMAL, REVERSE, EMPTY, SLIPSWITCH, RegAspects
 
 class Dell (District):
 	def __init__(self, name, frame, screen):
@@ -284,27 +284,28 @@ class Dell (District):
 		self.signals = {}
 
 		sigList = [
-			[ "D6RA",  True,   "right", (46, 10) ],
-			[ "D6RB",  True,   "right", (46, 12) ],
-			[ "D4RA",  True,   "right", (46, 14) ],
-			[ "D4RB",  True,   "right", (46, 16) ],
+			[ "D6RA",  RegAspects, True,   "right", (46, 10) ],
+			[ "D6RB",  RegAspects, True,   "right", (46, 12) ],
+			[ "D4RA",  RegAspects, True,   "rightlong", (46, 14) ],
+			[ "D4RB",  RegAspects, True,   "rightlong", (46, 16) ],
 
-			[ "D6L",   False,  "left",  (55, 10) ],
-			[ "D4L",   False,  "left",  (55, 12) ],
+			[ "D6L",   RegAspects, False,  "leftlong",  (55, 10) ],
+			[ "D4L",   RegAspects, False,  "leftlong",  (55, 12) ],
 
-			[ "D12R",  True,   "right", (66, 12) ],
-			[ "D10R",  True,   "right", (66, 14) ],
+			[ "D12R",  RegAspects, True,   "rightlong", (66, 12) ],
+			[ "D10R",  RegAspects, True,   "rightlong", (66, 14) ],
 
-			[ "D12L",  False,  "left",  (70, 10) ],
-			[ "D10L",  False,  "left",  (70, 12) ]
+			[ "D12L",  RegAspects, False,  "leftlong",  (70, 10) ],
+			[ "D10L",  RegAspects, False,  "leftlong",  (70, 12) ]
 		]
-		for signm, east, tileSet, pos in sigList:
-			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, east, pos, tiles[tileSet])  
+		for signm, atype, east, tileSet, pos in sigList:
+			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])  
 
 		blockSigs = {
-			"D10": ("L18L", "D6RB"),
+			# which signals govern stopping sections, west and east
+			"D10": ("L18L", None),
 			"D11": ("D6L",  "D12R"),
-			"D20": ("L14L", "D4RA"),
+			"D20": (None, "D4RA"),
 			"D21": ("D4L",  "D10R")
 		}
 
