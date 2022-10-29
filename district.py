@@ -322,21 +322,24 @@ class District:
 		exitBlk.SetEast(nd)
 		exitBlk.SetCleared(aspect!=STOP, refresh=True)
 
-		self.LockSwitches(osblock.GetName(), sig, aspect!=STOP)
+		self.LockTurnoutsForSignal(osblock.GetName(), sig, aspect!=STOP)
 
-	def LockSwitches(self, osblknm, sig, flag):
+	def LockTurnoutsForSignal(self, osblknm, sig, flag):
 		signm = sig.GetName()
 		if osblknm in sig.possibleRoutes:
 			osblk = self.blocks[osblknm]
 			rt = osblk.GetRoute()
 			if rt:
 				tolist = rt.GetTurnouts()
-				for t in tolist:
-					to = self.turnouts[t]
-					to.SetLock(signm, flag, refresh=True)
-					tp = to.GetPaired()
-					if tp:
-						tp.SetLock(signm, flag, refresh=True)
+				self.LockTurnouts(signm, tolist, flag)
+
+	def LockTurnouts(self, locker, tolist, flag):
+		for t in tolist:
+			to = self.frame.turnouts[t]
+			to.SetLock(locker, flag, refresh=True)
+			tp = to.GetPaired()
+			if tp:
+				tp.SetLock(locker, flag, refresh=True)
 
 	def DoHandSwitchAction(self, hs, stat):
 		hs.SetValue(stat!=0, refresh=True)

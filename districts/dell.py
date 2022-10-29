@@ -19,14 +19,11 @@ class Dell (District):
 			sigList = [sn for sn in self.signals.keys() if sn.startswith(prefix+"R")]
 		else:
 			sigList = [sn for sn in self.signals.keys() if sn.startswith(prefix+"L") or sn.startswith(prefix+"R")]
-		print(str(sigList))
+
 		if direction != 0:
 			for signm in sigList:
 				sig = self.signals[signm]
-				print("aspect = %d" % sig.GetAspect())
 				rt, osblk = self.FindRoute(sig)
-				if rt:
-					print("Route %s found for OO %s and signal %s" % (rt.GetName(), osblk.GetName(), signm))
 
 
 	def DoTurnoutAction(self, turnout, state):

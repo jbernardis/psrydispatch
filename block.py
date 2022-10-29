@@ -51,7 +51,6 @@ class Route:
 
 	def rprint(self):
 		logging.debug("Block %s: set route to %s: %s => %s => %s %s" % (self.osblk.GetName(), self.name, self.blkin, str(self.pos), self.blkout, str(self.turnouts)))
-		print("Block %s: set route to %s: %s => %s => %s %s" % (self.osblk.GetName(), self.name, self.blkin, str(self.pos), self.blkout, str(self.turnouts)))
 
 
 class Block:
@@ -246,8 +245,13 @@ class Block:
 				logging.warning("Stopping block %s not defined for block %s" % (blockend, self.GetName()))
 				return
 			b.SetOccupied(occupied, refresh)
-			if occupied and self.train is None:
-				trn, loco = self.IdentifyTrain()
+			if occupied and self.train is None and self.frame.IsDispatcher():
+				tr = self.IdentifyTrain()
+				if tr is None:
+					tr = self.frame.NewTrain()
+
+				trn, loco = tr.GetNameAndLoco()
+				self.SetTrain(tr)
 				self.frame.Request({"settrain": { "block": self.GetName(), "name": trn, "loco": loco}})
 			if refresh:
 				self.Draw()
@@ -261,8 +265,14 @@ class Block:
 		if self.occupied:
 			self.cleared = False
 
-			if self.train is None:
-				trn, loco = self.IdentifyTrain()
+			if self.train is None and self.frame.IsDispatcher():
+				tr = self.IdentifyTrain()
+				if tr is None:
+					tr = self.frame.NewTrain()
+
+				trn, loco = tr.GetNameAndLoco()
+
+				self.SetTrain(tr)
 				self.frame.Request({"settrain": { "block": self.GetName(), "name": trn, "loco": loco}})
 		else:
 			for b in [self.sbEast, self.sbWest]:
@@ -286,7 +296,9 @@ class Block:
 		if self.sbWest and self.sbWest.IsOccupied():
 			return
 		# all unoccupied - clean up
-		self.frame.Request({"settrain": { "block": self.GetName(), "name": None, "loco": None}})
+		if self.frame.IsDispatcher():
+			self.frame.Request({"settrain": { "block": self.GetName(), "name": None, "loco": None}})
+		self.train = None
 		self.EvaluateStoppingSections()
 		self.frame.DoFleetPending(self)
 
@@ -300,20 +312,14 @@ class Block:
 	def IdentifyTrain(self):
 		if self.east:
 			if self.blkWest:
-				tr = self.blkWest.GetTrain()
-				if tr is None:
-					return None, None
-				return tr.GetNameAndLoco()
+				return self.blkWest.GetTrain()
 			else:
-				return None, None
+				return None
 		else:
 			if self.blkEast:
-				tr = self.blkEast.GetTrain()
-				if tr is None:
-					return None, None
-				return tr.GetNameAndLoco()
+				return self.blkEast.GetTrain()
 			else:
-				return None, None
+				return None
 
 	def SetCleared(self, cleared=True, refresh=False):
 		if cleared and self.occupied:
@@ -550,12 +556,13 @@ class OverSwitch (Block):
 				else:
 					self.entrySignal.SetFleetPending(False, None)
 				self.frame.Request({"signal": { "name": signm, "aspect": STOP }})
+				# replace signal locks on turnouts with block locks
+				self.district.LockTurnoutsForSignal(self.GetName(), self.entrySignal, False)
 				self.entrySignal = None
 		
 		if self.route:
 			tolist = self.route.GetTurnouts()
-			for t in tolist:
-				self.frame.turnouts[t].SetLock(self.name, occupied)
+			self.district.LockTurnouts(self.name, tolist, occupied)
 
 
 	def GetTileInRoute(self, screen, pos):

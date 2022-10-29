@@ -171,6 +171,9 @@ class MainFrame(wx.Frame):
 		self.rrServer = RRServer()
 		self.rrServer.SetServerAddress(self.settings.ipaddr, self.settings.serverport)
 
+	def IsDispatcher(self):
+		return self.settings.dispatch
+
 	def resolveObjects(self):
 		for bknm, bk in self.blocks.items():
 			sgWest, sgEast = bk.GetSignals()
@@ -178,14 +181,12 @@ class MainFrame(wx.Frame):
 				try:
 					self.signals[sgWest].SetGuardBlock(bk)
 				except KeyError:
-					print("Block %s: Unable to find west signal %s - using None" % (bknm, sgWest))
 					sgWest = None
 
 			if sgEast is not None:
 				try:
 					self.signals[sgEast].SetGuardBlock(bk)
 				except KeyError:
-					print("Block %s: Unable to find east signal %s - using None" % (bknm, sgEast))
 					sgEast = None
 			bk.SetSignals((sgWest, sgEast))
 
@@ -388,6 +389,7 @@ class MainFrame(wx.Frame):
 			if blk:
 				if blk.IsOccupied():
 					tr = blk.GetTrain()
+					oldName, oldLoco = tr.GetNameAndLoco()
 					dlg = EditTrainDlg(self, tr)
 					rc = dlg.ShowModal()
 					if rc == wx.ID_OK:
@@ -396,7 +398,7 @@ class MainFrame(wx.Frame):
 					if rc != wx.ID_OK:
 						return
 
-					self.Request({"settrain": { "block": blk.GetName(), "name": trainid, "loco": locoid}})
+					self.Request({"renametrain": { "oldname": oldName, "newname": trainid, "oldloco": oldLoco, "newloco": locoid}})
 
 		if pos[0] == 64 and pos[1] == 35:
 			self.panels[LaKr].DrawFixedBitmap(1017, 616, 0, self.bitmaps.USS.leverv)
@@ -472,6 +474,12 @@ class MainFrame(wx.Frame):
 			return self.signals[signm]
 		except:
 			return None
+
+	def NewTrain(self):
+		tr = Train(None)
+		name, loco = tr.GetNameAndLoco()
+		self.trains[name] = tr
+		return tr
 
 	def Popup(self, message, background=None, text=None):
 		tb = TB.ToasterBox(self, TB.TB_SIMPLE, TB.TB_DEFAULT_STYLE, TB.TB_ONTIME,
@@ -600,13 +608,9 @@ class MainFrame(wx.Frame):
 						self.breakerDisplay.DelBreaker(name)
 
 					if name in self.indicators:
-						print("breaker %s is also an indicator" % name)
 						ind = self.indicators[name]
-						print("current value is %d, new value is %d" % (ind.GetValue(), val))
 						if val != ind.GetValue():
 							ind.SetValue(val)
-					else:
-						print("breaker %s is NOT an indicator" % name)
 
 			elif cmd == "settrain":
 				for p in parms:
@@ -625,31 +629,46 @@ class MainFrame(wx.Frame):
 						if name is None:
 							if tr:
 								tr.RemoveFromBlock(blk)
-							tr = None
-						else:
-							if tr:
-								oldName = tr.GetName()
-								if oldName and oldName != name:
+							return
+
+						if not blk.IsOccupied():
+							logging.warning("Set train for block %s, but that block is unoccupied" % block)
+							return
+
+						if tr:
+							oldName = tr.GetName()
+							if oldName and oldName != name:
+								if name in self.trains:
+									# merge the two trains under the new "name"
+									try:
+										bl = self.trains[oldName].GetBlockList()
+									except:
+										bl = {}
+									for blk in bl.values():
+										self.trains[name].AddToBlock(blk)
+								else:
 									tr.SetName(name)
 									self.trains[name] = tr
-									try:
-										del(self.trains[oldName])
-									except:
-										logging.warning("can't delete train %s from train list" % oldName)
-							try:
-								tr = self.trains[name]
-							except:
-								tr = Train(name)
-								self.trains[name] = tr
-							tr.AddToBlock(blk)
-							if loco:
-								tr.SetLoco(loco)
+
+								try:
+									del(self.trains[oldName])
+								except:
+									logging.warning("can't delete train %s from train list" % oldName)
+						try:
+							tr = self.trains[name]
+						except:
+							tr = Train(name)
+							self.trains[name] = tr
+						tr.AddToBlock(blk)
+						if loco:
+							tr.SetLoco(loco)
 
 						blk.SetTrain(tr)
 						if tr:
 							tr.Draw()
 						else:
 							blk.DrawTrain()
+
 			elif cmd == "sessionID":
 				self.sessionid = int(parms)
 				logging.info("connected to railroad server with session ID %d" % self.sessionid)
@@ -661,7 +680,7 @@ class MainFrame(wx.Frame):
 	def Request(self, req):
 		if self.settings.dispatch:
 			logging.debug(json.dumps(req))
-			print(json.dumps(req))
+			print("Outgoing request: %s" % json.dumps(req))
 			self.rrServer.SendRequest(req)
 	
 	def onDisconnectEvent(self, _):
@@ -671,10 +690,26 @@ class MainFrame(wx.Frame):
 		self.bRefresh.Enable(False)
 		logging.info("Server socket closed")
 
-	def OnClose(self, evt):
-		print("Trains:")
+	def SaveTrains(self):
+		trDict = {}
 		for trid, tr in self.trains.items():
-			print("%s: %s" % (trid, tr.tstring()))
+			trDict[trid] = tr.GetBlockNameList()
+
+		print(json.dumps(trDict))
+
+	def SaveLocos(self):
+		locoDict = {}
+		for trid, tr in self.trains.items():
+			loco = tr.GetLoco()
+			if loco is not None:
+				locoDict[loco] = tr.GetBlockNameList()
+
+		print(json.dumps(locoDict))
+
+
+	def OnClose(self, evt):
+		self.SaveTrains()
+		self.SaveLocos()
 		try:
 			self.listener.kill()
 			self.listener.join()

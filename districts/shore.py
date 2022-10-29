@@ -26,7 +26,6 @@ class Shore (District):
 		aspect = sig.GetAspect()
 		signm = sig.GetName()
 		movement = aspect == 0  # do we want the signal to allow movement
-		print("trying to set signal %s to %d" % (signm, aspect))
 		if movement:
 			if osblk.IsBusy() or self.blocks["SOSW"].IsBusy() or self.blocks["SOSE"].IsBusy():
 				self.ReportOSBusy()

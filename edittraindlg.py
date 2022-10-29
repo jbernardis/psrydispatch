@@ -8,8 +8,10 @@ class EditTrainDlg(wx.Dialog):
 		vsz = wx.BoxSizer(wx.VERTICAL)
 		vsz.AddSpacer(20)
 
-		self.teTrainID = wx.TextCtrl(self, wx.ID_ANY, "", size=(125, -1))
-		self.teLocoID = wx.TextCtrl(self, wx.ID_ANY, "", size=(125, -1))
+		name, loco = train.GetNameAndLoco()
+
+		self.teTrainID = wx.TextCtrl(self, wx.ID_ANY, name, size=(125, -1))
+		self.teLocoID = wx.TextCtrl(self, wx.ID_ANY, loco, size=(125, -1))
 
 		vsz.Add(self.teTrainID)
 		vsz.AddSpacer(10)
