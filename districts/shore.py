@@ -182,7 +182,7 @@ class Shore (District):
 				elif s15+s17 == "RR":
 					block.SetRoute(self.routes["SRtP42H40"])
 				elif s15 == "N":
-					block.SetRoute(self.routes["SRtP42P43"])
+					block.SetRoute(self.routes["SRtP42N25"])
 				else:
 					block.SetRoute(None)
 
@@ -497,7 +497,7 @@ class Shore (District):
 		self.osBlocks["SOSHF"] = [ "F10", "F11" ]
 		self.osBlocks["SOSHJW"] = [ "H10", "H11" ]
 		self.osBlocks["SOSHJM"] = [ "H11", "H20", "H21", "H40" ]
-		self.osBlocks["SOSHJE"] = [ "H11", "H21", "H40", "P42", "P43" ]
+		self.osBlocks["SOSHJE"] = [ "H11", "H21", "H40", "P42", "N25" ]
 
 		return self.blocks, self.osBlocks
 
@@ -662,11 +662,11 @@ class Shore (District):
 		self.routes["SRtP42H11"] = Route(self.screen, block, "SRtP42H11", "P42", [  (114, 15), (115, 15), (116, 14), (117, 13), (118, 13), (119, 13), (120, 12), (121, 11), (122, 11)   ], "H11", [RESTRICTING, DIVERGING], ["SSw15", "SSw17", "SSw19"])
 		self.routes["SRtP42H21"] = Route(self.screen, block, "SRtP42H21", "P42", [  (114, 15), (115, 15), (116, 14), (117, 13), (118, 13), (119, 13), (120, 13), (121, 13), (122, 13)   ], "H21", [RESTRICTING, DIVERGING], ["SSw15", "SSw17", "SSw19"])
 		self.routes["SRtP42H40"] = Route(self.screen, block, "SRtP42H40", "P42", [  (114, 15), (115, 15), (116, 14), (117, 13), (118, 13), (119, 14), (120, 15), (121, 15), (122, 15)   ], "H40", [RESTRICTING, RESTRICTING], ["SSw15", "SSw17"])
-		self.routes["SRtP42P43"] = Route(self.screen, block, "SRtP42P43", "P42", [  (114, 15), (115, 15), (116, 15), (117, 15), (118, 16), (119, 17), (120, 17)   ], "P43", [MAIN, MAIN], ["SSw15"])
+		self.routes["SRtP42N25"] = Route(self.screen, block, "SRtP42N25", "P42", [  (114, 15), (115, 15), (116, 15), (117, 15), (118, 16), (119, 17), (120, 17)   ], "N25", [MAIN, MAIN], ["SSw15"])
 
 		self.signals["S20R"].AddPossibleRoutes("SOSHJW", [ "SRtH10H11" ])
 		self.signals["S18R"].AddPossibleRoutes("SOSHJM", [ "SRtH20H11", "SRtH20H21", "SRtH20H40" ])
-		self.signals["S16R"].AddPossibleRoutes("SOSHJE", [ "SRtP42H11", "SRtP42H21", "SRtP42H40", "SRtP42P43" ])
+		self.signals["S16R"].AddPossibleRoutes("SOSHJE", [ "SRtP42H11", "SRtP42H21", "SRtP42H40", "SRtP42N25" ])
 		self.signals["S20L"].AddPossibleRoutes("SOSHJW", [ "SRtH10H11" ])
 		self.signals["S20L"].AddPossibleRoutes("SOSHJM", [ "SRtH20H11" ])
 		self.signals["S20L"].AddPossibleRoutes("SOSHJE", [ "SRtP42H11" ])
@@ -674,7 +674,7 @@ class Shore (District):
 		self.signals["S18LA"].AddPossibleRoutes("SOSHJE", [ "SRtP42H21" ])
 		self.signals["S18LB"].AddPossibleRoutes("SOSHJM", [ "SRtH20H40" ])
 		self.signals["S18LB"].AddPossibleRoutes("SOSHJE", [ "SRtP42H40" ])
-		self.signals["S16L"].AddPossibleRoutes("SOSHJE", [ "SRtP42P43" ])
+		self.signals["S16L"].AddPossibleRoutes("SOSHJE", [ "SRtP42N25" ])
 
 		self.osSignals["SOSHJW"] = [ "S20R", "S20L" ]
 		self.osSignals["SOSHJM"] = [ "S18R", "S20L", "S18LA", "S18LB" ]

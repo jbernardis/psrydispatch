@@ -160,11 +160,11 @@ class Block:
 	def determineStatus(self):
 		self.status = OCCUPIED if self.occupied else CLEARED if self.cleared else EMPTY
 
-	def NextBlock(self):
+	def NextBlock(self, reverse=False):
 		if self.east:
-			return self.blkEast
+			return self.blkWest if reverse else self.blkEast
 		else:
-			return self.blkWest
+			return self.blkEast if reverse else self.blkWest
 
 	def GetRouteType(self):
 		return MAIN
@@ -210,6 +210,20 @@ class Block:
 	def IsCleared(self):
 		return self.cleared
 
+	def IsSectionOccupied(self, section):
+		if section == "E":
+			if self.sbEast:
+				return self.sbEast.IsOccupied()
+			else:
+				return False
+		elif section == "W":
+			if self.sbWest:
+				return self.sbWest.IsOccupied()
+			else:
+				return False
+		else:
+			return self.occupied
+
 	def IsOccupied(self):
 		if self.occupied:
 			return True
@@ -226,9 +240,11 @@ class Block:
 		for t, screen, pos, revflag in self.tiles:
 			bmp = t.getBmp(self.status, self.east, revflag)
 			self.frame.DrawTile(screen, pos, bmp)
+
 		for b in [self.sbEast, self.sbWest]:
 			if b is not None:
 				b.Draw()
+				
 		for t in self.turnouts:
 			t.Draw(self.status, self.east)
 
@@ -312,16 +328,25 @@ class Block:
 	def IdentifyTrain(self):
 		if self.east:
 			if self.blkWest:
+				if self.blkWest.GetName() in ["KOSN10S11", "KOSN20S21"]:
+					blkWest = self.blkWest.blkWest
+					return None if blkWest is None else blkWest.GetTrain()
+
 				return self.blkWest.GetTrain()
 			else:
 				return None
 		else:
 			if self.blkEast:
+				if self.blkEast.GetName() in ["KOSN10S11", "KOSN20S21"]:
+					blkEast = self.blkEast.blkEast
+					return None if blkEast is None else blkEast.GetTrain()
+
 				return self.blkEast.GetTrain()
 			else:
 				return None
 
 	def SetCleared(self, cleared=True, refresh=False):
+		if self.name in ["S11", "N10", "KOSN10S11"]:
 		if cleared and self.occupied:
 			# can't mark an occupied block as cleared
 			return
@@ -332,6 +357,9 @@ class Block:
 
 		self.cleared = cleared
 		self.determineStatus()
+		if self.status == EMPTY:
+			self.Reset()
+			
 		if refresh:
 			self.Draw()
 

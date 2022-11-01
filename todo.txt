@@ -23,7 +23,6 @@ inputs/outputs unused or uncertain of
 		
 		# outb[3] = setBit(outb[3], 2, self.rr.GetInput("H30").GetValue())     shore   # block indicators
 		# outb[3] = setBit(outb[3], 3, self.rr.GetInput("H10").GetValue())     shore
-		# outb[3] = setBit(outb[3], 5, self.rr.GetInput("N25").GetValue())     nassau
 		
     LATHAM:
 		# outb[3] = setBit(outb[3], 5, self.rr.GetInput("P11").GetValue().GetStatus())   port
@@ -83,7 +82,29 @@ inputs/outputs unused or uncertain of
           # 	YSWOut[4].bit.b5 = SBY82E;
           # 	YSWOut[4].bit.b6 = SBY83E;
           # 	YSWOut[4].bit.b7 = SBY84E;
-    
+SHORE
+SXL1 = SXL2 = False
+BX = False
+SXG = False
+#outb[2] = setBit(outb[2], 4, self.rr.GetOutput("F10H").GetStatus())  # Branch signals
+#outb[2] = setBit(outb[2], 5, self.rr.GetOutput("F10D").GetStatus())
+# outb[3] = setBit(outb[3], 5, self.rr.GetInput("P32").GetValue())  port
+#outb[3] = setBit(outb[3], 6, self.rr.GetInput("CBShore").GetValue())
+#outb[3] = setBit(outb[3], 7, self.rr.GetInput("CBHarpers").GetValue())
+outb[6] = setBit(outb[6], 0, self.rr.GetOutput("H30.srel").GetStatus()) # in conjunction with H30Power
+# 		SXON  = SIn[4].bit.b1;	//Crossing gate off normal
+  # self.rr.GetInput("CSw15").SetState(nb, rb)  clivedon
+# outb[2] = setBit(outb[2], 6, self.rr.GetOutput("P42.srel").GetStatus())	port
+
+KRULKISH
+		# outb[3] = setBit(outb[3], 6, self.rr.GetInput("CBKrulishYard").GetValue())  nassau
+
+
+check all block indicator outputs to see if I need a combined occupancy value like I do for block N25 in hyde
+
+
+
+
 fleeting
             basic fleeting implemented, but some questions: 1) should it be limited or restricted from certain signals, 2) should signals operate in fleeting "Groups" instead of individually
 

@@ -67,6 +67,7 @@ class District:
 				rname = osblk.GetRouteName()
 				if osblk.route is None:
 					continue
+
 				rt = self.routes[rname]
 				if sig.IsPossibleRoute(blknm, rname):
 					return rt, osblk
@@ -86,6 +87,7 @@ class District:
 			self.frame.Popup("OS Block %s is locked" % osblknm)
 			return
 
+
 		# this is a valid signal for the current route	
 		if not currentMovement:	  # we are trying to change the signal to allow movement
 			if osblk.IsBusy():
@@ -96,11 +98,12 @@ class District:
 			if sigE != osblk.GetEast():
 				# the block will need to be reversed, but it's premature
 				# to do so now - so force return values as if reversed
-				exitBlkNm = rt.GetExitBlock(reverse=True)
-				rType = rt.GetRouteType(reverse=True)
+				doReverse = True
 			else:
-				exitBlkNm = rt.GetExitBlock()
-				rType = rt.GetRouteType()
+				doReverse = False
+
+			exitBlkNm = rt.GetExitBlock(reverse=doReverse)
+			rType = rt.GetRouteType(reverse=doReverse)
 
 			exitBlk = self.frame.blocks[exitBlkNm]
 			if exitBlk.IsOccupied():
@@ -116,7 +119,7 @@ class District:
 				self.frame.Popup("OS Exit Block %s is locked" % exitBlk.GetName())
 				return
 
-			nb = exitBlk.NextBlock()
+			nb = exitBlk.NextBlock(reverse=doReverse)
 			if nb:
 				nbStatus = nb.GetStatus()
 				nbRType = nb.GetRouteType()
@@ -126,14 +129,15 @@ class District:
 				if sigE != nb.GetEast():
 				# the block will need to be reversed, but it's premature
 				# to do so now - so force return values as if reversed
-					nxbNm = nb.GetExitBlock(reverse=True)
+					doReverse = True
 				else:
-					nxbNm = nb.GetExitBlock()
+					doRevere = False
 
+				nxbNm = nb.GetExitBlock(reverse=doReverse)
 
 				nxb = self.frame.blocks[nxbNm]
 				if nxb:
-					nnb = nxb.NextBlock()
+					nnb = nxb.NextBlock(reverse=doReverse)
 				else:
 					nnb = None
 
@@ -300,8 +304,10 @@ class District:
 			return
 
 		# all checking was done on the sending side, so this is a valid request - just do it
+		if aspect != STOP:
+			osblock.SetEast(sig.GetEast())
 
-		osblock.SetEast(sig.GetEast())
+		exitBlkNm = osblock.GetExitBlock()
 		sig.SetAspect(aspect, refresh=True)
 		osblock.SetEntrySignal(sig)
 		osblock.SetCleared(aspect != STOP, refresh=True)
@@ -309,7 +315,6 @@ class District:
 		if osblock.IsBusy() and aspect == STOP:
 			return
 
-		exitBlkNm = rt.GetExitBlock()
 		exitBlk = self.frame.GetBlockByName(exitBlkNm)
 		if exitBlk.IsOccupied():
 			return
@@ -319,7 +324,9 @@ class District:
 		else:
 			nd = sig.GetEast()
 
-		exitBlk.SetEast(nd)
+		if aspect != STOP:
+			exitBlk.SetEast(nd)
+
 		exitBlk.SetCleared(aspect!=STOP, refresh=True)
 
 		self.LockTurnoutsForSignal(osblock.GetName(), sig, aspect!=STOP)

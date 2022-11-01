@@ -25,6 +25,7 @@ from districts.yard import Yard
 from districts.latham import Latham
 from districts.dell import Dell
 from districts.shore import Shore
+from districts.krulish import Krulish
 
 from constants import HyYdPt, LaKr, NaCl, screensList, EMPTY, OCCUPIED, NORMAL, REVERSE
 from listener import Listener
@@ -87,6 +88,9 @@ class MainFrame(wx.Frame):
 			b = wx.Button(self, wx.ID_ANY, "Nassau/Cliff",   pos=(1790, h+50), size=(200, 50))
 			self.Bind(wx.EVT_BUTTON, lambda event: self.SwapToScreen(NaCl), b)
 
+		if self.settings.showcameras:
+			self.DrawCameras()
+
 		self.bSubscribe = wx.Button(self, wx.ID_ANY, "Subscribe", pos=(100, 10))
 		self.Bind(wx.EVT_BUTTON, self.OnSubscribe, self.bSubscribe)
 
@@ -105,128 +109,6 @@ class MainFrame(wx.Frame):
 		self.SetSize((w, h))
 
 		wx.CallAfter(self.Initialize)
-
-	def UpdatePositionDisplay(self, x, y):
-		self.xpos.SetValue("%4d" % x)
-		self.ypos.SetValue("%4d" % y)
-
-	def Initialize(self):
-		self.listener = None
-		self.Bind(EVT_DELIVERY, self.onDeliveryEvent)
-		self.Bind(EVT_DISCONNECT, self.onDisconnectEvent)
-
-		self.tiles, self.totiles, self.sstiles, self.sigtiles, self.misctiles = loadTiles(self.bitmaps)
-		self.districts = Districts()
-		self.districts.AddDistrict(Yard("Yard", self, HyYdPt))
-		self.districts.AddDistrict(Latham("Latham", self, LaKr))
-		self.districts.AddDistrict(Dell("Dell", self, LaKr))
-		self.districts.AddDistrict(Shore("Shore", self, LaKr))
-		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
-
-		self.blocks, self.osBlocks = self.districts.DefineBlocks(self.tiles)
-		self.turnouts = self.districts.DefineTurnouts(self.totiles, self.blocks)
-		self.signals =  self.districts.DefineSignals(self.sigtiles)
-		self.buttons =  self.districts.DefineButtons(self.bitmaps.buttons)
-		self.handswitches =  self.districts.DefineHandSwitches(self.misctiles)
-		self.indicators = self.districts.DefineIndicators()
-
-		self.pendingFleets = {}
-
-		if not self.districts.Audit():
-			logging.error("Audit failed")
-
-		self.resolveObjects()
-
-		self.AddBogusStuff()
-
-
-		self.trains = {}
-
-		self.districts.Initialize(self.sstiles, self.misctiles)
-
-		if self.settings.dispatch:
-			self.turnoutMap = { (t.GetScreen(), t.GetPos()): t for t in self.turnouts.values() if not t.IsRouteControlled() }
-			self.buttonMap = { (b.GetScreen(), b.GetPos()): b for b in self.buttons.values() }
-			self.signalMap = { (s.GetScreen(), s.GetPos()): s for s in self.signals.values() }
-			self.handswitchMap = { (l.GetScreen(), l.GetPos()): l for l in self.handswitches.values() }
-			self.blockMap = self.BuildBlockMap(self.blocks)
-
-		else:
-			self.turnoutMap = {}
-			self.buttonMap = {}
-			self.signalMap = {}
-			self.handswitchMap = {}
-			self.blockMap = {}
-
-		self.buttonsToClear = []
-
-		self.districts.Draw()
-		if self.settings.showcameras:
-			self.DrawCameras()
-		
-		self.Bind(wx.EVT_TIMER, self.onTicker)
-		self.ticker = wx.Timer(self)
-		self.ticker.Start(1000)
-
-		self.rrServer = RRServer()
-		self.rrServer.SetServerAddress(self.settings.ipaddr, self.settings.serverport)
-
-	def IsDispatcher(self):
-		return self.settings.dispatch
-
-	def resolveObjects(self):
-		for bknm, bk in self.blocks.items():
-			sgWest, sgEast = bk.GetSignals()
-			if sgWest is not None:
-				try:
-					self.signals[sgWest].SetGuardBlock(bk)
-				except KeyError:
-					sgWest = None
-
-			if sgEast is not None:
-				try:
-					self.signals[sgEast].SetGuardBlock(bk)
-				except KeyError:
-					sgEast = None
-			bk.SetSignals((sgWest, sgEast))
-
-		# invert osBlocks so the we can easily map a block into the OS's it interconnects
-		self.blockOSMap = {}
-		for osblknm, blklist in self.osBlocks.items():
-			for blknm in blklist:
-				if blknm in self.blockOSMap:
-					self.blockOSMap[blknm].append(self.blocks[osblknm])
-				else:
-					self.blockOSMap[blknm] = [ self.blocks[osblknm] ]
-
-	def GetOSForBlock(self, blknm):
-		if blknm not in self.blockOSMap:
-			return []
-		else:
-			return self.blockOSMap[blknm]
-
-	def AddPendingFleet(self, block, sig):
-		self.pendingFleets[block.GetName()] = sig
-
-	def DelPendingFleet(self, block):
-		bname = block.GetName()
-		if bname not in self.pendingFleets:
-			return
-
-		del(self.pendingFleets[bname])
-
-	def DoFleetPending(self, block):
-		bname = block.GetName()
-		if bname not in self.pendingFleets:
-			return
-
-		sig = self.pendingFleets[bname]
-		del(self.pendingFleets[bname])
-
-		sig.DoFleeting()
-		
-
-		
 			
 	def DrawCameras(self):
 		cams = {}
@@ -276,6 +158,130 @@ class MainFrame(wx.Frame):
 		self.panels[LaKr].DrawFixedBitmap(1017, 616, 0, self.bitmaps.USS.leverv)
 		self.panels[LaKr].DrawFixedBitmap(1021, 563, 0, self.bitmaps.USS.lampw)
 
+	def UpdatePositionDisplay(self, x, y):
+		self.xpos.SetValue("%4d" % x)
+		self.ypos.SetValue("%4d" % y)
+
+	def Initialize(self):
+		self.listener = None
+		self.Bind(EVT_DELIVERY, self.onDeliveryEvent)
+		self.Bind(EVT_DISCONNECT, self.onDisconnectEvent)
+
+		self.tiles, self.totiles, self.sstiles, self.sigtiles, self.misctiles = loadTiles(self.bitmaps)
+		self.districts = Districts()
+		self.districts.AddDistrict(Yard("Yard", self, HyYdPt))
+		self.districts.AddDistrict(Latham("Latham", self, LaKr))
+		self.districts.AddDistrict(Dell("Dell", self, LaKr))
+		self.districts.AddDistrict(Shore("Shore", self, LaKr))
+		self.districts.AddDistrict(Krulish("Krulish", self, LaKr))
+		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
+
+		self.blocks, self.osBlocks = self.districts.DefineBlocks(self.tiles)
+		self.turnouts = self.districts.DefineTurnouts(self.totiles, self.blocks)
+		self.signals =  self.districts.DefineSignals(self.sigtiles)
+		self.buttons =  self.districts.DefineButtons(self.bitmaps.buttons)
+		self.handswitches =  self.districts.DefineHandSwitches(self.misctiles)
+		self.indicators = self.districts.DefineIndicators()
+
+		self.pendingFleets = {}
+
+		if not self.districts.Audit():
+			logging.error("Audit failed")
+
+		self.resolveObjects()
+
+		self.AddBogusStuff()
+
+
+		self.trains = {}
+
+		self.districts.Initialize(self.sstiles, self.misctiles)
+
+		if self.settings.dispatch:
+			self.turnoutMap = { (t.GetScreen(), t.GetPos()): t for t in self.turnouts.values() if not t.IsRouteControlled() }
+			self.buttonMap = { (b.GetScreen(), b.GetPos()): b for b in self.buttons.values() }
+			self.signalMap = { (s.GetScreen(), s.GetPos()): s for s in self.signals.values() }
+			self.handswitchMap = { (l.GetScreen(), l.GetPos()): l for l in self.handswitches.values() }
+			self.blockMap = self.BuildBlockMap(self.blocks)
+
+		else:
+			self.turnoutMap = {}
+			self.buttonMap = {}
+			self.signalMap = {}
+			self.handswitchMap = {}
+			self.blockMap = {}
+
+		self.buttonsToClear = []
+
+		self.districts.Draw()
+		
+		self.Bind(wx.EVT_TIMER, self.onTicker)
+		self.ticker = wx.Timer(self)
+		self.ticker.Start(1000)
+
+		self.rrServer = RRServer()
+		self.rrServer.SetServerAddress(self.settings.ipaddr, self.settings.serverport)
+
+	def IsDispatcher(self):
+		return self.settings.dispatch
+
+	def resolveObjects(self):
+		for bknm, bk in self.blocks.items():
+			sgWest, sgEast = bk.GetSignals()
+			if sgWest is not None:
+				try:
+					self.signals[sgWest].SetGuardBlock(bk)
+				except KeyError:
+					sgWest = None
+
+			if sgEast is not None:
+				try:
+					self.signals[sgEast].SetGuardBlock(bk)
+				except KeyError:
+					sgEast = None
+			bk.SetSignals((sgWest, sgEast))
+
+		# invert osBlocks so the we can easily map a block into the OS's it interconnects
+		self.blockOSMap = {}
+		for osblknm, blklist in self.osBlocks.items():
+			for blknm in blklist:
+				if blknm in self.blockOSMap:
+					self.blockOSMap[blknm].append(self.blocks[osblknm])
+				else:
+					self.blockOSMap[blknm] = [ self.blocks[osblknm] ]
+
+		# these pairs of blocks are directly connected without an OS in between
+		# self.blocks["S11"].SetNextBlockEast(self.blocks["N10"])
+		# self.blocks["N10"].SetNextBlockWest(self.blocks["S11"])
+		# self.blocks["S21"].SetNextBlockEast(self.blocks["N20"])
+		# self.blocks["N20"].SetNextBlockWest(self.blocks["S21"])
+
+	def GetOSForBlock(self, blknm):
+		if blknm not in self.blockOSMap:
+			return []
+		else:
+			return self.blockOSMap[blknm]
+
+	def AddPendingFleet(self, block, sig):
+		self.pendingFleets[block.GetName()] = sig
+
+	def DelPendingFleet(self, block):
+		bname = block.GetName()
+		if bname not in self.pendingFleets:
+			return
+
+		del(self.pendingFleets[bname])
+
+	def DoFleetPending(self, block):
+		bname = block.GetName()
+		if bname not in self.pendingFleets:
+			return
+
+		sig = self.pendingFleets[bname]
+		del(self.pendingFleets[bname])
+
+		sig.DoFleeting()		
+
 	def BuildBlockMap(self, bl):
 		blkMap = {}
 		for b in bl.values():
@@ -307,10 +313,6 @@ class MainFrame(wx.Frame):
 			print("You can remove bogus entry for block P42")
 		else:
 			self.blocks["P42"] = Block(self, self, "P42",	[], False)
-		if "P43" in self.blocks:
-			print("You can remove bogus entry for block P43")
-		else:
-			self.blocks["P43"] = Block(self, self, "P43",	[], False)
 		if "P50" in self.blocks:
 			print("You can remove bogus entry for block P50")
 		else:
