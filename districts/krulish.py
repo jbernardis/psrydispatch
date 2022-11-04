@@ -12,6 +12,35 @@ class Krulish (District):
 	def __init__(self, name, frame, screen):
 		District.__init__(self, name, frame, screen)
 
+	def DoSignalAction(self, sig, aspect):
+		District.DoSignalAction(self, sig, aspect)
+		signm = sig.GetName()
+
+		if signm == "N10W":
+			if aspect == 0:
+				bmp = self.misctiles["indicator"].getBmp(None, "out")
+			else:
+				bmp = self.misctiles["indicator"].getBmp(None, "green")
+			self.frame.DrawTile(self.screen, (119, 5), bmp)
+		if signm == "N20W":
+			if aspect == 0:
+				bmp = self.misctiles["indicator"].getBmp(None, "out")
+			else:
+				bmp = self.misctiles["indicator"].getBmp(None, "green")
+			self.frame.DrawTile(self.screen, (119, 24), bmp)
+		if signm == "S11E":
+			if aspect == 0:
+				bmp = self.misctiles["indicator"].getBmp(None, "out")
+			else:
+				bmp = self.misctiles["indicator"].getBmp(None, "green")
+			self.frame.DrawTile(self.screen, (124, 5), bmp)
+		if signm == "S21E":
+			if aspect == 0:
+				bmp = self.misctiles["indicator"].getBmp(None, "out")
+			else:
+				bmp = self.misctiles["indicator"].getBmp(None, "green")
+			self.frame.DrawTile(self.screen, (124, 24), bmp)
+
 	def DetermineRoute(self, blocks):
 		s1 = 'N' if self.turnouts["KSw1"].IsNormal() else 'R'
 		s3 = 'N' if self.turnouts["KSw3"].IsNormal() else 'R'

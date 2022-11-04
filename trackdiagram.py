@@ -7,7 +7,9 @@ class TrackDiagram(wx.Panel):
 		self.screens = [d.screen for d in dlist]
 		self.bgbmps =  [d.bitmap for d in dlist]
 		self.offsets = [d.offset for d in dlist]
+		self.xoffset = [int(o/16) for o in self.offsets]
 		self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
+		self.xoffset.append(9999)
 
 		self.showPosition = True
 
@@ -16,6 +18,7 @@ class TrackDiagram(wx.Panel):
 		self.bitmaps = {}
 		self.tx = 0
 		self.ty = 0
+		self.scr = -1
 
 		self.SetCursor(wx.Cursor(wx.CURSOR_ARROW))
 
@@ -35,22 +38,39 @@ class TrackDiagram(wx.Panel):
 	def DrawBackground(self, dc):
 		for i in range(len(self.bgbmps)):
 			dc.DrawBitmap(self.bgbmps[i], self.offsets[i], 0)
+		w, h = self.GetSize()
 
 	def OnMotion(self, evt):
 		pt = evt.GetPosition()
 		ntx = int(pt.x/16)
 		nty = int(pt.y/16)
-		if ntx != self.tx or nty != self.ty:
+		ox = self.DetermineScreen(ntx)
+		if ox is None:
+			# ignore if we can't determine position
+			return
+
+		ntx -= self.xoffset[ox]
+		scr = self.screens[ox]
+
+		if ntx != self.tx or nty != self.ty or self.scr != scr:
 			self.tx = ntx
 			self.ty = nty
+			self.scr = scr
 			if self.showPosition:
-				self.frame.UpdatePositionDisplay(self.tx, self.ty)
+				self.frame.UpdatePositionDisplay(self.tx, self.ty, self.scr)
+
+	def DetermineScreen(self, x):
+		for ox in range(len(self.xoffset)-1):
+			if self.xoffset[ox] <= x < self.xoffset[ox+1]:
+				return ox
+
+		return None 
 
 	def OnLeftUp(self, evt):
-		self.frame.ProcessClick(self.screens[0], (self.tx, self.ty))
+		self.frame.ProcessClick(self.scr, (self.tx, self.ty))
 
 	def OnRightUp(self, evt):
-		self.frame.ProcessRightClick(self.screens[0], (self.tx, self.ty))
+		self.frame.ProcessRightClick(self.scr, (self.tx, self.ty))
 
 	def DrawTile(self, x, y, offset, bmp):
 		self.tiles[(x*16+offset, y*16)] = bmp;

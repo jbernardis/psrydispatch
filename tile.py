@@ -545,7 +545,12 @@ def loadTiles(bitmaps):
 			"green-cross": b.diagright.routed,
 			"red-cross": b.diagright.occupied,
 		})
-
+	misctiles["indicator"] = MiscTile("indicator",
+		{
+			"green": bmisc.indicatorg,
+			"red": bmisc.indicatorr,
+			"out": bmisc.indicatorout,
+		})
 
 	b = bitmaps.signals
 	signals = {}

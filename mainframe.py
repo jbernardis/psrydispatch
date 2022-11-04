@@ -26,6 +26,7 @@ from districts.latham import Latham
 from districts.dell import Dell
 from districts.shore import Shore
 from districts.krulish import Krulish
+from districts.nassau import Nassau
 
 from constants import HyYdPt, LaKr, NaCl, screensList, EMPTY, OCCUPIED, NORMAL, REVERSE
 from listener import Listener
@@ -60,53 +61,56 @@ class MainFrame(wx.Frame):
 			LaKr:   Node(LaKr,   self.bitmaps.diagrams.LathamKrulish, 2544 if singlePage else 0),
 			NaCl:   Node(NaCl,   self.bitmaps.diagrams.NassauCliff, 5088 if singlePage else 0)
 		}
+		topSpace = 120
 		if self.settings.pages == 1:  # set up a single ultra-wide display accross 3 monitors
 			dp = TrackDiagram(self, [self.diagrams[sn] for sn in screensList])
-			dp.SetPosition((20, 120))
-			w, h = dp.GetSize()
-			h += 120
+			dp.SetPosition((16, 120))
+			diagramw, diagramh = dp.GetSize()
 			self.panels = {self.diagrams[sn].screen : dp for sn in screensList}  # all 3 screens just point to the same diagram
+			totalw = 2560*3
 
 		else:  # set up three separate screens for a single monitor
 			self.panels = {}
 			for d in [self.diagrams[sn] for sn in screensList]:
 				dp = TrackDiagram(self, [d])
 				dp.Hide()
-				dp.SetPosition((20, 120))
+				dp.SetPosition((8, 120))
 				self.panels[d.screen] = dp
 
 			self.currentScreen = LaKr
-			w, h = self.panels[self.currentScreen].GetSize()
+			diagramw, diagramh = self.panels[self.currentScreen].GetSize()
 			self.panels[self.currentScreen].Show()
-			h += 120  # add in the amount of vertical space we have reserved at the top of the display
 
 			# add buttons to switch from screen to screen
-			b = wx.Button(self, wx.ID_ANY, "Hyde/Yard/Port", pos=(500, h+50), size=(200, 50))
+			voffset = topSpace+diagramh+20
+			b = wx.Button(self, wx.ID_ANY, "Hyde/Yard/Port", pos=(500, voffset), size=(200, 50))
 			self.Bind(wx.EVT_BUTTON, lambda event: self.SwapToScreen(HyYdPt), b)
-			b = wx.Button(self, wx.ID_ANY, "Latham/Krulish", pos=(1145, h+50), size=(200, 50))
+			b = wx.Button(self, wx.ID_ANY, "Latham/Krulish", pos=(1145, voffset), size=(200, 50))
 			self.Bind(wx.EVT_BUTTON, lambda event: self.SwapToScreen(LaKr), b)
-			b = wx.Button(self, wx.ID_ANY, "Nassau/Cliff",   pos=(1790, h+50), size=(200, 50))
+			b = wx.Button(self, wx.ID_ANY, "Nassau/Cliff",   pos=(1790, voffset), size=(200, 50))
 			self.Bind(wx.EVT_BUTTON, lambda event: self.SwapToScreen(NaCl), b)
+			totalw = 2560+20
 
 		if self.settings.showcameras:
 			self.DrawCameras()
 
-		self.bSubscribe = wx.Button(self, wx.ID_ANY, "Subscribe", pos=(100, 10))
+		self.bSubscribe = wx.Button(self, wx.ID_ANY, "Connect", pos=(100, 10))
 		self.Bind(wx.EVT_BUTTON, self.OnSubscribe, self.bSubscribe)
 
 		self.bRefresh = wx.Button(self, wx.ID_ANY, "Refresh", pos=(400, 10))
 		self.Bind(wx.EVT_BUTTON, self.OnRefresh, self.bRefresh)
 		self.bRefresh.Enable(False)
 
-		self.xpos = wx.TextCtrl(self, wx.ID_ANY, "", size=(40, -1), pos=(100, 50), style=wx.TE_READONLY)
-		self.ypos = wx.TextCtrl(self, wx.ID_ANY, "", size=(40, -1), pos=(160, 50), style=wx.TE_READONLY)
+		self.scrn = wx.TextCtrl(self, wx.ID_ANY, "", size=(80, -1), pos=(100, 50), style=wx.TE_READONLY)
+		self.xpos = wx.TextCtrl(self, wx.ID_ANY, "", size=(40, -1), pos=(200, 50), style=wx.TE_READONLY)
+		self.ypos = wx.TextCtrl(self, wx.ID_ANY, "", size=(40, -1), pos=(260, 50), style=wx.TE_READONLY)
 
-		w += 50
-		h += 200
-		self.breakerDisplay = BreakerDisplay(self, pos=(int(w/2-400/2), 50), size=(400, 40))
+		h = 1080
+		self.breakerDisplay = BreakerDisplay(self, pos=(int(totalw/2-400/2), 50), size=(400, 40))
 
-		self.SetMaxSize((w, h))
-		self.SetSize((w, h))
+		self.SetMaxSize((totalw, h))
+		self.SetSize((totalw, h))
+		self.SetPosition((0, 0))
 
 		wx.CallAfter(self.Initialize)
 			
@@ -154,15 +158,13 @@ class MainFrame(wx.Frame):
 			for pos, bmp in cams[screen]:
 				self.panels[screen].DrawFixedBitmap(pos[0], pos[1], offset, bmp)
 
-		self.panels[LaKr].DrawFixedBitmap(1000, 560, 0, self.bitmaps.USS.si4)
-		self.panels[LaKr].DrawFixedBitmap(1017, 616, 0, self.bitmaps.USS.leverv)
-		self.panels[LaKr].DrawFixedBitmap(1021, 563, 0, self.bitmaps.USS.lampw)
-
-	def UpdatePositionDisplay(self, x, y):
+	def UpdatePositionDisplay(self, x, y, scr):
 		self.xpos.SetValue("%4d" % x)
 		self.ypos.SetValue("%4d" % y)
+		self.scrn.SetValue("%s" % scr)
 
 	def Initialize(self):
+		print("calling initialize")
 		self.listener = None
 		self.Bind(EVT_DELIVERY, self.onDeliveryEvent)
 		self.Bind(EVT_DISCONNECT, self.onDisconnectEvent)
@@ -174,6 +176,7 @@ class MainFrame(wx.Frame):
 		self.districts.AddDistrict(Dell("Dell", self, LaKr))
 		self.districts.AddDistrict(Shore("Shore", self, LaKr))
 		self.districts.AddDistrict(Krulish("Krulish", self, LaKr))
+		self.districts.AddDistrict(Nassau("Nassau", self, NaCl))
 		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
 
 		self.blocks, self.osBlocks = self.districts.DefineBlocks(self.tiles)
@@ -192,6 +195,8 @@ class MainFrame(wx.Frame):
 
 		self.AddBogusStuff()
 
+		self.rrServer = RRServer()
+		self.rrServer.SetServerAddress(self.settings.ipaddr, self.settings.serverport)
 
 		self.trains = {}
 
@@ -219,8 +224,7 @@ class MainFrame(wx.Frame):
 		self.ticker = wx.Timer(self)
 		self.ticker.Start(1000)
 
-		self.rrServer = RRServer()
-		self.rrServer.SetServerAddress(self.settings.ipaddr, self.settings.serverport)
+		print("finished initialize")
 
 	def IsDispatcher(self):
 		return self.settings.dispatch
@@ -249,12 +253,6 @@ class MainFrame(wx.Frame):
 					self.blockOSMap[blknm].append(self.blocks[osblknm])
 				else:
 					self.blockOSMap[blknm] = [ self.blocks[osblknm] ]
-
-		# these pairs of blocks are directly connected without an OS in between
-		# self.blocks["S11"].SetNextBlockEast(self.blocks["N10"])
-		# self.blocks["N10"].SetNextBlockWest(self.blocks["S11"])
-		# self.blocks["S21"].SetNextBlockEast(self.blocks["N20"])
-		# self.blocks["N20"].SetNextBlockWest(self.blocks["S21"])
 
 	def GetOSForBlock(self, blknm):
 		if blknm not in self.blockOSMap:
@@ -348,6 +346,7 @@ class MainFrame(wx.Frame):
 			to = None
 
 		if to:
+			print("Turnout %s" % to.GetName())
 			to.GetDistrict().PerformTurnoutAction(to)
 			return
 
@@ -401,28 +400,6 @@ class MainFrame(wx.Frame):
 						return
 
 					self.Request({"renametrain": { "oldname": oldName, "newname": trainid, "oldloco": oldLoco, "newloco": locoid}})
-
-		if pos[0] == 64 and pos[1] == 35:
-			self.panels[LaKr].DrawFixedBitmap(1017, 616, 0, self.bitmaps.USS.leverv)
-			self.panels[LaKr].DrawFixedBitmap(1021, 563, 0, self.bitmaps.USS.lampw)
-			self.panels[LaKr].DrawFixedBitmap(1003, 577, 0, self.bitmaps.USS.lampd)
-			self.panels[LaKr].DrawFixedBitmap(1036, 577, 0, self.bitmaps.USS.lampd)
-			sig = self.signals["D4L"]
-			sig.GetDistrict().PerformSignalLeverAction("D4", 0)
-		elif pos[0] == 63 and pos[1] == 36:
-			self.panels[LaKr].DrawFixedBitmap(1017, 616, 0, self.bitmaps.USS.leverl)
-			self.panels[LaKr].DrawFixedBitmap(1003, 577, 0, self.bitmaps.USS.lampg)
-			self.panels[LaKr].DrawFixedBitmap(1021, 563, 0, self.bitmaps.USS.lampd)
-			self.panels[LaKr].DrawFixedBitmap(1036, 577, 0, self.bitmaps.USS.lampd)
-			sig = self.signals["D4L"]
-			sig.GetDistrict().PerformSignalLeverAction("D4", -1)
-		elif pos[0] == 65 and pos[1] == 36:
-			self.panels[LaKr].DrawFixedBitmap(1017, 616, 0, self.bitmaps.USS.leverr)
-			self.panels[LaKr].DrawFixedBitmap(1021, 563, 0, self.bitmaps.USS.lampd)
-			self.panels[LaKr].DrawFixedBitmap(1003, 577, 0, self.bitmaps.USS.lampd)
-			self.panels[LaKr].DrawFixedBitmap(1036, 577, 0, self.bitmaps.USS.lampg)
-			sig = self.signals["D4L"]
-			sig.GetDistrict().PerformSignalLeverAction("D4", 1)
 
 	def ProcessRightClick(self, screen, pos):
 		logging.debug("right click %s %d, %d" % (screen, pos[0], pos[1]))
@@ -503,7 +480,7 @@ class MainFrame(wx.Frame):
 			self.listener.join()
 			self.listener = None
 			self.subscribed = False
-			self.bSubscribe.SetLabel("Subscribe")
+			self.bSubscribe.SetLabel("Connect")
 			self.bRefresh.Enable(False)
 		else:
 			self.listener = Listener(self, self.settings.ipaddr, self.settings.socketport)
@@ -514,8 +491,11 @@ class MainFrame(wx.Frame):
 
 			self.listener.start()
 			self.subscribed = True
-			self.bSubscribe.SetLabel("Unsubscribe")
+			self.bSubscribe.SetLabel("Disconnect")
 			self.bRefresh.Enable(True)
+			if self.settings.dispatch:
+				self.SendBlockDirRequests()
+				
 		self.breakerDisplay.UpdateDisplay()
 
 	def OnRefresh(self, _):
@@ -681,10 +661,19 @@ class MainFrame(wx.Frame):
 
 	def Request(self, req):
 		if self.settings.dispatch:
-			logging.debug(json.dumps(req))
-			print("Outgoing request: %s" % json.dumps(req))
-			self.rrServer.SendRequest(req)
-	
+			if self.subscribed:
+				logging.debug(json.dumps(req))
+				print("Outgoing request: %s" % json.dumps(req))
+				self.rrServer.SendRequest(req)
+
+	def SendBlockDirRequests(self):
+		for b in self.blocks.values():
+			self.Request({"blockdir": { "block": b.GetName(), "dir": "E" if b.GetEast() else "W"}})
+			sbw, sbe = b.GetStoppingSections()
+			for sb in [sbw, sbe]:
+				if sb:
+					self.Request({"blockdir": { "block": sb.GetName(), "dir": "E" if b.GetEast() else "W"}})
+
 	def onDisconnectEvent(self, _):
 		self.listener = None
 		self.subscribed = False

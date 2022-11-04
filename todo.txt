@@ -106,15 +106,15 @@ check all block indicator outputs to see if I need a combined occupancy value li
 
 
 fleeting
-            basic fleeting implemented, but some questions: 1) should it be limited or restricted from certain signals, 2) should signals operate in fleeting "Groups" instead of individually
+            basic fleeting implemented, but some questions: 1) should it be limited or restricted from certain signals, 
+            2) should signals operate in fleeting "Groups" instead of individually
 
 deduction of train movement - reporting train location
   allow loading of initial positions of traina and locos
   allow saving current locations
-  keeping track of trains - a master list - the ability to draw a train via the master list be having a list of containing Blocks
+  keeping track of trains - a master list - the ability to draw a train via the master list by having a list of containing Blocks
   checking train for non-contiguous Blocks
   we need to have an empty train object when a train has not yet been identified so that it can move forward as block occupancy is detected
-  deal with trains that are too short to span OS/stopping blocks - may not be a problem
 
 ATC
 

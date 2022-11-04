@@ -147,7 +147,7 @@ class Block:
 		pass
 
 	def Reset(self):
-		self.east = self.defaultEast
+		self.SetEast(self.defaultEast)
 
 	def SetNextBlockEast(self, blk):
 		logging.debug("Block %s: next east block is %s" % (self.GetName(), blk.GetName()))
@@ -195,6 +195,7 @@ class Block:
 
 	def SetEast(self, east):
 		self.east = east
+		self.frame.Request({"blockdir": { "block": self.GetName(), "dir": "E" if east else "W"}})
 
 	def IsReversed(self):
 		return self.east != self.defaultEast
@@ -318,6 +319,8 @@ class Block:
 		self.EvaluateStoppingSections()
 		self.frame.DoFleetPending(self)
 
+	def GetStoppingSections(self):
+		return self.sbWest, self.sbEast
 
 	def EvaluateStoppingSections(self):
 		if self.east and self.sbEast:
@@ -346,7 +349,6 @@ class Block:
 				return None
 
 	def SetCleared(self, cleared=True, refresh=False):
-		if self.name in ["S11", "N10", "KOSN10S11"]:
 		if cleared and self.occupied:
 			# can't mark an occupied block as cleared
 			return
@@ -358,6 +360,7 @@ class Block:
 		self.cleared = cleared
 		self.determineStatus()
 		if self.status == EMPTY:
+			print("block %s resetting" % self.GetName())
 			self.Reset()
 			
 		if refresh:
@@ -425,6 +428,7 @@ class StoppingBlock (Block):
 
 	def Draw(self):
 		self.east = self.block.east
+		self.frame.Request({"blockdir": { "block": self.GetName(), "dir": "E" if self.east else "W"}})
 		for t, screen, pos, revflag in self.tiles:
 			bmp = t.getBmp(self.status, self.east, revflag)
 			self.frame.DrawTile(screen, pos, bmp)

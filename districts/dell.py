@@ -12,20 +12,6 @@ class Dell (District):
 	def __init__(self, name, frame, screen):
 		District.__init__(self, name, frame, screen)
 
-	def PerformSignalLeverAction(self, prefix, direction):
-		if direction < 0:
-			sigList = [sn for sn in self.signals.keys() if sn.startswith(prefix+"L")]
-		elif direction > 0:
-			sigList = [sn for sn in self.signals.keys() if sn.startswith(prefix+"R")]
-		else:
-			sigList = [sn for sn in self.signals.keys() if sn.startswith(prefix+"L") or sn.startswith(prefix+"R")]
-
-		if direction != 0:
-			for signm in sigList:
-				sig = self.signals[signm]
-				rt, osblk = self.FindRoute(sig)
-
-
 	def DoTurnoutAction(self, turnout, state):
 		tn = turnout.GetName()
 		if turnout.GetType() == SLIPSWITCH:
