@@ -1,7 +1,6 @@
 from tkinter.tix import PopupMenu
 import wx
 import wx.lib.newevent
-import wx.lib.agw.toasterbox as TB
 
 import os
 import json
@@ -19,6 +18,7 @@ from block import Block
 from train import Train
 
 from breaker import BreakerDisplay
+from toaster import Toaster, TB_CENTER
 
 from districts.hyde import Hyde
 from districts.yard import Yard
@@ -50,7 +50,7 @@ class MainFrame(wx.Frame):
 		self.subscribed = False
 		logging.info("Display process starting")
 		self.settings = Settings(cmdFolder)
-		self.popupFont = wx.Font(wx.Font(12, wx.FONTFAMILY_ROMAN, wx.NORMAL, wx.BOLD, faceName="Arial"))
+		self.ToasterSetup()
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 		vsz = wx.BoxSizer(wx.VERTICAL)
 		hsz = wx.BoxSizer(wx.HORIZONTAL)
@@ -164,7 +164,6 @@ class MainFrame(wx.Frame):
 		self.scrn.SetValue("%s" % scr)
 
 	def Initialize(self):
-		print("calling initialize")
 		self.listener = None
 		self.Bind(EVT_DELIVERY, self.onDeliveryEvent)
 		self.Bind(EVT_DISCONNECT, self.onDisconnectEvent)
@@ -315,6 +314,14 @@ class MainFrame(wx.Frame):
 			print("You can remove bogus entry for block P50")
 		else:
 			self.blocks["P50"] = Block(self, self, "P50",	[], False)
+		if "B10" in self.blocks:
+			print("You can remove bogus entry for block B10")
+		else:
+			self.blocks["B10"] = Block(self, self, "B10",	[], False)
+		if "B20" in self.blocks:
+			print("You can remove bogus entry for block B20")
+		else:
+			self.blocks["B20"] = Block(self, self, "B20",	[], False)
 
 	def DrawOthers(self, block):
 		print("Remove this bogus drawothers method from mainframe")
@@ -326,17 +333,35 @@ class MainFrame(wx.Frame):
 		collapse = False
 		for b in self.buttonsToClear:
 			b[0] -= 1
-			if b[0] == 0:
+			if b[0] <= 0:
 				b[1].Release(refresh=True)
 				collapse = True
 
 		if collapse:
-			self.buttonsToClear = [x for x in self.buttonsToClear if x[0] != 0]
+			self.buttonsToClear = [x for x in self.buttonsToClear if x[0] > 0]
 
 		self.breakerDisplay.ticker()
 
 	def ClearButtonAfter(self, secs, btn):
 		self.buttonsToClear.append([secs, btn])
+
+	def ClearButtonNow(self, btn):
+		bnm = btn.GetName()
+		collapse = False
+		for bx in range(len(self.buttonsToClear)):
+			if self.buttonsToClear[bx][1].GetName() == bnm:
+				self.buttonsToClear[bx][0] = 0
+				self.buttonsToClear[bx][1].Release(refresh=True)
+				collapse = True
+
+		if collapse:
+			self.buttonsToClear = [x for x in self.buttonsToClear if x[0] > 0]
+
+	def ResetButtonExpiry(self, secs, btn):
+		bnm = btn.GetName()
+		for bx in range(len(self.buttonsToClear)):
+			if self.buttonsToClear[bx][1].GetName() == bnm:
+				self.buttonsToClear[bx][0] = secs
 
 	def ProcessClick(self, screen, pos):
 		logging.debug("click %s %d, %d" % (screen, pos[0], pos[1]))
@@ -346,7 +371,6 @@ class MainFrame(wx.Frame):
 			to = None
 
 		if to:
-			print("Turnout %s" % to.GetName())
 			to.GetDistrict().PerformTurnoutAction(to)
 			return
 
@@ -460,19 +484,17 @@ class MainFrame(wx.Frame):
 		self.trains[name] = tr
 		return tr
 
-	def Popup(self, message, background=None, text=None):
-		tb = TB.ToasterBox(self, TB.TB_SIMPLE, TB.TB_DEFAULT_STYLE, TB.TB_ONTIME,
-			scrollType=TB.TB_SCR_TYPE_FADE)
+	def ToasterSetup(self):
+		self.toaster = Toaster()
+		self.toaster.SetPositionByCorner(TB_CENTER)
+		self.toaster.SetFont(wx.Font(wx.Font(20, wx.FONTFAMILY_ROMAN, wx.NORMAL, wx.BOLD, faceName="Arial")))
+		self.toaster.SetBackgroundColour(wx.Colour(255, 179, 154))
+		self.toaster.SetTextColour(wx.Colour(0, 0, 0))
 
-		tb.SetPopupSize((700, 60))
-		tb.CenterOnParent(wx.BOTH)
-		tb.SetPopupPauseTime(5000)
-		tb.SetPopupScrollSpeed(8)
-		tb.SetPopupBackgroundColour(wx.Colour(255, 179, 154) if background is None else background)
-		tb.SetPopupTextColour(wx.Colour(0, 0, 0) if text is None else text)
-		tb.SetPopupText(message)
-		tb.SetPopupTextFont(self.popupFont)
-		tb.Play()
+
+
+	def Popup(self, message, background=None, text=None):
+		self.toaster.Append(message)
 
 	def OnSubscribe(self, _):
 		if self.subscribed:
@@ -677,7 +699,7 @@ class MainFrame(wx.Frame):
 	def onDisconnectEvent(self, _):
 		self.listener = None
 		self.subscribed = False
-		self.bSubscribe.SetLabel("Subscribe")
+		self.bSubscribe.SetLabel("Connect")
 		self.bRefresh.Enable(False)
 		logging.info("Server socket closed")
 
@@ -699,6 +721,7 @@ class MainFrame(wx.Frame):
 
 
 	def OnClose(self, evt):
+		self.toaster.Close()
 		self.SaveTrains()
 		self.SaveLocos()
 		try:

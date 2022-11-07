@@ -8,6 +8,8 @@ class Button:
 		self.tiles = tiles
 		self.aspect = 0
 		self.pressed = False
+		self.acknowledged = False
+		self.invalid = False
 
 	def GetDistrict(self):
 		return self.district
@@ -21,8 +23,15 @@ class Button:
 	def GetName(self):
 		return self.name
 
+	def IsPressed(self):
+		return self.pressed
+
 	def Draw(self):
-		if self.pressed:
+		if self.acknowledged:
+			bmp = self.tiles.acknowledged
+		elif self.invalid:
+			bmp = self.tiles.error
+		elif self.pressed:
 			bmp = self.tiles.dark
 		else:
 			bmp = self.tiles.light
@@ -38,7 +47,29 @@ class Button:
 
 		return True
 
+	def Acknowledge(self, refresh=False):
+		if self.acknowledged:
+			return False
+		
+		self.acknowledged = True
+		if refresh:
+			self.Draw()
+
+		return True
+
+	def Invalidate(self, refresh=False):
+		if self.invalid:
+			return False
+		
+		self.invalid = True
+		if refresh:
+			self.Draw()
+
+		return True
+
 	def Release(self, refresh=False):
+		self.acknowledged = False
+		self.invalid = False
 		if not self.pressed:
 			return False
 		

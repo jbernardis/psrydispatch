@@ -71,6 +71,7 @@ class District:
 				rt = self.routes[rname]
 				if sig.IsPossibleRoute(blknm, rname):
 					return rt, osblk
+
 		return None, None
 
 	def PerformSignalAction(self, sig):
@@ -79,19 +80,19 @@ class District:
 		rt, osblk = self.FindRoute(sig)
 
 		if rt is None:
-			self.frame.Popup("No routes found for Signal %s" % (signm))
+			self.frame.Popup("No available route")
 			return
 
 		osblknm = osblk.GetName()
 		if osblk.AreHandSwitchesSet():
-			self.frame.Popup("OS Block %s is locked" % osblknm)
+			self.frame.Popup("Block is locked")
 			return
 
 
 		# this is a valid signal for the current route	
 		if not currentMovement:	  # we are trying to change the signal to allow movement
 			if osblk.IsBusy():
-				self.frame.Popup("OS Block %s is busy" % osblknm)
+				self.frame.Popup("Block is busy")
 				return
 
 			sigE = sig.GetEast()
@@ -107,16 +108,16 @@ class District:
 
 			exitBlk = self.frame.blocks[exitBlkNm]
 			if exitBlk.IsOccupied():
-				self.frame.Popup("OS Exit Block %s is busy" % exitBlk.GetName())
+				self.frame.Popup("Block is busy")
 				return
 
 			
 			if exitBlk.IsCleared() and sigE != exitBlk.GetEast():
-				self.frame.Popup("OS Exit block is cleared in opposite direction")
+				self.frame.Popup("Block is cleared in opposite direction")
 				return
 
 			if exitBlk.AreHandSwitchesSet():
-				self.frame.Popup("OS Exit Block %s is locked" % exitBlk.GetName())
+				self.frame.Popup("Block is locked")
 				return
 
 			nb = exitBlk.NextBlock(reverse=doReverse)
@@ -153,7 +154,7 @@ class District:
 		else: # we are trying to change the signal to stop the train
 			esig = osblk.GetEntrySignal()	
 			if esig is not None and esig.GetName() != signm:
-				self.frame.Popup("Signal %s is not for route %s" % (sig.GetName(), rt.GetDescription()))
+				self.frame.Popup("Incorrect signal for current route")
 				return
 			rType = None
 			nbStatus = None
@@ -252,7 +253,6 @@ class District:
 				return 0  # Stop
 
 		else:
-			print("Unknown aspect type: %d" % atype)
 			return 0
 
 	def PerformHandSwitchAction(self, hs):
@@ -260,7 +260,7 @@ class District:
 			# currently unlocked - trying to lock
 	
 			if hs.IsBlockCleared():
-				self.frame.Popup("Block %s has a route cleared through it" % hs.GetBlock().GetName())
+				self.frame.Popup("Block is cleared")
 				return
 
 			stat = 1
@@ -331,6 +331,12 @@ class District:
 
 		self.LockTurnoutsForSignal(osblock.GetName(), sig, aspect!=STOP)
 
+		if exitBlk.GetBlockType() == OVERSWITCH:
+			rt = exitBlk.GetRoute()
+			if rt:
+				tolist = rt.GetTurnouts()
+				self.LockTurnouts(signm, tolist, aspect!=STOP)
+
 	def LockTurnoutsForSignal(self, osblknm, sig, flag):
 		signm = sig.GetName()
 		if osblknm in sig.possibleRoutes:
@@ -380,13 +386,13 @@ class District:
 		return({})
 
 	def ReportBlockBusy(self, blknm):
-		self.frame.Popup("Block %s is busy" % blknm)
+		self.frame.Popup("Block is busy")
 
 	def ReportOSBusy(self):
-		self.frame.Popup("OS Block is busy")
+		self.frame.Popup("Block is busy")
 
 	def ReportTurnoutLocked(self, tonm):
-		self.frame.Popup("Turnout %s is locked" % tonm)
+		self.frame.Popup("Turnout is locked" % tonm)
 
 	def Audit(self):
 		passedAudit = True

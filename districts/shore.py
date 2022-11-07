@@ -34,7 +34,7 @@ class Shore (District):
 		else: # stopping
 			esig = osblk.GetEntrySignal()	
 			if esig is not None and esig.GetName() != signm:
-				self.frame.Popup("Signal %s is not entry signal" % signm)
+				self.frame.Popup("Incorrect signal")
 				return
 			aspect = STOP
 

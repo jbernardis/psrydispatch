@@ -150,11 +150,17 @@ class Block:
 		self.SetEast(self.defaultEast)
 
 	def SetNextBlockEast(self, blk):
-		logging.debug("Block %s: next east block is %s" % (self.GetName(), blk.GetName()))
+		if blk is None:
+			logging.debug("Block %s: next east block is None" % self.GetName())
+		else:
+			logging.debug("Block %s: next east block is %s" % (self.GetName(), blk.GetName()))
 		self.blkEast = blk
 
 	def SetNextBlockWest(self, blk):
-		logging.debug("Block %s: next west block is %s" % (self.GetName(), blk.GetName()))
+		if blk is None:
+			logging.debug("Block %s: next west block is None" % self.GetName())
+		else:
+			logging.debug("Block %s: next west block is %s" % (self.GetName(), blk.GetName()))
 		self.blkWest = blk
 
 	def determineStatus(self):

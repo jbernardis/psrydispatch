@@ -6,50 +6,323 @@ from signal import Signal
 from button import Button
 from handswitch import HandSwitch
 
-from constants import LaKr, RegAspects, RESTRICTING, DIVERGING, MAIN
+from constants import LaKr, SloAspects, SLOW, RESTRICTING, DIVERGING, MAIN, SLIPSWITCH, NORMAL, REVERSE
 
 class Nassau (District):
 	def __init__(self, name, frame, screen):
 		District.__init__(self, name, frame, screen)
 
+	def DoTurnoutAction(self, turnout, state):
+		tn = turnout.GetName()
+		if turnout.GetType() == SLIPSWITCH:
+			if tn == "NSw29":
+				bstat = NORMAL if self.turnouts["NSw27"].IsNormal() else REVERSE
+				turnout.SetStatus([bstat, state])
+				turnout.Draw()
+			elif tn == "NSw31":
+				bstat = NORMAL if self.turnouts["NSw29"].IsNormal() else REVERSE
+				b1, b2 = self.turnouts["NSw29"].GetStatus()
+				turnout.SetStatus([bstat, state])
+				turnout.Draw()
+			elif tn == "NSw23":
+				bstat = NORMAL if self.turnouts["NSw21"].IsNormal() else REVERSE
+				turnout.SetStatus([bstat, state])
+				turnout.Draw()
+			elif tn == "NSw43":
+				bstat = NORMAL if self.turnouts["NSw45"].IsNormal() else REVERSE
+				turnout.SetStatus([state, bstat])
+				b1, b2 = turnout.GetStatus()
+				turnout.Draw()
+			elif tn == "NSw45":
+				bstat = NORMAL if self.turnouts["NSw47"].IsNormal() else REVERSE
+				turnout.SetStatus([state, bstat])
+				turnout.Draw()
+
+		else:
+			District.DoTurnoutAction(self, turnout, state)
+
+		if tn == "NSw27":
+			trnout = self.turnouts["NSw29"]
+			trnout.UpdateStatus()
+			trnout.Draw()
+		elif tn == "NSw29":
+			trnout = self.turnouts["NSw31"]
+			trnout.UpdateStatus()
+			trnout.Draw()
+		elif tn == "NSw21":
+			trnout = self.turnouts["NSw23"]
+			trnout.UpdateStatus()
+			trnout.Draw()
+		elif tn == "NSw45":
+			trnout = self.turnouts["NSw43"]
+			trnout.UpdateStatus()
+			trnout.Draw()
+		elif tn == "NSw47":
+			trnout = self.turnouts["NSw45"]
+			trnout.UpdateStatus()
+			trnout.Draw()
+
+
+	def PerformButtonAction(self, btn):
+		District.PerformButtonAction(self, btn)
+		if self.buttonEntryWest and not self.buttonEntryWest.IsPressed():
+			self.buttonEntryWest = None
+		if self.buttonExitWest and not self.buttonExitWest.IsPressed():
+			self.buttonExitWest = None
+
+		if btn.GetName() in self.entryWest:
+			if self.buttonEntryWest:
+				self.frame.ClearButtonNow(self.buttonEntryWest)
+
+			btn.Press(refresh=True)
+			self.buttonEntryWest = btn
+			self.frame.ClearButtonAfter(5, btn)
+
+		if btn.GetName() in self.exitWest:
+			if self.buttonExitWest:
+				self.frame.ClearButtonNow(self.buttonExitWest)
+
+			btn.Press(refresh=True)
+			self.buttonExitWest = btn
+			self.frame.ClearButtonAfter(5, btn)
+
+		if self.buttonEntryWest and self.buttonExitWest:
+			self.frame.ResetButtonExpiry(1, self.buttonEntryWest)
+			self.frame.ResetButtonExpiry(1, self.buttonExitWest)
+			try:
+				toList = self.NXMap[self.buttonEntryWest.GetName()][self.buttonExitWest.GetName()]
+			except KeyError:
+				toList = None
+
+			if toList is None or self.anyTurnoutLocked(toList):
+				self.buttonEntryWest.Invalidate(refresh=True)
+				self.buttonExitWest.Invalidate(refresh=True)
+				self.frame.Popup("No available route")
+
+			else:
+				self.buttonEntryWest.Acknowledge(refresh=True)
+				self.buttonExitWest.Acknowledge(refresh=True)
+				self.frame.Request({"nxbutton": { "entry": self.buttonEntryWest.GetName(),  "exit": self.buttonExitWest.GetName()}})
+
+			self.buttonEntryWest = self.buttonExitWest = None
+
+
+		if self.buttonEntryEast and not self.buttonEntryEast.IsPressed():
+			self.buttonEntryEast = None
+		if self.buttonExitEast and not self.buttonExitEast.IsPressed():
+			self.buttonExitEast = None
+
+		if btn.GetName() in self.entryEast:
+			if self.buttonEntryEast:
+				self.frame.ClearButtonNow(self.buttonEntryEast)
+
+			btn.Press(refresh=True)
+			self.buttonEntryEast = btn
+			self.frame.ClearButtonAfter(5, btn)
+
+		if btn.GetName() in self.exitEast:
+			if self.buttonExitEast:
+				self.frame.ClearButtonNow(self.buttonExitEast)
+
+			btn.Press(refresh=True)
+			self.buttonExitEast = btn
+			self.frame.ClearButtonAfter(5, btn)
+
+		if self.buttonEntryEast and self.buttonExitEast:
+			self.frame.ResetButtonExpiry(1, self.buttonEntryEast)
+			self.frame.ResetButtonExpiry(1, self.buttonExitEast)
+			try:
+				toList = self.NXMap[self.buttonEntryEast.GetName()][self.buttonExitEast.GetName()]
+			except KeyError:
+				toList = None
+
+			if toList is None or self.anyTurnoutLocked(toList):
+				self.buttonEntryEast.Invalidate(refresh=True)
+				self.buttonExitEast.Invalidate(refresh=True)
+				self.frame.Popup("No available route")
+
+			else:
+				self.buttonEntryEast.Acknowledge(refresh=True)
+				self.buttonExitEast.Acknowledge(refresh=True)
+				self.frame.Request({"nxbutton": { "entry": self.buttonEntryEast.GetName(),  "exit": self.buttonExitEast.GetName()}})
+
+			self.buttonEntryEast = self.buttonExitEast = None
+
+	def anyTurnoutLocked(self, toList):
+		rv = False
+		for toname, stat in toList:
+			turnout = self.turnouts[toname]
+			tostat = "N" if turnout.IsNormal() else "R"
+			if turnout.IsLocked() and tostat != stat:
+				rv = True
+
+		return rv
+
 	def DetermineRoute(self, blocks):
-		pass
-		# s1 = 'N' if self.turnouts["KSw1"].IsNormal() else 'R'
-		# s3 = 'N' if self.turnouts["KSw3"].IsNormal() else 'R'
-		# s5 = 'N' if self.turnouts["KSw5"].IsNormal() else 'R'
-		# s7 = 'N' if self.turnouts["KSw7"].IsNormal() else 'R'
-		# self.turnouts["KSw3"].SetLock("KSw5", s5=='R', refresh=True)
-		# self.turnouts["KSw3b"].SetLock("KSw9", s5=='R', refresh=True)
-		# self.turnouts["KSw5"].SetLock("KSw3", s3=='R', refresh=True)
-		# self.turnouts["KSw5b"].SetLock("KSw3", s3=='R', refresh=True)
 
-		# for block in blocks:
-		# 	bname = block.GetName()
-		# 	if bname == "KOSW":
-		# 		if s3+s5+s7 == "NNR":
-		# 			block.SetRoute(self.routes["KRtN10K10"])
-		# 		elif s3+s5+s7 == "NNN":
-		# 			block.SetRoute(self.routes["KRtN10N11"])
-		# 		elif s3+s5 == "NR":
-		# 			block.SetRoute(self.routes["KRtN10N21"])
-		# 		else:
-		# 			block.SetRoute(None)
+		s19 = 'N' if self.turnouts["NSw19"].IsNormal() else 'R'
+		s21 = 'N' if self.turnouts["NSw21"].IsNormal() else 'R'
+		s23 = 'N' if self.turnouts["NSw23"].IsNormal() else 'R'
+		s25 = 'N' if self.turnouts["NSw25"].IsNormal() else 'R'
+		s27 = 'N' if self.turnouts["NSw27"].IsNormal() else 'R'
+		s29 = 'N' if self.turnouts["NSw29"].IsNormal() else 'R'
+		s31 = 'N' if self.turnouts["NSw31"].IsNormal() else 'R'
+		s33 = 'N' if self.turnouts["NSw33"].IsNormal() else 'R'
+		s35 = 'N' if self.turnouts["NSw35"].IsNormal() else 'R'
 
-		# 	elif bname == "KOSM":
-		# 		if s3+s5+s7 == "RNR":
-		# 			block.SetRoute(self.routes["KRtN25K10"])
-		# 		elif s3+s5+s7 == "RNN":
-		# 			block.SetRoute(self.routes["KRtN25N11"])
-		# 		elif s1+s3+s5 == "RNN":
-		# 			block.SetRoute(self.routes["KRtN25N21"])
-		# 		else:
-		# 			block.SetRoute(None)
+		s39 = 'N' if self.turnouts["NSw39"].IsNormal() else 'R'
+		s41 = 'N' if self.turnouts["NSw41"].IsNormal() else 'R'
+		s43 = 'N' if self.turnouts["NSw43"].IsNormal() else 'R'
+		s45 = 'N' if self.turnouts["NSw45"].IsNormal() else 'R'
+		s47 = 'N' if self.turnouts["NSw47"].IsNormal() else 'R'
+		s51 = 'N' if self.turnouts["NSw51"].IsNormal() else 'R'
+		s53 = 'N' if self.turnouts["NSw53"].IsNormal() else 'R'
+		s55 = 'N' if self.turnouts["NSw55"].IsNormal() else 'R'
+		s57 = 'N' if self.turnouts["NSw57"].IsNormal() else 'R'
+		
+
+		for block in blocks:
+			bname = block.GetName()
+			if bname == "NWOSTY":
+				if s25 == "N":
+					block.SetRoute(self.routes["NRtT12W10"])
+				else:
+					block.SetRoute(None)
+
+			elif bname == "NWOSCY":
+				if s21+s23+s27 == "NNN":
+					block.SetRoute(self.routes["NRtN60N31"])
+				elif s21+s23+s25+s27 == "NRNN":
+					block.SetRoute(self.routes["NRtN60N32"])
+				elif s21+s23+s25+s27 == "NRRN":
+					block.SetRoute(self.routes["NRtN60W10"])
+				elif s21+s27+s29 == "NRN":
+					block.SetRoute(self.routes["NRtN60N12"])
+				elif s27+s29+s31 == "RRN":
+					block.SetRoute(self.routes["NRtN60N22"])
+				elif s27+s29+s31+s33 == "RRRR":
+					block.SetRoute(self.routes["NRtN60N41"])
+				elif s27+s29+s31+s33+s35 == "RRRNR":
+					block.SetRoute(self.routes["NRtN60N42"])
+				elif s27+s29+s31+s33+s35 == "RRRNN":
+					block.SetRoute(self.routes["NRtN60W20"])
+				else:
+					block.SetRoute(None)
 				
-		# 	elif bname == "KOSE":
-		# 		if s1+s5 == "NN":
-		# 			block.SetRoute(self.routes["KRtN20N21"])
-		# 		else:
-		# 			block.SetRoute(None)
+			elif bname == "NWOSW":
+				if s19+s21+s23+s27+s29 == "NRNNN":
+					block.SetRoute(self.routes["NRtN11N31"])
+				elif s19+s21+s23+s25+s27+s29 == "NRRNNN":
+					block.SetRoute(self.routes["NRtN11N32"])
+				elif s19+s21+s23+s25+s27+s29 == "NRRRNN":
+					block.SetRoute(self.routes["NRtN11W10"])
+				elif s19+s21+s27+s29 == "NNNN":
+					block.SetRoute(self.routes["NRtN11N12"])
+				elif s19+s27+s29+s31 == "NNRN":
+					block.SetRoute(self.routes["NRtN11N22"])
+				elif s19+s27+s29+s31+s33 == "NNRRR":
+					block.SetRoute(self.routes["NRtN11N41"])
+				elif s19+s27+s29+s31+s33+s35 == "NNRRNR":
+					block.SetRoute(self.routes["NRtN11N42"])
+				elif s19+s27+s29+s31+s33+s35 == "NNRRNN":
+					block.SetRoute(self.routes["NRtN11W20"])
+				else:
+					block.SetRoute(None)
+				
+			elif bname == "NWOSE":
+				if s19+s21+s23+s27+s29 == "RRNNN":
+					block.SetRoute(self.routes["NRtN21N31"])
+				elif s19+s21+s23+s25+s27+s29 == "RRRNNN":
+					block.SetRoute(self.routes["NRtN21N32"])
+				elif s19+s21+s23+s25+s27+s29 == "RRRRNN":
+					block.SetRoute(self.routes["NRtN21W10"])
+				elif s19+s21+s27+s29 == "RNNN":
+					block.SetRoute(self.routes["NRtN21N12"])
+				elif s19+s29+s31 == "NNN":
+					block.SetRoute(self.routes["NRtN21N22"])
+				elif s19+s29+s31+s33 == "NNRR":
+					block.SetRoute(self.routes["NRtN21N41"])
+				elif s19+s29+s31+s33+s35 == "NNRNR":
+					block.SetRoute(self.routes["NRtN21N42"])
+				elif s19+s29+s31+s33+s35 == "NNRNN":
+					block.SetRoute(self.routes["NRtN21W20"])
+				else:
+					block.SetRoute(None)
+
+			elif bname == "N60":
+				s13 = 'N' if self.turnouts["NSw13"].IsNormal() else 'R'
+				s15 = 'N' if self.turnouts["NSw15"].IsNormal() else 'R'
+				s17 = 'N' if self.turnouts["NSw17"].IsNormal() else 'R'
+				if s13+s17 == "NR":
+					block.SetRoute(self.routes["NRtN60A"])
+				elif s13+s17 == "RR":
+					block.SetRoute(self.routes["NRtN60B"])
+				elif s15+s17 == "RN":
+					block.SetRoute(self.routes["NRtN60C"])
+				elif s15+s17 == "NN":
+					block.SetRoute(self.routes["NRtN60D"])
+				else:
+					block.SetRoute(None)
+
+			elif bname == "NEOSRH":
+				if s47+s55 == "NN":
+					block.SetRoute(self.routes["NRtR10W11"])
+				elif s45+s47+s51+s53+s55 == "NRNRN":
+					block.SetRoute(self.routes["NRtR10N32"])
+				elif s45+s47+s51+s53+s55 == "NRRRN":
+					block.SetRoute(self.routes["NRtR10N31"])
+				elif s45+s47+s53+s55 == "NRNN":
+					block.SetRoute(self.routes["NRtR10N12"])
+				elif s43+s45+s47 == "NRR":
+					block.SetRoute(self.routes["NRtR10N22"])
+				elif s41+s43+s45+s47 == "RRRR":
+					block.SetRoute(self.routes["NRtR10N41"])
+				elif s39+s41+s43+s45+s47 == "RNRRR":
+					block.SetRoute(self.routes["NRtR10N42"])
+				elif s39+s41+s43+s45+s47 == "NNRRR":
+					block.SetRoute(self.routes["NRtR10W20" ])
+				else:
+					block.SetRoute(None)
+
+			elif bname == "NEOSW":
+				if s45+s47+s55+s57 == "NNRN":
+					block.SetRoute(self.routes["NRtB10W11"])
+				elif s45+s47+s51+s53+s55+s57 == "NNNRNN":
+					block.SetRoute(self.routes["NRtB10N32"])
+				elif s45+s47+s51+s53+s55+s57 == "NNRRNN":
+					block.SetRoute(self.routes["NRtB10N31"])
+				elif s45+s47+s53+s55+s57 == "NNNNN":
+					block.SetRoute(self.routes["NRtB10N12"])
+				elif s43+s45+s47+s57 == "NRNN":
+					block.SetRoute(self.routes["NRtB10N22"])
+				elif s41+s43+s45+s47+s57 == "RRRNN":
+					block.SetRoute(self.routes["NRtB10N41"])
+				elif s39+s41+s43+s45+s47+s57 == "RNRRNN":
+					block.SetRoute(self.routes["NRtB10N42"])
+				elif s39+s41+s43+s45+s47+s57 == "NNRRNN":
+					block.SetRoute(self.routes["NRtB10W20"])
+				else:
+					block.SetRoute(None)
+
+			elif bname == "NEOSE":
+				if s45+s47+s55+s57 == "NNRR":
+					block.SetRoute(self.routes["NRtB20W11"])
+				elif s45+s47+s51+s53+s55+s57 == "NNNRNR":
+					block.SetRoute(self.routes["NRtB20N32"])
+				elif s45+s47+s51+s53+s55+s57 == "NNRRNR":
+					block.SetRoute(self.routes["NRtB20N31"])
+				elif s45+s47+s53+s55+s57 == "NNNNR":
+					block.SetRoute(self.routes["NRtB20N12"])
+				elif s43+s45+s57 == "NNN":
+					block.SetRoute(self.routes["NRtB20N22"])
+				elif s41+s43+s45+s57 == "RRNN":
+					block.SetRoute(self.routes["NRtB20N41"])
+				elif s39+s41+s43+s45+s57 == "RNRNN":
+					block.SetRoute(self.routes["NRtB20N42"])
+				elif s39+s41+s43+s45+s57 == "NNRNN":
+					block.SetRoute(self.routes["NRtB20W20"])
+				else:
+					block.SetRoute(None)
 
 	def DefineBlocks(self, tiles):
 		self.blocks = {}
@@ -147,7 +420,7 @@ class Nassau (District):
 			], True)
 		self.blocks["N41"].AddTrainLoc(self.screen, (23, 15))
 
-		self.blocks["N22"] = Block(self, self.frame, "N22",
+		self.blocks["N42"] = Block(self, self.frame, "N42",
 			[
 				(tiles["horiz"],   self.screen, (21, 17), False),
 				(tiles["horiznc"], self.screen, (22, 17), False),
@@ -158,7 +431,7 @@ class Nassau (District):
 				(tiles["horiz"],   self.screen, (27, 17), False),
 				(tiles["horiznc"], self.screen, (28, 17), False),
 			], True)
-		self.blocks["N22"].AddTrainLoc(self.screen, (23, 17))
+		self.blocks["N42"].AddTrainLoc(self.screen, (23, 17))
 
 		self.blocks["W20"] = Block(self, self.frame, "W20",
 			[
@@ -199,7 +472,7 @@ class Nassau (District):
 				(tiles["houtline"],  self.screen, (15, 5), False),
 			], False)
 
-		self.blocks["N60"] = Block(self, self.frame, "N60",
+		self.blocks["N60"] = OverSwitch(self, self.frame, "N60",
 			[
 				(tiles["eobleft"],  self.screen, (4, 6), False),
 				(tiles["eobleft"],  self.screen, (4, 7), False),
@@ -211,31 +484,15 @@ class Nassau (District):
 				(tiles["horiznc"],  self.screen, (5, 9), False),
 				(tiles["horiznc"],  self.screen, (7, 9), False),
 				(tiles["diagright"],self.screen, (7, 8), False),
-			], False)
-
-		self.blocks["N60A"] = Block(self, self.frame, "N60A",
-			[
 				(tiles["houtline"],  self.screen, (1, 6), False),
 				(tiles["houtline"],  self.screen, (2, 6), False),
 				(tiles["houtline"],  self.screen, (3, 6), False),
-			], False)
-
-		self.blocks["N60B"] = Block(self, self.frame, "N60B",
-			[
 				(tiles["houtline"],  self.screen, (1, 7), False),
 				(tiles["houtline"],  self.screen, (2, 7), False),
 				(tiles["houtline"],  self.screen, (3, 7), False),
-			], False)
-
-		self.blocks["N60C"] = Block(self, self.frame, "N60C",
-			[
 				(tiles["houtline"],  self.screen, (1, 8), False),
 				(tiles["houtline"],  self.screen, (2, 8), False),
 				(tiles["houtline"],  self.screen, (3, 8), False),
-			], False)
-
-		self.blocks["N60D"] = Block(self, self.frame, "N60D",
-			[
 				(tiles["houtline"],  self.screen, (1, 9), False),
 				(tiles["houtline"],  self.screen, (2, 9), False),
 				(tiles["houtline"],  self.screen, (3, 9), False),
@@ -256,13 +513,12 @@ class Nassau (District):
 				(tiles["horiz"],     self.screen, (14, 9), False),
 				(tiles["diagright"], self.screen, (11, 10), False),
 				(tiles["diagright"], self.screen, (13, 12), False),
-
 				(tiles["diagleft"],  self.screen, (16, 8), False),
 				(tiles["diagleft"],  self.screen, (18, 6), False),
 				(tiles["diagright"], self.screen, (15, 14), False),
 				(tiles["diagright"], self.screen, (17, 16), False),
 				(tiles["diagright"], self.screen, (19, 18), False),
-				(tiles["turnrightright"], self.screen, (20, 19), False),
+				(tiles["turnrightleft"], self.screen, (20, 19), False),
 				(tiles["horiznc"],   self.screen, (18, 7), False),
 				(tiles["horiz"],     self.screen, (19, 7), False),
 				(tiles["horiznc"],   self.screen, (16, 9), False),
@@ -293,13 +549,12 @@ class Nassau (District):
 				(tiles["horiz"],     self.screen, (10, 11), False),
 				(tiles["diagright"], self.screen, (13, 12), False),
 				(tiles["diagleft"],  self.screen, (14, 10), False),
-
 				(tiles["diagleft"],  self.screen, (16, 8), False),
 				(tiles["diagleft"],  self.screen, (18, 6), False),
 				(tiles["diagright"], self.screen, (15, 14), False),
 				(tiles["diagright"], self.screen, (17, 16), False),
 				(tiles["diagright"], self.screen, (19, 18), False),
-				(tiles["turnrightright"], self.screen, (20, 19), False),
+				(tiles["turnrightleft"], self.screen, (20, 19), False),
 				(tiles["horiznc"],   self.screen, (18, 7), False),
 				(tiles["horiz"],     self.screen, (19, 7), False),
 				(tiles["horiznc"],   self.screen, (16, 9), False),
@@ -330,15 +585,14 @@ class Nassau (District):
 				(tiles["horiz"],     self.screen, (11, 13), False),
 				(tiles["horiznc"],   self.screen, (12, 13), False),
 				(tiles["horiz"],     self.screen, (13, 13), False),
-				(tiles["diagleft"],  self.screen, (14, 12), False),
+				(tiles["diagleft"],  self.screen, (10, 12), False),
 				(tiles["diagleft"],  self.screen, (14, 10), False),
-
 				(tiles["diagleft"],  self.screen, (16, 8), False),
 				(tiles["diagleft"],  self.screen, (18, 6), False),
 				(tiles["diagright"], self.screen, (15, 14), False),
 				(tiles["diagright"], self.screen, (17, 16), False),
 				(tiles["diagright"], self.screen, (19, 18), False),
-				(tiles["turnrightright"], self.screen, (20, 19), False),
+				(tiles["turnrightleft"], self.screen, (20, 19), False),
 				(tiles["horiznc"],   self.screen, (18, 7), False),
 				(tiles["horiz"],     self.screen, (19, 7), False),
 				(tiles["horiznc"],   self.screen, (16, 9), False),
@@ -363,10 +617,165 @@ class Nassau (District):
 			], 
 			True)
 
+		self.blocks["NEOSRH"] = OverSwitch(self, self.frame, "NEOSRH", 
+			[
+				(tiles["horiznc"],   self.screen, (43, 9), False),
+				(tiles["horiz"],     self.screen, (38, 9), False),
+				(tiles["horiznc"],   self.screen, (39, 9), False),
+				(tiles["horiz"],     self.screen, (40, 9), False),
+				(tiles["horiznc"],   self.screen, (41, 9), False),
+				(tiles["diagleft"],  self.screen, (41, 10), False),
+
+				(tiles["diagright"], self.screen, (36, 8), False),
+				(tiles["diagright"], self.screen, (35, 7), False),
+				(tiles["diagright"], self.screen, (34, 6), False),
+				(tiles["turnrightright"], self.screen, (33,5), False),
+				(tiles["horiznc"],   self.screen, (30, 11), False),
+				(tiles["horiz"],     self.screen, (31, 11), False),
+				(tiles["horiznc"],   self.screen, (32, 11), False),
+				(tiles["horiz"],     self.screen, (33, 11), False),
+				(tiles["horiz"],     self.screen, (35, 11), False),
+				(tiles["horiznc"],   self.screen, (36, 11), False),
+				(tiles["horiz"],     self.screen, (37, 11), False),
+				(tiles["horiznc"],   self.screen, (38, 11), False),
+				(tiles["diagright"], self.screen, (33, 10), False),
+				(tiles["horiznc"],   self.screen, (30, 9), False),
+				(tiles["horiz"],     self.screen, (31, 9), False),
+				(tiles["diagright"], self.screen, (31, 8), False),
+				(tiles["turnrightright"], self.screen, (30, 7), False),
+				(tiles["diagleft"],  self.screen, (39, 12), False),
+				(tiles["horiznc"],   self.screen, (30, 13), False),
+				(tiles["horiz"],     self.screen, (31, 13), False),
+				(tiles["horiznc"],   self.screen, (32, 13), False),
+				(tiles["horiz"],     self.screen, (33, 13), False),
+				(tiles["horiznc"],   self.screen, (34, 13), False),
+				(tiles["horiz"],     self.screen, (35, 13), False),
+				(tiles["horiznc"],   self.screen, (36, 13), False),
+				(tiles["horiz"],     self.screen, (37, 13), False),
+				(tiles["diagleft"],  self.screen, (37, 14), False),
+				(tiles["horiznc"],   self.screen, (30, 15), False),
+				(tiles["horiz"],     self.screen, (31, 15), False),
+				(tiles["horiznc"],   self.screen, (32, 15), False),
+				(tiles["horiz"],     self.screen, (33, 15), False),
+				(tiles["horiznc"],   self.screen, (34, 15), False),
+				(tiles["horiz"],     self.screen, (35, 15), False),
+				(tiles["diagleft"],  self.screen, (35, 16), False),
+				(tiles["horiznc"],   self.screen, (30, 17), False),
+				(tiles["horiz"],     self.screen, (31, 17), False),
+				(tiles["horiznc"],   self.screen, (32, 17), False),
+				(tiles["horiz"],     self.screen, (33, 17), False),
+				(tiles["diagleft"],  self.screen, (33, 18), False),
+				(tiles["turnleftright"],  self.screen, (32, 19), False),
+			],
+			False)
+
+		self.blocks["NEOSW"] = OverSwitch(self, self.frame, "NEOSW", 
+			[
+				(tiles["horiz"],     self.screen, (42, 11), False),
+				(tiles["horiznc"],   self.screen, (43, 11), False),
+
+				(tiles["diagright"], self.screen, (36, 8), False),
+				(tiles["diagright"], self.screen, (35, 7), False),
+				(tiles["diagright"], self.screen, (34, 6), False),
+				(tiles["diagright"], self.screen, (38, 10), False),
+				(tiles["turnrightright"], self.screen, (33,5), False),
+				(tiles["horiznc"],   self.screen, (30, 11), False),
+				(tiles["horiz"],     self.screen, (31, 11), False),
+				(tiles["horiznc"],   self.screen, (32, 11), False),
+				(tiles["horiz"],     self.screen, (33, 11), False),
+				(tiles["horiz"],     self.screen, (35, 11), False),
+				(tiles["horiznc"],   self.screen, (36, 11), False),
+				(tiles["horiz"],     self.screen, (37, 11), False),
+				(tiles["horiznc"],   self.screen, (38, 11), False),
+				(tiles["diagright"], self.screen, (33, 10), False),
+				(tiles["horiznc"],   self.screen, (30, 9), False),
+				(tiles["horiz"],     self.screen, (31, 9), False),
+				(tiles["diagright"], self.screen, (31, 8), False),
+				(tiles["turnrightright"], self.screen, (30, 7), False),
+				(tiles["diagleft"],  self.screen, (39, 12), False),
+				(tiles["horiznc"],   self.screen, (30, 13), False),
+				(tiles["horiz"],     self.screen, (31, 13), False),
+				(tiles["horiznc"],   self.screen, (32, 13), False),
+				(tiles["horiz"],     self.screen, (33, 13), False),
+				(tiles["horiznc"],   self.screen, (34, 13), False),
+				(tiles["horiz"],     self.screen, (35, 13), False),
+				(tiles["horiznc"],   self.screen, (36, 13), False),
+				(tiles["horiz"],     self.screen, (37, 13), False),
+				(tiles["diagleft"],  self.screen, (37, 14), False),
+				(tiles["horiznc"],   self.screen, (30, 15), False),
+				(tiles["horiz"],     self.screen, (31, 15), False),
+				(tiles["horiznc"],   self.screen, (32, 15), False),
+				(tiles["horiz"],     self.screen, (33, 15), False),
+				(tiles["horiznc"],   self.screen, (34, 15), False),
+				(tiles["horiz"],     self.screen, (35, 15), False),
+				(tiles["diagleft"],  self.screen, (35, 16), False),
+				(tiles["horiznc"],   self.screen, (30, 17), False),
+				(tiles["horiz"],     self.screen, (31, 17), False),
+				(tiles["horiznc"],   self.screen, (32, 17), False),
+				(tiles["horiz"],     self.screen, (33, 17), False),
+				(tiles["diagleft"],  self.screen, (33, 18), False),
+				(tiles["turnleftright"],  self.screen, (32, 19), False),
+			],
+			False)
+
+		self.blocks["NEOSE"] = OverSwitch(self, self.frame, "NEOSE", 
+			[
+				(tiles["horiznc"],   self.screen, (39, 13), False),
+				(tiles["horiz"],     self.screen, (40, 13), False),
+				(tiles["horiznc"],   self.screen, (41, 13), False),
+				(tiles["horiz"],     self.screen, (42, 13), False),
+				(tiles["diagright"], self.screen, (42, 12), False),
+
+				(tiles["diagright"], self.screen, (36, 8), False),
+				(tiles["diagright"], self.screen, (35, 7), False),
+				(tiles["diagright"], self.screen, (34, 6), False),
+				(tiles["diagright"], self.screen, (38, 10), False),
+				(tiles["turnrightright"], self.screen, (33,5), False),
+				(tiles["horiznc"],   self.screen, (30, 11), False),
+				(tiles["horiz"],     self.screen, (31, 11), False),
+				(tiles["horiznc"],   self.screen, (32, 11), False),
+				(tiles["horiz"],     self.screen, (33, 11), False),
+				(tiles["horiz"],     self.screen, (35, 11), False),
+				(tiles["horiznc"],   self.screen, (36, 11), False),
+				(tiles["horiz"],     self.screen, (37, 11), False),
+				(tiles["horiznc"],   self.screen, (38, 11), False),
+				(tiles["diagright"], self.screen, (33, 10), False),
+				(tiles["horiznc"],   self.screen, (30, 9), False),
+				(tiles["horiz"],     self.screen, (31, 9), False),
+				(tiles["diagright"], self.screen, (31, 8), False),
+				(tiles["turnrightright"], self.screen, (30, 7), False),
+				(tiles["horiznc"],   self.screen, (30, 13), False),
+				(tiles["horiz"],     self.screen, (31, 13), False),
+				(tiles["horiznc"],   self.screen, (32, 13), False),
+				(tiles["horiz"],     self.screen, (33, 13), False),
+				(tiles["horiznc"],   self.screen, (34, 13), False),
+				(tiles["horiz"],     self.screen, (35, 13), False),
+				(tiles["horiznc"],   self.screen, (36, 13), False),
+				(tiles["horiz"],     self.screen, (37, 13), False),
+				(tiles["diagleft"],  self.screen, (37, 14), False),
+				(tiles["horiznc"],   self.screen, (30, 15), False),
+				(tiles["horiz"],     self.screen, (31, 15), False),
+				(tiles["horiznc"],   self.screen, (32, 15), False),
+				(tiles["horiz"],     self.screen, (33, 15), False),
+				(tiles["horiznc"],   self.screen, (34, 15), False),
+				(tiles["horiz"],     self.screen, (35, 15), False),
+				(tiles["diagleft"],  self.screen, (35, 16), False),
+				(tiles["horiznc"],   self.screen, (30, 17), False),
+				(tiles["horiz"],     self.screen, (31, 17), False),
+				(tiles["horiznc"],   self.screen, (32, 17), False),
+				(tiles["horiz"],     self.screen, (33, 17), False),
+				(tiles["diagleft"],  self.screen, (33, 18), False),
+				(tiles["turnleftright"],  self.screen, (32, 19), False),
+			],
+			True)
+
 		self.osBlocks["NWOSTY"] = [ "T12", "W10" ]
 		self.osBlocks["NWOSCY"] = [ "N60", "W10", "N32", "N31", "N12", "N22", "N41", "N42", "W20" ]
 		self.osBlocks["NWOSW"] = [ "N11", "W10", "N32", "N31", "N12", "N22", "N41", "N42", "W20" ]
 		self.osBlocks["NWOSE"] = [ "N21", "W10", "N32", "N31", "N12", "N22", "N41", "N42", "W20" ]
+		self.osBlocks["NEOSRH"] = [ "W11", "N32", "N31", "N12", "N22", "N41", "N42", "W20", "R10"]
+		self.osBlocks["NEOSW"] = [ "W11", "N32", "N31", "N12", "N22", "N41", "N42", "W20", "B10"]
+		self.osBlocks["NEOSE"] = [ "W11", "N32", "N31", "N12", "N22", "N41", "N42", "W20", "B20"]
 
 		return self.blocks, self.osBlocks
 
@@ -377,12 +786,21 @@ class Nassau (District):
 		toList = [
 			[ "NSw19",  "toleftleft",    ["NWOSE", "NWOSW"], (11, 11) ],
 			[ "NSw19b", "toleftright",   ["NWOSE", "NWOSW"], (9, 13) ],
-			[ "NSw21b", "toleftright",   ["NWOSE", "NWOSW", "NWOSCY"], (13, 11) ],
-			[ "NSw23",  "torightup",     ["NWOSE", "NWOSW", "NWOSCY" ], (17, 7) ],
+			[ "NSw21", "toleftright",    ["NWOSE", "NWOSW", "NWOSCY"], (13, 11) ],
 			[ "NSw25",  "toleftleft",    ["NWOSE", "NWOSW", "NWOSCY", "NWOSTY"], (19, 5) ],
-			[ "NSw27b", "torightright",  ["NWOSE", "NWOSW", "NWOSCY"], (10, 9) ],
-			[ "NSw31",  "toleftdown",    ["NWOSE", "NWOSW", "NWOSCY"], (16, 15) ],
-			[ "NSw33",  "toleftdown",    ["NWOSE", "NWOSW", "NWOSCY"], (18, 17) ],
+			[ "NSw25b", "torightupinv",  ["NWOSE", "NWOSW", "NWOSCY", "NWOSTY"], (17, 7) ],
+			[ "NSw27",  "torightright",  ["NWOSE", "NWOSW", "NWOSCY"], (10, 9) ],
+			[ "NSw33",  "toleftdown",    ["NWOSE", "NWOSW", "NWOSCY"], (16, 15) ],
+			[ "NSw35",  "toleftdown",    ["NWOSE", "NWOSW", "NWOSCY"], (18, 17) ],
+			[ "NSw39",  "torightdown",   ["NEOSE", "NEOSW", "NEOSRH"], (34, 17) ],
+			[ "NSw41",  "torightdown",   ["NEOSE", "NEOSW", "NEOSRH"], (36, 15) ],
+			[ "NSw47",  "toleftleft",    ["NEOSE", "NEOSW", "NEOSRH"], (42, 9) ],
+			[ "NSw51",  "toleftup",      ["NEOSE", "NEOSW", "NEOSRH"], (32, 9) ],
+			[ "NSw53",  "torightleft",   ["NEOSE", "NEOSW", "NEOSRH"], (34, 11) ],
+			[ "NSw55",  "toleftdowninv", ["NEOSE", "NEOSW", "NEOSRH"], (37, 9) ],
+			[ "NSw55b", "torightleft",   ["NEOSE", "NEOSW", "NEOSRH"], (39, 11) ],
+			[ "NSw57",  "torightleft",   ["NEOSE", "NEOSW", "NEOSRH"], (43, 13) ],
+			[ "NSw57b", "torightright",  ["NEOSE", "NEOSW", "NEOSRH"], (41, 11) ],
 		]
 		for tonm, tileSet, blks, pos in toList:
 			trnout = Turnout(self, self.frame, tonm, self.screen, tiles[tileSet], pos)
@@ -405,42 +823,177 @@ class Nassau (District):
 				trnout.AddBlock(blknm)
 			self.turnouts[tonm] = trnout
 
-		# self.turnouts["KSw3"].SetPairedTurnout(self.turnouts["KSw3b"])
-		# self.turnouts["KSw5"].SetPairedTurnout(self.turnouts["KSw5b"])
+		trnout = SlipSwitch(self, self.frame, "NSw29", self.screen, tiles["ssleft"], (12, 11))
+		blocks["NWOSE"].AddTurnout(trnout)
+		blocks["NWOSW"].AddTurnout(trnout)
+		blocks["NWOSCY"].AddTurnout(trnout)
+		trnout.AddBlock("NWOSE")
+		trnout.AddBlock("NWOSW")
+		trnout.AddBlock("NWOSCY")
+		trnout.SetRouteControl(True)
+		trnout.SetControllers(self.turnouts["NSw27"], None)
+		self.turnouts["NSw29"] = trnout
+
+		trnout = SlipSwitch(self, self.frame, "NSw31", self.screen, tiles["ssleft"], (14, 13))
+		blocks["NWOSE"].AddTurnout(trnout)
+		blocks["NWOSW"].AddTurnout(trnout)
+		blocks["NWOSCY"].AddTurnout(trnout)
+		trnout.AddBlock("NWOSE")
+		trnout.AddBlock("NWOSW")
+		trnout.AddBlock("NWOSCY")
+		trnout.SetControllers(self.turnouts["NSw29"], None)
+		trnout.SetRouteControl(True)
+		self.turnouts["NSw31"] = trnout
+
+		trnout = SlipSwitch(self, self.frame, "NSw23", self.screen, tiles["ssright"], (15, 9))
+		blocks["NWOSE"].AddTurnout(trnout)
+		blocks["NWOSW"].AddTurnout(trnout)
+		blocks["NWOSCY"].AddTurnout(trnout)
+		trnout.AddBlock("NWOSE")
+		trnout.AddBlock("NWOSW")
+		trnout.AddBlock("NWOSCY")
+		trnout.SetControllers(self.turnouts["NSw21"], None)
+		trnout.SetRouteControl(True)
+		self.turnouts["NSw23"] = trnout
+
+		trnout = SlipSwitch(self, self.frame, "NSw45", self.screen, tiles["ssright"], (40, 11))
+		blocks["NEOSE"].AddTurnout(trnout)
+		blocks["NEOSW"].AddTurnout(trnout)
+		blocks["NEOSRH"].AddTurnout(trnout)
+		trnout.AddBlock("NEOSE")
+		trnout.AddBlock("NEOSW")
+		trnout.AddBlock("NEOSRH")
+		trnout.SetControllers(None, self.turnouts["NSw47"])
+		trnout.SetRouteControl(True)
+		self.turnouts["NSw45"] = trnout
+
+		trnout = SlipSwitch(self, self.frame, "NSw43", self.screen, tiles["ssright"], (38, 13))
+		blocks["NEOSE"].AddTurnout(trnout)
+		blocks["NEOSW"].AddTurnout(trnout)
+		blocks["NEOSRH"].AddTurnout(trnout)
+		trnout.AddBlock("NEOSE")
+		trnout.AddBlock("NEOSW")
+		trnout.AddBlock("NEOSRH")
+		trnout.SetControllers(None, self.turnouts["NSw45"])
+		trnout.SetRouteControl(True)
+		self.turnouts["NSw43"] = trnout
+
+		self.turnouts["NSw19"].SetPairedTurnout(self.turnouts["NSw19b"])
+		self.turnouts["NSw25"].SetPairedTurnout(self.turnouts["NSw25b"])
+		self.turnouts["NSw55"].SetPairedTurnout(self.turnouts["NSw55b"])
+		self.turnouts["NSw57"].SetPairedTurnout(self.turnouts["NSw57b"])
 
 		return self.turnouts
 
 	def DefineButtons(self, tiles):
 		self.buttons = {}
 		self.osButtons = {}
+
+		self.buttonEntryWest = self.buttonExitWest = None
+		self.buttonEntryEast = self.buttonExitEast = None
 	
-		self.buttons["NBWI1"] = Button(self, self.screen, self.frame, "NBWI1", (9, 9), tiles)
-		self.buttons["NBWI2"] = Button(self, self.screen, self.frame, "NBWI2", (8, 11), tiles)
-		self.buttons["NBWI3"] = Button(self, self.screen, self.frame, "NBWI3", (8, 13), tiles)
-		self.buttons["NBWIT"] = Button(self, self.screen, self.frame, "NBWIT", (16, 5), tiles)
+		self.buttons["NNXBtnN60"] = Button(self, self.screen, self.frame, "NNXBtnN60", (9, 9), tiles)
+		self.buttons["NNXBtnN11"] = Button(self, self.screen, self.frame, "NNXBtnN11", (8, 11), tiles)
+		self.buttons["NNXBtnN21"] = Button(self, self.screen, self.frame, "NNXBtnN21", (8, 13), tiles)
+		self.buttons["NNXBtnT12"] = Button(self, self.screen, self.frame, "NNXBtnT12", (16, 5), tiles)
+		self.entryWest = {x:self.buttons[x] for x in ["NNXBtnN60", "NNXBtnN11", "NNXBtnN21", "NNXBtnT12"]}
 
-		self.buttons["NBWO1"] = Button(self, self.screen, self.frame, "NBWO1", (20, 5), tiles)
-		self.buttons["NBWO2"] = Button(self, self.screen, self.frame, "NBWO2", (20, 7), tiles)
-		self.buttons["NBWO3"] = Button(self, self.screen, self.frame, "NBWO3", (20, 9), tiles)
-		self.buttons["NBWO4"] = Button(self, self.screen, self.frame, "NBWO4", (20, 11), tiles)
-		self.buttons["NBWO5"] = Button(self, self.screen, self.frame, "NBWO5", (20, 13), tiles)
-		self.buttons["NBWO6"] = Button(self, self.screen, self.frame, "NBWO6", (20, 15), tiles)
-		self.buttons["NBWO7"] = Button(self, self.screen, self.frame, "NBWO7", (20, 17), tiles)
-		self.buttons["NBWO8"] = Button(self, self.screen, self.frame, "NBWO8", (21, 19), tiles)
+		self.buttons["NNXBtnW10"] = Button(self, self.screen, self.frame, "NNXBtnW10", (20, 5), tiles)
+		self.buttons["NNXBtnN32W"] = Button(self, self.screen, self.frame, "NNXBtnN32W", (20, 7), tiles)
+		self.buttons["NNXBtnN31W"] = Button(self, self.screen, self.frame, "NNXBtnN31W", (20, 9), tiles)
+		self.buttons["NNXBtnN12W"] = Button(self, self.screen, self.frame, "NNXBtnN12W", (20, 11), tiles)
+		self.buttons["NNXBtnN22W"] = Button(self, self.screen, self.frame, "NNXBtnN22W", (20, 13), tiles)
+		self.buttons["NNXBtnN41W"] = Button(self, self.screen, self.frame, "NNXBtnN41W", (20, 15), tiles)
+		self.buttons["NNXBtnN42W"] = Button(self, self.screen, self.frame, "NNXBtnN42W", (20, 17), tiles)
+		self.buttons["NNXBtnW20W"] = Button(self, self.screen, self.frame, "NNXBtnW20W", (21, 19), tiles)
+		self.exitWest = {x:self.buttons[x] for x in ["NNXBtnW10", "NNXBtnN32W", "NNXBtnN31W", "NNXBtnN12W", "NNXBtnN22W", "NNXBtnN41W", "NNXBtnN42W", "NNXBtnW20W"]}
 
-		self.buttons["NBEI1"] = Button(self, self.screen, self.frame, "NBEI1", (44, 9), tiles)
-		self.buttons["NBEI2"] = Button(self, self.screen, self.frame, "NBEI2", (44, 11), tiles)
-		self.buttons["NBEI3"] = Button(self, self.screen, self.frame, "NBEI3", (44, 13), tiles)
-		self.buttons["NBWO1"] = Button(self, self.screen, self.frame, "NBWO1", (20, 5), tiles)
+		self.buttons["NNXBtnR10"] = Button(self, self.screen, self.frame, "NNXBtnR10", (44, 9), tiles)
+		self.buttons["NNXBtnB10"] = Button(self, self.screen, self.frame, "NNXBtnB10", (44, 11), tiles)
+		self.buttons["NNXBtnB20"] = Button(self, self.screen, self.frame, "NNXBtnB20", (44, 13), tiles)
+		self.entryEast = {x:self.buttons[x] for x in ["NNXBtnR10", "NNXBtnB10", "NNXBtnB20"]}
 
-		self.buttons["NBEO1"] = Button(self, self.screen, self.frame, "NBEO1", (32, 5), tiles)
-		self.buttons["NBEO2"] = Button(self, self.screen, self.frame, "NBEO2", (29, 7), tiles)
-		self.buttons["NBEO3"] = Button(self, self.screen, self.frame, "NBEO3", (29, 9), tiles)
-		self.buttons["NBEO4"] = Button(self, self.screen, self.frame, "NBEO4", (29, 11), tiles)
-		self.buttons["NBEO5"] = Button(self, self.screen, self.frame, "NBEO5", (29, 13), tiles)
-		self.buttons["NBEO6"] = Button(self, self.screen, self.frame, "NBEO6", (29, 15), tiles)
-		self.buttons["NBEO7"] = Button(self, self.screen, self.frame, "NBEO7", (29, 17), tiles)
-		self.buttons["NBEO8"] = Button(self, self.screen, self.frame, "NBEO8", (31, 19), tiles)
+		self.buttons["NNXBtnW11"] = Button(self, self.screen, self.frame, "NNXBtnW11", (32, 5), tiles)
+		self.buttons["NNXBtnN32E"] = Button(self, self.screen, self.frame, "NNXBtnN32E", (29, 7), tiles)
+		self.buttons["NNXBtnN31E"] = Button(self, self.screen, self.frame, "NNXBtnN31E", (29, 9), tiles)
+		self.buttons["NNXBtnN12E"] = Button(self, self.screen, self.frame, "NNXBtnN12E", (29, 11), tiles)
+		self.buttons["NNXBtnN22E"] = Button(self, self.screen, self.frame, "NNXBtnN22E", (29, 13), tiles)
+		self.buttons["NNXBtnN41E"] = Button(self, self.screen, self.frame, "NNXBtnN41E", (29, 15), tiles)
+		self.buttons["NNXBtnN42E"] = Button(self, self.screen, self.frame, "NNXBtnN42E", (29, 17), tiles)
+		self.buttons["NNXBtnW20E"] = Button(self, self.screen, self.frame, "NNXBtnW20E", (31, 19), tiles)
+		self.exitEast = {x:self.buttons[x] for x in ["NNXBtnW11", "NNXBtnN32E", "NNXBtnN31E", "NNXBtnN12E", "NNXBtnN22E", "NNXBtnN41E", "NNXBtnN42E", "NNXBtnW20E"]}
+
+		self.NXMap = {
+			"NNXBtnT12": {
+				"NNXBtnW10":  [ ["NSw25", "N"] ]
+			},
+
+			"NNXBtnN60": {
+				"NNXBtnW10":  [ ["NSw21", "N"], ["NSw23", "R"], ["NSw25", "R"], ["NSw27", "N"] ],
+				"NNXBtnN32W": [ ["NSw21", "N"], ["NSw23", "R"], ["NSw25", "N"], ["NSw27", "N"] ],
+				"NNXBtnN31W": [ ["NSw21", "N"], ["NSw23", "N"], ["NSw27", "N"] ],
+				"NNXBtnN12W": [ ["NSw21", "N"], ["NSw27", "R"], ["NSw29", "N"] ],
+				"NNXBtnN22W": [ ["NSw27", "R"], ["NSw29", "R"], ["NSw31", "N"] ],
+				"NNXBtnN41W": [ ["NSw27", "R"], ["NSw29", "R"], ["NSw31", "R"], ["NSw33", "R"] ],
+				"NNXBtnN42W": [ ["NSw27", "R"], ["NSw29", "R"], ["NSw31", "R"], ["NSw33", "N"], ["NSw35", "R"] ],
+				"NNXBtnW20W": [ ["NSw27", "R"], ["NSw29", "R"], ["NSw31", "R"], ["NSw33", "N"], ["NSw35", "N"] ],
+			},
+
+			"NNXBtnN11": {
+				"NNXBtnW10":  [ ["NSw19", "N"], ["NSw21", "R"], ["NSw23", "R"], ["NSw25", "R"], ["NSw27", "N"], ["NSw29", "N"] ],
+				"NNXBtnN32W": [ ["NSw19", "N"], ["NSw21", "R"], ["NSw23", "R"], ["NSw25", "N"], ["NSw27", "N"], ["NSw29", "N"] ],
+				"NNXBtnN31W": [ ["NSw19", "N"], ["NSw21", "R"], ["NSw23", "N"], ["NSw27", "N"], ["NSw29", "N"] ],
+				"NNXBtnN12W": [ ["NSw19", "N"], ["NSw21", "N"], ["NSw27", "N"], ["NSw29", "N"] ],
+				"NNXBtnN22W": [ ["NSw19", "N"], ["NSw27", "N"], ["NSw29", "R"], ["NSw31", "N"] ],
+				"NNXBtnN41W": [ ["NSw19", "N"], ["NSw27", "N"], ["NSw29", "R"], ["NSw31", "R"], ["NSw33", "R"] ],
+				"NNXBtnN42W": [ ["NSw19", "N"], ["NSw27", "N"], ["NSw29", "R"], ["NSw31", "R"], ["NSw33", "N"], ["NSw35", "R"] ],
+				"NNXBtnW20W": [ ["NSw19", "N"], ["NSw27", "N"], ["NSw29", "R"], ["NSw31", "R"], ["NSw33", "N"], ["NSw35", "N"] ],
+			},
+
+			"NNXBtnN21": {
+				"NNXBtnW10":  [ ["NSw19", "R"], ["NSw21", "R"], ["NSw23", "R"], ["NSw25", "R"], ["NSw27", "N"], ["NSw29", "N"] ],
+				"NNXBtnN32W": [ ["NSw19", "R"], ["NSw21", "R"], ["NSw23", "R"], ["NSw25", "N"], ["NSw27", "N"], ["NSw29", "N"] ],
+				"NNXBtnN31W": [ ["NSw19", "R"], ["NSw21", "R"], ["NSw23", "N"], ["NSw27", "N"], ["NSw29", "N"] ],
+				"NNXBtnN12W": [ ["NSw19", "R"], ["NSw21", "N"], ["NSw27", "N"], ["NSw29", "N"] ],
+				"NNXBtnN22W": [ ["NSw19", "N"], ["NSw29", "N"], ["NSw31", "N"] ],
+				"NNXBtnN41W": [ ["NSw19", "N"], ["NSw29", "N"], ["NSw31", "R"], ["NSw33", "R"] ],
+				"NNXBtnN42W": [ ["NSw19", "N"], ["NSw29", "N"], ["NSw31", "R"], ["NSw33", "N"], ["NSw35", "R"] ],
+				"NNXBtnW20W": [ ["NSw19", "N"], ["NSw29", "N"], ["NSw31", "R"], ["NSw33", "N"], ["NSw35", "N"] ],
+			},
+
+			"NNXBtnR10": {
+				"NNXBtnW11":  [ ["NSw47", "N"], ["NSw55", "N"] ],
+				"NNXBtnN32E": [ ["NSw51", "N"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "R"] ],
+				"NNXBtnN31E": [ ["NSw51", "R"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "R"] ],
+				"NNXBtnN12E": [ ["NSw53", "N"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "R"] ],
+				"NNXBtnN22E": [ ["NSw43", "N"], ["NSw45", "R"], ["NSw47", "R"] ],
+				"NNXBtnN41E": [ ["NSw41", "R"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "R"] ],
+				"NNXBtnN42E": [ ["NSw39", "R"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "R"] ],
+				"NNXBtnW20E": [ ["NSw39", "N"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "R"] ]
+			}, 
+			
+			"NNXBtnB10": {
+				"NNXBtnW11":  [ ["NSw55", "R"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "N"] ],
+				"NNXBtnN32E": [ ["NSw51", "N"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "N"] ],
+				"NNXBtnN31E": [ ["NSw51", "R"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "N"] ],
+				"NNXBtnN12E": [ ["NSw53", "N"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "N"] ],
+				"NNXBtnN22E": [ ["NSw43", "N"], ["NSw45", "R"], ["NSw47", "N"], ["NSw57", "N"] ],
+				"NNXBtnN41E": [ ["NSw41", "R"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "N"], ["NSw57", "N"]],
+				"NNXBtnN42E": [ ["NSw39", "R"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "N"], ["NSw57", "N"] ],
+				"NNXBtnW20E": [ ["NSw39", "N"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "N"], ["NSw57", "N"] ]
+			}, 
+			
+			"NNXBtnB20": {
+				"NNXBtnW11":  [ ["NSw55", "R"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "R"] ],
+				"NNXBtnN32E": [ ["NSw51", "N"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "R"]],
+				"NNXBtnN31E": [ ["NSw51", "R"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "R"]],
+				"NNXBtnN12E": [ ["NSw53", "N"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "R"] ],
+				"NNXBtnN22E": [ ["NSw43", "N"], ["NSw45", "N"], ["NSw57", "N"] ],
+				"NNXBtnN41E": [ ["NSw41", "R"], ["NSw43", "R"], ["NSw45", "N"], ["NSw57", "N"] ],
+				"NNXBtnN42E": [ ["NSw39", "R"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "N"], ["NSw57", "N"] ],
+				"NNXBtnW20E": [ ["NSw39", "N"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "N"], ["NSw57", "N"] ]
+			}
+		}
 
 		return self.buttons
 	
@@ -448,86 +1001,195 @@ class Nassau (District):
 		self.signals = {}
 		self.routes = {}
 		self.osSignals = {}
-		# sigList = [
-		# 	[ "K8R",  RegAspects, True,    "rightlong", (141, 12) ],
-		# 	[ "K4R",  RegAspects, True,    "rightlong", (141, 14) ],
-		# 	[ "K2R",  RegAspects, True,    "rightlong", (141, 16) ],
+		sigList = [
+			[ "N20R", SloAspects, True,    "right", (16, 6) ],
+			[ "N18R", SloAspects, True,    "right", (9, 10) ],
+			[ "N16R", SloAspects, True,    "rightlong", (8, 12) ],
+			[ "N14R", SloAspects, True,    "rightlong", (8, 14) ],
 
-		# 	[ "K8LA", RegAspects, False,   "left",  (149, 8) ],
-		# 	[ "K8LB", RegAspects, False,   "leftlong", (149, 10) ],
-		# 	[ "K2L",  RegAspects, False,   "leftlong", (149, 12) ],
+			[ "N20L", SloAspects, False,   "left", (20, 4) ],
+			[ "N18LA",SloAspects, False,   "left", (20, 6) ],
+			[ "N18LB",SloAspects, False,   "leftlong", (20, 8) ],
 
-		# 	[ "N20W", RegAspects, False,   "leftlong", (121, 18) ],
-		# 	[ "S21E", RegAspects, True,    "rightlong", (122, 20) ],
+			[ "N16L", SloAspects, False,   "leftlong", (20, 10) ],
 
-		# 	[ "N10W", RegAspects, False,   "leftlong", (121, 6) ],
-		# 	[ "S11E", RegAspects, True,    "rightlong", (122, 8) ],
-		# ]
+			[ "N14LA",SloAspects, False,   "leftlong", (20, 12) ],
+			[ "N14LB",SloAspects, False,   "left", (20, 14) ],
+			[ "N14LC",SloAspects, False,   "left", (20, 16) ],
+			[ "N14LD",SloAspects, False,   "left", (21, 18) ],
 
-		# for signm, atype, east, tileSet, pos in sigList:
-		# 	self.signals[signm]  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])  
 
-		# blockSigs = {
-		# 	# # which signals govern stopping sections, west and east
-		# 	"N10": ("N10W",  "K8R"),
-		# 	"N11": ("K8B",  "N16R"),
-		# 	"N20": ("N20W", "K2R"),
-		# 	"N21": ("K2L",  "N14R"),
-		# 	"N25": ("S16L",  "K4R")
-		# }
+			[ "N28R", SloAspects, True,    "right", (32, 6) ],
 
-		# for blknm, siglist in blockSigs.items():
-		# 	self.blocks[blknm].SetSignals(siglist)
+			[ "N26RA",SloAspects, True,    "right", (29, 8) ],
+			[ "N26RB",SloAspects, True,    "right", (29, 10) ],
+			[ "N26RC",SloAspects, True,    "rightlong", (29, 12) ],
 
-		# block = self.blocks["KOSW"]
-		# self.routes["KRtN10K10"] = Route(self.screen, block, "KRtN10K10", "K10", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 11), (147, 10), (148, 9), (149, 9) ], "N10", [RESTRICTING, RESTRICTING], ["KSw3", "KSw5", "KSw7"])
-		# self.routes["KRtN10N11"] = Route(self.screen, block, "KRtN10N11", "N11", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 11), (147, 11), (148, 11), (149, 11) ], "N10", [MAIN, MAIN], ["KSw3", "KSw5", "KSw7"])
-		# self.routes["KRtN10N21"] = Route(self.screen, block, "KRtN10N21", "N21", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 12), (147, 13), (148, 13), (149, 13) ], "N10", [DIVERGING, DIVERGING], ["KSw3", "KSw5"])
+			[ "N24RA",SloAspects, True,    "rightlong", (29, 14) ],
+			[ "N24RB",SloAspects, True,    "rightlong", (29, 16) ],
+			[ "N24RC",SloAspects, True,    "right", (29, 18) ],
+			[ "N24RD",SloAspects, True,    "right", (31, 20) ],
 
-		# block = self.blocks["KOSM"]
-		# self.routes["KRtN25K10"] = Route(self.screen, block, "KRtN25K10", "K10", [ (141, 13), (142, 13), (143, 12), (144, 11), (145, 11), (146, 11), (147, 10), (148, 9), (149, 9) ], "N25", [RESTRICTING, RESTRICTING], ["KSw3", "KSw5", "KSw7"])
-		# self.routes["KRtN25N11"] = Route(self.screen, block, "KRtN25N11", "N11", [ (141, 13), (142, 13), (143, 12), (144, 11), (145, 11), (146, 11), (147, 11), (148, 11), (149, 11) ], "N25", [DIVERGING, DIVERGING], ["KSw3", "KSw5", "KSw7"])
-		# self.routes["KRtN25N21"] = Route(self.screen, block, "KRtN25N21", "N21", [ (141, 13), (142, 13), (143, 13), (144, 13), (145, 13), (146, 13), (147, 13), (148, 13), (149, 13) ], "N25", [MAIN, MAIN], ["KSw1", "KSw3", "KSw5"])
+			[ "N28L", SloAspects, False,   "leftlong", (44, 8) ],
+			[ "N26L", SloAspects, False,   "leftlong", (44, 10) ],
+			[ "N24L", SloAspects, False,   "left", (44, 12) ]
+		]
 
-		# block = self.blocks["KOSE"]
-		# self.routes["KRtN20N21"] = Route(self.screen, block, "KRtN20N21", "N20", [ (141, 15), (142, 15), (143, 15), (144, 14), (145, 13), (146, 13), (147, 13), (148, 13), (149, 13) ], "N21", [DIVERGING, DIVERGING], ["KSw1", "KSw5"])
+		for signm, atype, east, tileSet, pos in sigList:
+			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])  
 
-		# block = self.blocks["KOSN10S11"]
-		# self.routes["KRtN10S11"] = Route(self.screen, block, "KRtN10S11", "N10", [  ], "S11", [MAIN, MAIN], [])
-		# block.SetRoute(self.routes["KRtN10S11"])
+		block = self.blocks["NWOSTY"]
+		self.routes["NRtT12W10"] = Route(self.screen, block, "NRtT12W10", "W10", [ (17, 5), (18, 5), (19, 5) ], "T12", [RESTRICTING, RESTRICTING], ["NSw25"])
 
-		# block = self.blocks["KOSN20S21"]
-		# self.routes["KRtN20S21"] = Route(self.screen, block, "KRtN20S21", "S21", [  ], "N20", [MAIN, MAIN], [])
-		# block.SetRoute(self.routes["KRtN20S21"])
+		block = self.blocks["NWOSCY"]
+		self.routes["NRtN60N31"] = Route(self.screen, block, "NRtN60N31", "N31", [ (10, 9), (11, 9), (12, 9), (13, 9), (14, 9), (15, 9), (16, 9), (17, 9), (18, 9), (19, 9) ], "N60", [RESTRICTING, RESTRICTING], ["NSw21", "NSw23", "NSw27"])
+		self.routes["NRtN60N32"] = Route(self.screen, block, "NRtN60N32", "N32", [ (10, 9), (11, 9), (12, 9), (13, 9), (14, 9), (15, 9), (16, 8), (17, 7), (18, 7), (19, 7) ], "N60", [RESTRICTING, RESTRICTING], ["NSw21", "NSw23", "NSw25", "NSw27"])
+		self.routes["NRtN60W10"] = Route(self.screen, block, "NRtN60W10", "W10", [ (10, 9), (11, 9), (12, 9), (13, 9), (14, 9), (15, 9), (16, 8), (17, 7), (18, 6), (19, 5) ], "N60", [RESTRICTING, RESTRICTING], ["NSw21", "NSw23", "NSw25", "NSw27"])
+		self.routes["NRtN60N12"] = Route(self.screen, block, "NRtN60N12", "N12", [ (10, 9), (11, 10), (12, 11), (13, 11), (14, 11), (15, 11), (16, 11), (17, 11), (18, 11), (19, 11) ], "N60", [RESTRICTING, RESTRICTING], ["NSw21", "NSw27", "NSw29"])
+		self.routes["NRtN60N22"] = Route(self.screen, block, "NRtN60N22", "N22", [ (10, 9), (11, 10), (12, 11), (13, 12), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13) ], "N60", [RESTRICTING, RESTRICTING], ["NSw27", "NSw29", "NSw31"])
+		self.routes["NRtN60N41"] = Route(self.screen, block, "NRtN60N41", "N41", [ (10, 9), (11, 10), (12, 11), (13, 12), (14, 13), (15, 14), (16, 15), (17, 15), (18, 15), (19, 15) ], "N60", [RESTRICTING, RESTRICTING], ["NSw27", "NSw29", "NSw31", "NSw33"])
+		self.routes["NRtN60N42"] = Route(self.screen, block, "NRtN60N42", "N42", [ (10, 9), (11, 10), (12, 11), (13, 12), (14, 13), (15, 14), (16, 15), (17, 16), (18, 17), (19, 17) ], "N60", [RESTRICTING, RESTRICTING], ["NSw27", "NSw29", "NSw31", "NSw33", "NSw35"])
+		self.routes["NRtN60W20"] = Route(self.screen, block, "NRtN60W20", "W20", [ (10, 9), (11, 10), (12, 11), (13, 12), (14, 13), (15, 14), (16, 15), (17, 16), (18, 17), (19, 18), (20, 19) ], "N60", [RESTRICTING, RESTRICTING], ["NSw27", "NSw29", "NSw31", "NSw33", "NSw35"])
 
-		# self.signals["K8R"].AddPossibleRoutes("KOSW", [ "KRtN10K10", "KRtN10N11", "KRtN10N21" ])
-		# self.signals["K4R"].AddPossibleRoutes("KOSM", [ "KRtN25K10", "KRtN25N11", "KRtN25N21" ])
-		# self.signals["K2R"].AddPossibleRoutes("KOSE", [ "KRtN20N21" ])
-		# self.signals["K8LA"].AddPossibleRoutes("KOSW", [ "KRtN10K10" ])
-		# self.signals["K8LA"].AddPossibleRoutes("KOSM", [ "KRtN25K10" ])
-		# self.signals["K8LB"].AddPossibleRoutes("KOSW", [ "KRtN10N11" ])
-		# self.signals["K8LB"].AddPossibleRoutes("KOSM", [ "KRtN25N11" ])
-		# self.signals["K2L"].AddPossibleRoutes("KOSW", [ "KRtN10N21" ])
-		# self.signals["K2L"].AddPossibleRoutes("KOSM", [ "KRtN25N21" ])
-		# self.signals["K2L"].AddPossibleRoutes("KOSE", [ "KRtN20N21" ])
+		block = self.blocks["NWOSW"]
+		self.routes["NRtN11N31"] = Route(self.screen, block, "NRtN11N31", "N31", [ (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 10), (15, 9), (16, 9), (17, 9), (18, 9), (19, 9) ], "N11", [RESTRICTING, RESTRICTING], ["NSw19", "NSw21", "NSw23", "NSw27", "NSw29"])
+		self.routes["NRtN11N32"] = Route(self.screen, block, "NRtN11N32", "N32", [ (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 10), (15, 9), (16, 8), (17, 7), (18, 7), (19, 7) ], "N11", [RESTRICTING, RESTRICTING], ["NSw19", "NSw21", "NSw23", "NSw25", "NSw27", "NSw29"])
+		self.routes["NRtN11W10"] = Route(self.screen, block, "NRtN11W10", "W10", [ (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 10), (15, 9), (16, 8), (17, 7), (18, 6), (19, 5) ], "N11", [RESTRICTING, RESTRICTING], ["NSw19", "NSw21", "NSw23", "NSw25", "NSw27", "NSw29"])
+		self.routes["NRtN11N12"] = Route(self.screen, block, "NRtN11N12", "N12", [ (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 11), (15, 11), (16, 11), (17, 11), (18, 11), (19, 11) ], "N11", [SLOW, SLOW], ["NSw19", "NSw21", "NSw27", "NSw29"])
+		self.routes["NRtN11N22"] = Route(self.screen, block, "NRtN11N22", "N22", [ (9, 11), (10, 11), (11, 11), (12, 11), (13, 12), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13) ], "N11", [SLOW, SLOW], ["NSw19", "NSw27", "NSw29", "NSw31"])
+		self.routes["NRtN11N41"] = Route(self.screen, block, "NRtN11N41", "N41", [ (9, 11), (10, 11), (11, 11), (12, 11), (13, 12), (14, 13), (15, 14), (16, 15), (17, 15), (18, 15), (19, 15) ], "N11", [RESTRICTING, RESTRICTING], ["NSw19", "NSw27", "NSw29", "NSw31", "NSw33"])
+		self.routes["NRtN11N42"] = Route(self.screen, block, "NRtN11N42", "N42", [ (9, 11), (10, 11), (11, 11), (12, 11), (13, 12), (14, 13), (15, 14), (16, 15), (17, 16), (18, 17), (19, 17) ], "N11", [RESTRICTING, RESTRICTING], ["NSw19", "NSw27", "NSw29", "NSw31", "NSw33", "NSw35"])
+		self.routes["NRtN11W20"] = Route(self.screen, block, "NRtN11W20", "W20", [ (9, 11), (10, 11), (11, 11), (12, 11), (13, 12), (14, 13), (15, 14), (16, 15), (17, 16), (18, 17), (19, 18), (20, 19) ], "N11", [RESTRICTING, RESTRICTING], ["NSw19", "NSw27", "NSw29", "NSw31", "NSw33", "NSw35"])
 
-		# self.signals["N10W"].AddPossibleRoutes("KOSN10S11", [ "KRtN10S11" ])
-		# self.signals["S11E"].AddPossibleRoutes("KOSN10S11", [ "KRtN10S11" ])
+		block = self.blocks["NWOSE"]
+		self.routes["NRtN21N31"] = Route(self.screen, block, "NRtN21N31", "N21", [ (9, 13), (10, 12), (11, 11), (12, 11), (13, 11), (14, 10), (15, 9), (16, 9), (17, 9), (18, 9), (19, 9) ], "N31", [RESTRICTING, RESTRICTING], ["NSw19", "NSw21", "NSw23", "NSw27", "NSw29"])
+		self.routes["NRtN21N32"] = Route(self.screen, block, "NRtN21N32", "N21", [ (9, 13), (10, 12), (11, 11), (12, 11), (13, 11), (14, 10), (15, 9), (16, 8), (17, 7), (18, 7), (19, 7) ], "N32", [RESTRICTING, RESTRICTING], ["NSw19", "NSw21", "NSw23", "NSw25", "NSw27", "NSw29"])
+		self.routes["NRtN21W10"] = Route(self.screen, block, "NRtN21W10", "N21", [ (9, 13), (10, 12), (11, 11), (12, 11), (13, 11), (14, 10), (15, 9), (16, 8), (17, 7), (18, 6), (19, 5) ], "W10", [RESTRICTING, RESTRICTING], ["NSw19", "NSw21", "NSw23", "NSw25", "NSw27", "NSw29"])
+		self.routes["NRtN21N12"] = Route(self.screen, block, "NRtN21N12", "N21", [ (9, 13), (10, 12), (11, 11), (12, 11), (13, 11), (14, 11), (15, 11), (16, 11), (17, 11), (18, 11), (19, 11) ], "N12", [SLOW, SLOW], ["NSw19", "NSw21", "NSw27", "NSw29"])
+		self.routes["NRtN21N22"] = Route(self.screen, block, "NRtN21N22", "N21", [ (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13) ], "N22", [SLOW, SLOW], ["NSw19", "NSw21", "NSw29"])
+		self.routes["NRtN21N41"] = Route(self.screen, block, "NRtN21N41", "N21", [ (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 14), (16, 15), (17, 15), (18, 15), (19, 15) ], "N41", [RESTRICTING, RESTRICTING], ["NSw19", "NSw21", "NSw29", "NSw33"])
+		self.routes["NRtN21N42"] = Route(self.screen, block, "NRtN21N42", "N21", [ (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 14), (16, 15), (17, 16), (18, 17), (19, 17) ], "N42", [RESTRICTING, RESTRICTING], ["NSw19", "NSw21", "NSw29", "NSw33", "NSw35"])
+		self.routes["NRtN21W20"] = Route(self.screen, block, "NRtN21W20", "N21", [ (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 14), (16, 15), (17, 16), (18, 17), (19, 18), (20, 19) ], "W20", [RESTRICTING, RESTRICTING], ["NSw19", "NSw21", "NSw29", "NSw33", "NSw35"])
 
-		# self.signals["N20W"].AddPossibleRoutes("KOSN20S21", [ "KRtN20S21" ])
-		# self.signals["S21E"].AddPossibleRoutes("KOSN20S21", [ "KRtN20S21" ])
+		self.signals["N20R"].AddPossibleRoutes("NWOSTY", [ "NRtT12W10" ])
+		self.signals["N18R"].AddPossibleRoutes("NWOSCY", [ "NRtN60N31", "NRtN60N32", "NRtN60W10", "NRtN60N12", "NRtN60N22", "NRtN60N41", "NRtN60N42", "NRtN60W20" ])
+		self.signals["N16R"].AddPossibleRoutes("NWOSW",  [ "NRtN11N31", "NRtN11N32", "NRtN11W10", "NRtN11N12", "NRtN11N22", "NRtN11N41", "NRtN11N42", "NRtN11W20" ])
+		self.signals["N14R"].AddPossibleRoutes("NWOSE",  [ "NRtN21N31", "NRtN21N32", "NRtN21W10", "NRtN21N12", "NRtN21N22", "NRtN21N41", "NRtN21N42", "NRtN21W20" ])
 
-		# self.osSignals["KOSW"] = [ "K8R", "K8LA", "K8LB", "K2L" ]
-		# self.osSignals["KOSM"] = [ "K4R", "K8LA", "K8LB", "K2L" ]
-		# self.osSignals["KOSE"] = [ "K2R", "K2L" ]
-		# self.osSignals["KOSN10S11"] = [ "N10W", "S11E" ]
-		# self.osSignals["KOSN20S21"] = [ "N20W", "S21E" ]
+		self.signals["N20R"].AddPossibleRoutes("NWOSTY", [ "NRtT12W10" ])
+		self.signals["N20R"].AddPossibleRoutes("NWOSCY", [ "NRtN60W10" ])
+		self.signals["N20R"].AddPossibleRoutes("NWOSW",  [ "NRtN11W10" ])
+		self.signals["N20R"].AddPossibleRoutes("NWOSE",  [ "NRtN21W10" ])
 
+		self.signals["N18LA"].AddPossibleRoutes("NWOSCY", [ "NRtN60N32" ])
+		self.signals["N18LA"].AddPossibleRoutes("NWOSW",  [ "NRtN60N32" ])
+		self.signals["N18LA"].AddPossibleRoutes("NWOSE",  [ "NRtN60N32" ])
+
+		self.signals["N18LB"].AddPossibleRoutes("NWOSCY", [ "NRtN60N31" ])
+		self.signals["N18LB"].AddPossibleRoutes("NWOSW",  [ "NRtN60N31" ])
+		self.signals["N18LB"].AddPossibleRoutes("NWOSE",  [ "NRtN60N31" ])
+
+		self.signals["N16L"].AddPossibleRoutes("NWOSCY", [ "NRtN60N12" ])
+		self.signals["N16L"].AddPossibleRoutes("NWOSW",  [ "NRtN60N12" ])
+		self.signals["N16L"].AddPossibleRoutes("NWOSE",  [ "NRtN60N12" ])
+
+		self.signals["N14LA"].AddPossibleRoutes("NWOSCY", [ "NRtN60N22" ])
+		self.signals["N14LA"].AddPossibleRoutes("NWOSW",  [ "NRtN60N22" ])
+		self.signals["N14LA"].AddPossibleRoutes("NWOSE",  [ "NRtN60N22" ])
+
+		self.signals["N14LB"].AddPossibleRoutes("NWOSCY", [ "NRtN60N41" ])
+		self.signals["N14LB"].AddPossibleRoutes("NWOSW",  [ "NRtN60N41" ])
+		self.signals["N14LB"].AddPossibleRoutes("NWOSE",  [ "NRtN60N41" ])
+
+		self.signals["N14LC"].AddPossibleRoutes("NWOSCY", [ "NRtN60N42" ])
+		self.signals["N14LC"].AddPossibleRoutes("NWOSW",  [ "NRtN60N42" ])
+		self.signals["N14LC"].AddPossibleRoutes("NWOSE",  [ "NRtN60N42" ])
+
+		self.signals["N14LD"].AddPossibleRoutes("NWOSCY", [ "NRtN60W20" ])
+		self.signals["N14LD"].AddPossibleRoutes("NWOSW",  [ "NRtN60W20" ])
+		self.signals["N14LD"].AddPossibleRoutes("NWOSE",  [ "NRtN60W20" ])
+
+		self.osSignals["NWOSTY"] = [ "N20R", "N20L" ]
+		self.osSignals["NWOSCY"] = [ "N18R", "N20L", "N18LA", "N18LB", "N16L", "N14LA", "N14LB", "N14LC", "N14LD" ]
+		self.osSignals["NWOSW"] =  [ "N16R", "N20L", "N18LA", "N18LB", "N16L", "N14LA", "N14LB", "N14LC", "N14LD" ]
+		self.osSignals["NWOSE"] =  [ "N14R", "N20L", "N18LA", "N18LB", "N16L", "N14LA", "N14LB", "N14LC", "N14LD" ]
+
+		block = self.blocks["N60"]
+		self.routes["NRtN60A"] = Route(self.screen, block, "NRtN60A", None, [ (1, 6), (2, 6), (3, 6), (4, 6), (5, 6), (6, 7), (7, 8), (8, 9) ], "NWOSCY", [RESTRICTING, RESTRICTING], ["NSw13", "NSw17"])
+		self.routes["NRtN60B"] = Route(self.screen, block, "NRtN60B", None, [ (1, 7), (2, 7), (3, 7), (4, 7), (5, 7), (6, 7), (7, 8), (8, 9) ], "NWOSCY", [RESTRICTING, RESTRICTING], ["NSw13", "NSw17"])
+		self.routes["NRtN60C"] = Route(self.screen, block, "NRtN60C", None, [ (1, 8), (2, 8), (3, 8), (4, 8), (5, 8), (6, 9), (7, 9), (8, 9) ], "NWOSCY", [RESTRICTING, RESTRICTING], ["NSw15", "NSw17"])
+		self.routes["NRtN60D"] = Route(self.screen, block, "NRtN60D", None, [ (1, 9), (2, 9), (3, 9), (4, 9), (5, 9), (6, 9), (7, 9), (8, 9) ], "NWOSCY", [RESTRICTING, RESTRICTING], ["NSw15", "NSw17"])
+		block.SetRoute(self.routes["NRtN60D"])
+
+		block = self.blocks["NEOSRH"]
+		self.routes["NRtR10W11"] = Route(self.screen, block, "NRtR10W11", "R10", [ (33, 5), (34, 6), (35, 7), (36, 8), (37, 9), (38, 9), (39, 9), (40, 9), (41, 9), (42, 9), (43, 9) ], "W11", [RESTRICTING, RESTRICTING], ["NSw47", "NSw55"])
+		self.routes["NRtR10N32"] = Route(self.screen, block, "NRtR10N32", "R10", [ (30, 7), (31, 8), (32, 9), (33, 10), (34, 11), (35, 11), (36, 11), (37, 11), (38, 11), (39, 11), (40, 11), (41, 10), (42, 9), (43, 9) ], "N32", [RESTRICTING, SLOW], ["NSw45", "NSw47", "NSw51", "NSw53", "NSw55"])
+		self.routes["NRtR10N31"] = Route(self.screen, block, "NRtR10N31", "R10", [ (30, 9), (31, 9), (32, 9), (33, 10), (34, 11), (35, 11), (36, 11), (37, 11), (38, 11), (39, 11), (40, 11), (41, 10), (42, 9), (43, 9) ], "N31", [RESTRICTING, SLOW], ["NSw45", "NSw47", "NSw51", "NSw53", "NSw55"])
+		self.routes["NRtR10N12"] = Route(self.screen, block, "NRtR10N12", "R10", [ (30, 11), (31, 11), (32, 11), (33, 11), (34, 11), (35, 11), (36, 11), (37, 11), (38, 11), (39, 11), (40, 11), (41, 10), (42, 9), (43, 9) ], "N12", [SLOW, SLOW], ["NSw45", "NSw47", "NSw53", "NSw55"])
+		self.routes["NRtR10N22"] = Route(self.screen, block, "NRtR10N22", "R10", [ (30, 13), (31, 13), (32, 13), (33, 13), (34, 13), (35, 13), (36, 13), (37, 13), (38, 13), (39, 12), (40, 11), (41, 10), (42, 9), (43, 9) ], "N22", [SLOW, SLOW], ["NSw43", "NSw45", "NSw47"])
+		self.routes["NRtR10N41"] = Route(self.screen, block, "NRtR10N41", "R10", [ (30, 15), (31, 15), (32, 15), (33, 15), (34, 15), (35, 15), (36, 15), (37, 14), (38, 13), (39, 12), (40, 11), (41, 10), (42, 9), (43, 9) ], "N41", [SLOW, RESTRICTING], ["NSw41", "NSw43", "NSw45", "NSw47"])
+		self.routes["NRtR10N42"] = Route(self.screen, block, "NRtR10N42", "R10", [ (30, 17), (31, 17), (32, 17), (33, 17), (34, 17), (35, 16), (36, 15), (37, 14), (38, 13), (39, 12), (40, 11), (41, 10), (42, 9), (43, 9) ], "N42", [SLOW, RESTRICTING], ["NSw39", "NSw41", "NSw43", "NSw45", "NSw47"])
+		self.routes["NRtR10W20"] = Route(self.screen, block, "NRtR10W20", "R10", [ (32, 19), (33, 18), (34, 17), (35, 16), (36, 15), (37, 14), (38, 13), (39, 12), (40, 11), (41, 10), (42, 9), (43, 9) ], "W20", [RESTRICTING, RESTRICTING], ["NSw39", "NSw41", "NSw43", "NSw45", "NSw47"])
+
+		block = self.blocks["NEOSW"]
+		self.routes["NRtB10W11"] = Route(self.screen, block, "NRtB10W11", "B10", [ (33, 5), (34, 6), (35, 7), (36, 8), (37, 9), (38, 10), (39, 11), (40, 11), (41, 11), (42, 11), (43, 11) ], "W11", [RESTRICTING, RESTRICTING], ["NSw45", "NSw47", "NSw55", "NSw57"])
+		self.routes["NRtB10N32"] = Route(self.screen, block, "NRtB10N32", "B10", [ (30, 7), (31, 8), (32, 9), (33, 10), (34, 11), (35, 11), (36, 11), (37, 11), (38, 11), (39, 11), (40, 11), (41, 11), (42, 11), (43, 11) ], "N32", [RESTRICTING, SLOW], ["NSw45", "NSw47", "NSw51", "NSw53", "NSw55", "NSw57"])
+		self.routes["NRtB10N31"] = Route(self.screen, block, "NRtB10N31", "B10", [ (30, 9), (31, 9), (32, 9), (33, 10), (34, 11), (35, 11), (36, 11), (37, 11), (38, 11), (39, 11), (40, 11), (41, 11), (42, 11), (43, 11) ], "N31", [RESTRICTING, SLOW], ["NSw45", "NSw47", "NSw51", "NSw53", "NSw55", "NSw57"])
+		self.routes["NRtB10N12"] = Route(self.screen, block, "NRtB10N12", "B10", [ (30, 11), (31, 11), (32, 11), (33, 11), (34, 11), (35, 11), (36, 11), (37, 11), (38, 11), (39, 11), (40, 11), (41, 11), (42, 11), (43, 11) ], "N12", [RESTRICTING, SLOW], ["NSw45", "NSw47", "NSw53", "NSw55", "NSw57"])
+		self.routes["NRtB10N22"] = Route(self.screen, block, "NRtB10N22", "B10", [ (30, 13), (31, 13), (32, 13), (33, 13), (34, 13), (35, 13), (36, 13), (37, 13), (38, 13), (39, 12), (40, 11), (41, 11), (42, 11), (43, 11) ], "N22", [RESTRICTING, SLOW], ["NSw43", "NSw45", "NSw47", "NSw57"])
+		self.routes["NRtB10N41"] = Route(self.screen, block, "NRtB10N41", "B10", [ (30, 15), (31, 15), (32, 15), (33, 15), (34, 15), (35, 15), (36, 15), (37, 14), (38, 13), (39, 12), (40, 11), (41, 11), (42, 11), (43, 11) ], "N41", [RESTRICTING, RESTRICTING], ["NSw41", "NSw43", "NSw45", "NSw47", "NSw57"])
+		self.routes["NRtB10N42"] = Route(self.screen, block, "NRtB10N42", "B10", [ (30, 17), (31, 17), (32, 17), (33, 17), (34, 17), (35, 16), (36, 15), (37, 14), (38, 13), (39, 12), (40, 11), (41, 11), (42, 11), (43, 11) ], "N42", [RESTRICTING, RESTRICTING], ["NSw39", "NSw41", "NSw43", "NSw45", "NSw47", "NSw57"])
+		self.routes["NRtB10W20"] = Route(self.screen, block, "NRtB10W20", "B10", [ (32, 19), (33, 18), (34, 17), (35, 16), (36, 15), (37, 14), (38, 13), (39, 12), (40, 11), (41, 11), (42, 11), (43, 11) ], "W20", [RESTRICTING, RESTRICTING], ["NSw39", "NSw41", "NSw43", "NSw45", "NSw47", "NSw57"])
+
+		block = self.blocks["NEOSE"]
+		self.routes["NRtB20W11"] = Route(self.screen, block, "NRtB20W11", "W11", [ (33, 5), (34, 6), (35, 7), (36, 8), (37, 9), (38, 10), (39, 11), (40, 11), (41, 11), (42, 12), (43, 13) ], "B20", [RESTRICTING, RESTRICTING], ["NSw45", "NSw47", "NSw55", "NSw57"])
+		self.routes["NRtB20N32"] = Route(self.screen, block, "NRtB20N32", "N32", [ (30, 7), (31, 8), (32, 9), (33, 10), (34, 11), (35, 11), (36, 11), (37, 11), (38, 11), (39, 11), (40, 11), (41, 11), (42, 12), (43, 13) ], "B20", [RESTRICTING, RESTRICTING], ["NSw45", "NSw47", "NSw51", "NSw53", "NSw55", "NSw57"])
+		self.routes["NRtB20N31"] = Route(self.screen, block, "NRtB20N31", "N31", [ (30, 9), (31, 9), (32, 9), (33, 10), (34, 11), (35, 11), (36, 11), (37, 11), (38, 11), (39, 11), (40, 11), (41, 11), (42, 12), (43, 13) ], "B20", [RESTRICTING, RESTRICTING], ["NSw45", "NSw47", "NSw51", "NSw53", "NSw55", "NSw57"])
+		self.routes["NRtB20N12"] = Route(self.screen, block, "NRtB20N12", "N12", [ (30, 11), (31, 11), (32, 11), (33, 11), (34, 11), (35, 11), (36, 11), (37, 11), (38, 11), (39, 11), (40, 11), (41, 11), (42, 12), (43, 13) ], "B20", [SLOW, RESTRICTING], ["NSw45", "NSw47", "NSw53", "NSw55", "NSw57"])
+		self.routes["NRtB20N22"] = Route(self.screen, block, "NRtB20N22", "N22", [ (30, 13), (31, 13), (32, 13), (33, 13), (34, 13), (35, 13), (36, 13), (37, 13), (38, 13), (39, 13), (40, 13), (41, 13), (42, 13), (43, 13) ], "B20", [SLOW, RESTRICTING], ["NSw43", "NSw45", "NSw57"])
+		self.routes["NRtB20N41"] = Route(self.screen, block, "NRtB20N41", "N41", [ (30, 15), (31, 15), (32, 15), (33, 15), (34, 15), (35, 15), (36, 15), (37, 14), (38, 13), (39, 13), (40, 13), (41, 13), (42, 13), (43, 13) ], "B20", [SLOW, RESTRICTING], ["NSw41", "NSw43", "NSw45", "NSw57"])
+		self.routes["NRtB20N42"] = Route(self.screen, block, "NRtB20N42", "N42", [ (30, 17), (31, 17), (32, 17), (33, 17), (34, 17), (35, 16), (36, 15), (37, 14), (38, 13), (39, 13), (40, 13), (41, 13), (42, 13), (43, 13) ], "B20", [SLOW, RESTRICTING], ["NSw39", "NSw41", "NSw43", "NSw45", "NSw57"])
+		self.routes["NRtB20W20"] = Route(self.screen, block, "NRtB20W20", "W20", [ (32, 19), (33, 18), (34, 17), (35, 16), (36, 15), (37, 14), (38, 13), (39, 13), (40, 13), (41, 13), (42, 13), (43, 13) ], "B20", [RESTRICTING, RESTRICTING], ["NSw39", "NSw41", "NSw43", "NSw45", "NSw57"])
+
+		self.signals["N28L"].AddPossibleRoutes("NEOSRH", [ "NRtR10W11", "NRtR10N32", "NRtR10N31", "NRtR10N12", "NRtR10N22", "NRtR10N41", "NRtR10N42", "NRtR10W20" ])
+		self.signals["N26L"].AddPossibleRoutes("NEOSW",  [ "NRtB10W11", "NRtB10N32", "NRtB10N31", "NRtB10N12", "NRtB10N22", "NRtB10N41", "NRtB10N42", "NRtB10W20" ])
+		self.signals["N24L"].AddPossibleRoutes("NEOSE",  [ "NRtB20W11", "NRtB20N32", "NRtB20N31", "NRtB20N12", "NRtB20N22", "NRtB20N41", "NRtB20N42", "NRtB20W20" ])
+
+		self.signals["N28R"].AddPossibleRoutes("NEOSRH", [ "NRtR10W11" ])
+		self.signals["N28R"].AddPossibleRoutes("NEOSW", [ "NRtB10W11" ])
+		self.signals["N28R"].AddPossibleRoutes("NEOSE", [ "NRtB20W11" ])
+
+		self.signals["N26RA"].AddPossibleRoutes("NEOSRH", [ "NRtR10N32" ])
+		self.signals["N26RA"].AddPossibleRoutes("NEOSW", [ "NRtB10N32" ])
+		self.signals["N26RA"].AddPossibleRoutes("NEOSE", [ "NRtB20N32" ])
+
+		self.signals["N26RB"].AddPossibleRoutes("NEOSRH", [ "NRtR10N31" ])
+		self.signals["N26RB"].AddPossibleRoutes("NEOSW", [ "NRtB10N31" ])
+		self.signals["N26RB"].AddPossibleRoutes("NEOSE", [ "NRtB20N31" ])
+
+		self.signals["N26RC"].AddPossibleRoutes("NEOSRH", [ "NRtR10N12" ])
+		self.signals["N26RC"].AddPossibleRoutes("NEOSW", [ "NRtB10N12" ])
+		self.signals["N26RC"].AddPossibleRoutes("NEOSE", [ "NRtB20N12" ])
+
+		self.signals["N24RA"].AddPossibleRoutes("NEOSRH", [ "NRtR10N22" ])
+		self.signals["N24RA"].AddPossibleRoutes("NEOSW", [ "NRtB10N22" ])
+		self.signals["N24RA"].AddPossibleRoutes("NEOSE", [ "NRtB20N22" ])
+
+		self.signals["N24RB"].AddPossibleRoutes("NEOSRH", [ "NRtR10N41" ])
+		self.signals["N24RB"].AddPossibleRoutes("NEOSW", [ "NRtB10N41" ])
+		self.signals["N24RB"].AddPossibleRoutes("NEOSE", [ "NRtB20N41" ])
+
+		self.signals["N24RC"].AddPossibleRoutes("NEOSRH", [ "NRtR10N42" ])
+		self.signals["N24RC"].AddPossibleRoutes("NEOSW", [ "NRtB10N42" ])
+		self.signals["N24RC"].AddPossibleRoutes("NEOSE", [ "NRtB20N42" ])
+
+		self.signals["N24RD"].AddPossibleRoutes("NEOSRH", [ "NRtR10W20" ])
+		self.signals["N24RD"].AddPossibleRoutes("NEOSW", [ "NRtB10W20" ])
+		self.signals["N24RD"].AddPossibleRoutes("NEOSE", [ "NRtB20W20" ])
+
+		self.osSignals["NEOSRH"] = [ "N28L", "N28R", "N26RA", "N26RB", "N26RC", "N24RA", "N24RB", "N24RC", "N24RD" ]
+		self.osSignals["NEOSW"] = [ "N26L", "N28R", "N26RA", "N26RB", "N26RC", "N24RA", "N24RB", "N24RC", "N24RD" ]
+		self.osSignals["NEOSE"] = [ "N24L", "N28R", "N26RA", "N26RB", "N26RC", "N24RA", "N24RB", "N24RC", "N24RD" ]
 
 		return self.signals
-
-	def PerformButtonAction(self, btn):
-		District.PerformButtonAction(self, btn)
-
-		print("Nassau: press button %s" % btn.GetName())
 
