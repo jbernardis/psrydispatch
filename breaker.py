@@ -12,7 +12,16 @@ breakerNames = {
 	"CBReverserP31":    "Reverser P31",
 	"CBReverserP41":    "Reverser P41",
 	"CBReverserP50":    "Reverser P50",
-	"CBReverserC22C23": "Reverser C22/C23"
+	"CBReverserC22C23": "Reverser C22/C23",
+	"CBKrulish":		"Krulish",
+	"CBKrulishYd":		"Krulish Yard",
+	"CBNassauW":		"Nassau West",
+	"CBNassauE":		"Nassau East",
+	"CBSptJct":			"Southport Junction",
+	"CBWilson":			"Wilson City",
+	"CBThomas":			"Thomas Yard",
+	"CBFoss":			"Foss",
+	"CBDell":			"Dell",
 }
 
 

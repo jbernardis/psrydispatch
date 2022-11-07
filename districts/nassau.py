@@ -6,7 +6,7 @@ from signal import Signal
 from button import Button
 from handswitch import HandSwitch
 
-from constants import LaKr, SloAspects, SLOW, RESTRICTING, DIVERGING, MAIN, SLIPSWITCH, NORMAL, REVERSE
+from constants import LaKr, SloAspects, SLOW, RESTRICTING, DIVERGING, MAIN, SLIPSWITCH, NORMAL, REVERSE, RegAspects
 
 class Nassau (District):
 	def __init__(self, name, frame, screen):
@@ -157,6 +157,30 @@ class Nassau (District):
 				rv = True
 
 		return rv
+
+	def CheckBlockSignals(self, sig, aspect, blk, rev, rType, nbStatus, nbRType, nnbClear):
+		if blk is None:
+			print("blk is None")
+			return
+
+		blkNm = blk.GetName()
+		east = blk.GetEast(reverse=rev)
+
+		if blkNm == "N21" and not east:
+			signm = "N21W"
+			atype = RegAspects
+
+		elif blkNm == "N11" and not east:
+			signm = "N11W"
+			atype = RegAspects
+
+		else:
+			return
+
+		if aspect != 0:
+			aspect = self.GetBlockAspect(atype, rType, nbStatus, nbRType, nnbClear)
+
+		self.frame.Request({"signal": { "name": signm, "aspect": aspect }})
 
 	def DetermineRoute(self, blocks):
 
@@ -445,12 +469,14 @@ class Nassau (District):
 
 		self.blocks["R10"] = Block(self, self.frame, "R10",
 			[
-				(tiles["horiznc"],  self.screen, (45, 9), False),
-				(tiles["horiz"],    self.screen, (46, 9), False),
 				(tiles["horiznc"],  self.screen, (47, 9), False),
 				(tiles["horiz"],    self.screen, (48, 9), False),
 				(tiles["horiznc"],  self.screen, (49, 9), False),
-			], True)
+			], False)
+		self.blocks["R10"].AddStoppingBlock([
+				(tiles["horiznc"],  self.screen, (45, 9), False),
+				(tiles["horiz"],    self.screen, (46, 9), False),
+			], False)
 
 		self.blocks["W10"] = Block(self, self.frame, "W10",
 			[
@@ -1076,38 +1102,38 @@ class Nassau (District):
 		self.signals["N16R"].AddPossibleRoutes("NWOSW",  [ "NRtN11N31", "NRtN11N32", "NRtN11W10", "NRtN11N12", "NRtN11N22", "NRtN11N41", "NRtN11N42", "NRtN11W20" ])
 		self.signals["N14R"].AddPossibleRoutes("NWOSE",  [ "NRtN21N31", "NRtN21N32", "NRtN21W10", "NRtN21N12", "NRtN21N22", "NRtN21N41", "NRtN21N42", "NRtN21W20" ])
 
-		self.signals["N20R"].AddPossibleRoutes("NWOSTY", [ "NRtT12W10" ])
-		self.signals["N20R"].AddPossibleRoutes("NWOSCY", [ "NRtN60W10" ])
-		self.signals["N20R"].AddPossibleRoutes("NWOSW",  [ "NRtN11W10" ])
-		self.signals["N20R"].AddPossibleRoutes("NWOSE",  [ "NRtN21W10" ])
+		self.signals["N20L"].AddPossibleRoutes("NWOSTY", [ "NRtT12W10" ])
+		self.signals["N20L"].AddPossibleRoutes("NWOSCY", [ "NRtN60W10" ])
+		self.signals["N20L"].AddPossibleRoutes("NWOSW",  [ "NRtN11W10" ])
+		self.signals["N20L"].AddPossibleRoutes("NWOSE",  [ "NRtN21W10" ])
 
 		self.signals["N18LA"].AddPossibleRoutes("NWOSCY", [ "NRtN60N32" ])
-		self.signals["N18LA"].AddPossibleRoutes("NWOSW",  [ "NRtN60N32" ])
-		self.signals["N18LA"].AddPossibleRoutes("NWOSE",  [ "NRtN60N32" ])
+		self.signals["N18LA"].AddPossibleRoutes("NWOSW",  [ "NRtN11N32" ])
+		self.signals["N18LA"].AddPossibleRoutes("NWOSE",  [ "NRtN21N32" ])
 
 		self.signals["N18LB"].AddPossibleRoutes("NWOSCY", [ "NRtN60N31" ])
-		self.signals["N18LB"].AddPossibleRoutes("NWOSW",  [ "NRtN60N31" ])
-		self.signals["N18LB"].AddPossibleRoutes("NWOSE",  [ "NRtN60N31" ])
+		self.signals["N18LB"].AddPossibleRoutes("NWOSW",  [ "NRtN11N31" ])
+		self.signals["N18LB"].AddPossibleRoutes("NWOSE",  [ "NRtN21N31" ])
 
 		self.signals["N16L"].AddPossibleRoutes("NWOSCY", [ "NRtN60N12" ])
-		self.signals["N16L"].AddPossibleRoutes("NWOSW",  [ "NRtN60N12" ])
-		self.signals["N16L"].AddPossibleRoutes("NWOSE",  [ "NRtN60N12" ])
+		self.signals["N16L"].AddPossibleRoutes("NWOSW",  [ "NRtN11N12" ])
+		self.signals["N16L"].AddPossibleRoutes("NWOSE",  [ "NRtN21N12" ])
 
 		self.signals["N14LA"].AddPossibleRoutes("NWOSCY", [ "NRtN60N22" ])
-		self.signals["N14LA"].AddPossibleRoutes("NWOSW",  [ "NRtN60N22" ])
-		self.signals["N14LA"].AddPossibleRoutes("NWOSE",  [ "NRtN60N22" ])
+		self.signals["N14LA"].AddPossibleRoutes("NWOSW",  [ "NRtN11N22" ])
+		self.signals["N14LA"].AddPossibleRoutes("NWOSE",  [ "NRtN21N22" ])
 
 		self.signals["N14LB"].AddPossibleRoutes("NWOSCY", [ "NRtN60N41" ])
-		self.signals["N14LB"].AddPossibleRoutes("NWOSW",  [ "NRtN60N41" ])
-		self.signals["N14LB"].AddPossibleRoutes("NWOSE",  [ "NRtN60N41" ])
+		self.signals["N14LB"].AddPossibleRoutes("NWOSW",  [ "NRtN11N41" ])
+		self.signals["N14LB"].AddPossibleRoutes("NWOSE",  [ "NRtN21N41" ])
 
 		self.signals["N14LC"].AddPossibleRoutes("NWOSCY", [ "NRtN60N42" ])
-		self.signals["N14LC"].AddPossibleRoutes("NWOSW",  [ "NRtN60N42" ])
-		self.signals["N14LC"].AddPossibleRoutes("NWOSE",  [ "NRtN60N42" ])
+		self.signals["N14LC"].AddPossibleRoutes("NWOSW",  [ "NRtN11N42" ])
+		self.signals["N14LC"].AddPossibleRoutes("NWOSE",  [ "NRtN21N42" ])
 
 		self.signals["N14LD"].AddPossibleRoutes("NWOSCY", [ "NRtN60W20" ])
-		self.signals["N14LD"].AddPossibleRoutes("NWOSW",  [ "NRtN60W20" ])
-		self.signals["N14LD"].AddPossibleRoutes("NWOSE",  [ "NRtN60W20" ])
+		self.signals["N14LD"].AddPossibleRoutes("NWOSW",  [ "NRtN11W20" ])
+		self.signals["N14LD"].AddPossibleRoutes("NWOSE",  [ "NRtN21W20" ])
 
 		self.osSignals["NWOSTY"] = [ "N20R", "N20L" ]
 		self.osSignals["NWOSCY"] = [ "N18R", "N20L", "N18LA", "N18LB", "N16L", "N14LA", "N14LB", "N14LC", "N14LD" ]

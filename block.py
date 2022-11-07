@@ -196,8 +196,8 @@ class Block:
 			# this should never happen
 			return self.status
 
-	def GetEast(self):
-		return self.east
+	def GetEast(self, reverse=False):
+		return not self.east if reverse else self.east
 
 	def SetEast(self, east):
 		self.east = east
@@ -452,8 +452,8 @@ class StoppingBlock (Block):
 	def Reset(self):
 		pass
 
-	def GetEast(self):
-		return self.block.east
+	def GetEast(self, reverse=False):
+		return self.block.GetEast(reverse)
 
 	def IsOccupied(self):
 		return self.occupied

@@ -21,9 +21,6 @@ inputs/outputs unused or uncertain of
           HydeEastPower, HydeWestPower (outputs) - need implementation in display - dispatcher is done
           		#outb[4] = setBit(outb[4], 0, self.rr.GetInput("CBHydeJct").GetValue())   Clivedon  #Circuit breakers
 		
-		# outb[3] = setBit(outb[3], 2, self.rr.GetInput("H30").GetValue())     shore   # block indicators
-		# outb[3] = setBit(outb[3], 3, self.rr.GetInput("H10").GetValue())     shore
-		
     LATHAM:
 		# outb[3] = setBit(outb[3], 5, self.rr.GetInput("P11").GetValue().GetStatus())   port
 
@@ -34,6 +31,7 @@ inputs/outputs unused or uncertain of
 		#outb[4] = setBit(outb[4], 0, self.rr.GetInput("CBWaterman").GetValue()) Bank
 
 		# outb[4] = setBit(outb[4], 2, self.rr.GetInput("P50").GetValue())  port
+    
           #     KAOut[1].bit.b1 = Y22Ra;
           #     KAOut[1].bit.b2 = Y22Rb;
           #     KAOut[0].bit.b6 = Y20H;
@@ -96,8 +94,55 @@ outb[6] = setBit(outb[6], 0, self.rr.GetOutput("H30.srel").GetStatus()) # in con
   # self.rr.GetInput("CSw15").SetState(nb, rb)  clivedon
 # outb[2] = setBit(outb[2], 6, self.rr.GetOutput("P42.srel").GetStatus())	port
 
-KRULKISH
-		# outb[3] = setBit(outb[3], 6, self.rr.GetInput("CBKrulishYard").GetValue())  nassau
+
+
+NASSAU:
+#		outb[3] = setBit(outb[3], 1, self.rr.GetInput("B20").GetValue())  bank #	Bank approach indicator
+# 	NWOut[3].bit.b2 = !NFltL12.R;		//Fleet indicator
+# 	NWOut[3].bit.b3 = NFltL12.R;
+
+# 	NWOut[6].bit.b6 = NWSL1;			//Switch locks
+# 	NWOut[6].bit.b7 = NWSL2;
+
+#     NWOut[7].bit.b0 = NWSL3;
+# 	NWOut[7].bit.b1 = NWSL4;
+
+# 		NRelease 		= NWIn[3].bit.b2; 	//Switch release
+# 		if(RBNassau->Checked)
+# 		{
+# 			NFltL12.R 		= NWIn[3].bit.b3;	//Fleet lever
+# 			NSigL14.R		= NWIn[3].bit.b4;	//Signal levers
+# 			NSigL14.Callon	= NWIn[3].bit.b5;
+# 			NSigL14.L		= NWIn[3].bit.b6;
+# 			NSigL16.R 		= NWIn[3].bit.b7;
+# 			NSigL16.Callon	= NWIn[4].bit.b0;
+# 			NSigL16.L		= NWIn[4].bit.b1;
+# 			NSigL18.R		= NWIn[4].bit.b2;
+# 			NSigL18.Callon	= NWIn[4].bit.b3;
+# 			NSigL18.L		= NWIn[4].bit.b4;
+# 			NSigL24.R		= NWIn[5].bit.b0;
+# 			NSigL24.Callon	= NWIn[5].bit.b1;
+# 			NSigL24.L	 	= NWIn[5].bit.b2;
+# 			NSigL26.R 		= NWIn[5].bit.b3;
+# 			NSigL26.Callon 	= NWIn[5].bit.b4;
+# 			NSigL26.L 		= NWIn[5].bit.b5;
+# 		}
+
+# 		if(!RBNDispatcherAll->Checked)
+# 		{
+# 			NSigL20.R		= NWIn[4].bit.b5;
+# 			NSigL20.Callon	= NWIn[4].bit.b6;
+# 			NSigL20.L		= NWIn[4].bit.b7;
+# 			NSigL28.R	 	= NWIn[5].bit.b6;
+# 			NSigL28.Callon	= NWIn[5].bit.b7;
+# 			NSigL28.L   	= NWIn[6].bit.b0;
+# 		}
+
+
+#    	NEOut[2].bit.b3 = NESL1;                //Switch locks
+#     NEOut[2].bit.b4 = NESL2;
+#    	NEOut[2].bit.b5 = NESL3;
+
 
 
 check all block indicator outputs to see if I need a combined occupancy value like I do for block N25 in hyde

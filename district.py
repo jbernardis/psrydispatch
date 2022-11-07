@@ -1,4 +1,5 @@
 import logging
+import json
 
 from constants import RegAspects, RegSloAspects, AdvAspects, SloAspects, \
 			MAIN, SLOW, DIVERGING, RESTRICTING, \
@@ -60,18 +61,25 @@ class District:
 
 	def FindRoute(self, sig):
 		signm = sig.GetName()
+		#print("find route for signal %s" % signm)
+		#print("possible routes: %s" % json.dumps(sig.possibleRoutes))
 		for blknm, siglist in self.osSignals.items():
+			#print("block, sigs = %s %s" % (blknm, str(siglist)))
 			if signm in siglist:
 				osblk = self.frame.blocks[blknm]
 				osblknm = blknm
 				rname = osblk.GetRouteName()
+				#print("os: %s route: %s" % (osblknm, str(rname)))
 				if osblk.route is None:
 					continue
 
 				rt = self.routes[rname]
 				if sig.IsPossibleRoute(blknm, rname):
+					#print("good route")
 					return rt, osblk
+				#print("not a possible route")
 
+		#print("no route found")
 		return None, None
 
 	def PerformSignalAction(self, sig):
@@ -99,12 +107,12 @@ class District:
 			if sigE != osblk.GetEast():
 				# the block will need to be reversed, but it's premature
 				# to do so now - so force return values as if reversed
-				doReverse = True
+				doReverseExit = True
 			else:
-				doReverse = False
+				doReverseExit = False
 
-			exitBlkNm = rt.GetExitBlock(reverse=doReverse)
-			rType = rt.GetRouteType(reverse=doReverse)
+			exitBlkNm = rt.GetExitBlock(reverse=doReverseExit)
+			rType = rt.GetRouteType(reverse=doReverseExit)
 
 			exitBlk = self.frame.blocks[exitBlkNm]
 			if exitBlk.IsOccupied():
@@ -120,7 +128,7 @@ class District:
 				self.frame.Popup("Block is locked")
 				return
 
-			nb = exitBlk.NextBlock(reverse=doReverse)
+			nb = exitBlk.NextBlock(reverse=doReverseExit)
 			if nb:
 				nbStatus = nb.GetStatus()
 				nbRType = nb.GetRouteType()
@@ -130,15 +138,15 @@ class District:
 				if sigE != nb.GetEast():
 				# the block will need to be reversed, but it's premature
 				# to do so now - so force return values as if reversed
-					doReverse = True
+					doReverseNext = True
 				else:
-					doRevere = False
+					doReverseNext = False
 
-				nxbNm = nb.GetExitBlock(reverse=doReverse)
+				nxbNm = nb.GetExitBlock(reverse=doReverseNext)
 
 				nxb = self.frame.blocks[nxbNm]
 				if nxb:
-					nnb = nxb.NextBlock(reverse=doReverse)
+					nnb = nxb.NextBlock(reverse=doReverseNext)
 				else:
 					nnb = None
 
@@ -160,14 +168,22 @@ class District:
 			nbStatus = None
 			nbRType = None
 			nnbClear = False
+			doReverseExit = False
+			exitBlkNm = osblk.GetExitBlock()
+			print("Exit block is %s" % str(exitBlkNm))
+			exitBlk = self.frame.blocks[exitBlkNm]
 
-		# better logic here to determine signal aspect - no need to send color
 		if currentMovement:
 			aspect = 0
 		else:
 			aspect = self.GetAspect(sig.GetAspectType(), rType, nbStatus, nbRType, nnbClear)
 
+		self.CheckBlockSignals(sig, aspect, exitBlk, doReverseExit, rType, nbStatus, nbRType, nnbClear)
+
 		self.frame.Request({"signal": { "name": signm, "aspect": aspect }})
+
+	def CheckBlockSignals(self, sig, aspect, blk, rev, rType, nbStatus, nbRType, nnbClear):
+		pass
 
 	def GetAspect(self, atype, rtype, nbstatus, nbrtype, nnbclear):
 		if atype == RegAspects:
@@ -254,6 +270,33 @@ class District:
 
 		else:
 			return 0
+
+	def GetBlockAspect(self, atype, rtype, nbstatus, nbrtype, nnbclear):
+		if atype == RegAspects:
+			if nbstatus == CLEARED and nbrtype == MAIN:	
+				return 0b011 # clear
+			elif nbstatus == CLEARED and nbrtype == DIVERGING:
+				return 0b010 # approach medium
+			elif nbstatus == CLEARED and nbrtype == SLOW:
+				return 0b110 # appproach slow
+			elif nbstatus != CLEARED:
+				return 0b001 # approach
+			else:
+				return 0b000 # stop
+
+		elif atype == AdvAspects:
+			if nbstatus == CLEARED and nbrtype == MAIN and nnbclear:
+				return 0b011 # clear
+			elif nbstatus == CLEARED and nbrtype == MAIN and nnbclear:
+				return 0b110 # advance approach
+			elif nbstatus == CLEARED and nbrtype == DIVERGING:
+				return 0b010 # approach medium
+			elif nbstatus != CLEARED:
+				return 0b001 # approach
+			else:
+				return 0b000 # stop
+
+		return 0b000 # stop as default
 
 	def PerformHandSwitchAction(self, hs):
 		if not hs.GetValue():
