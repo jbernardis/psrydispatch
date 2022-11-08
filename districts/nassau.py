@@ -87,8 +87,8 @@ class Nassau (District):
 			self.frame.ClearButtonAfter(5, btn)
 
 		if self.buttonEntryWest and self.buttonExitWest:
-			self.frame.ResetButtonExpiry(1, self.buttonEntryWest)
-			self.frame.ResetButtonExpiry(1, self.buttonExitWest)
+			self.frame.ResetButtonExpiry(2, self.buttonEntryWest)
+			self.frame.ResetButtonExpiry(2, self.buttonExitWest)
 			try:
 				toList = self.NXMap[self.buttonEntryWest.GetName()][self.buttonExitWest.GetName()]
 			except KeyError:
@@ -129,8 +129,8 @@ class Nassau (District):
 			self.frame.ClearButtonAfter(5, btn)
 
 		if self.buttonEntryEast and self.buttonExitEast:
-			self.frame.ResetButtonExpiry(1, self.buttonEntryEast)
-			self.frame.ResetButtonExpiry(1, self.buttonExitEast)
+			self.frame.ResetButtonExpiry(2, self.buttonEntryEast)
+			self.frame.ResetButtonExpiry(2, self.buttonExitEast)
 			try:
 				toList = self.NXMap[self.buttonEntryEast.GetName()][self.buttonExitEast.GetName()]
 			except KeyError:
@@ -153,7 +153,9 @@ class Nassau (District):
 		for toname, stat in toList:
 			turnout = self.turnouts[toname]
 			tostat = "N" if turnout.IsNormal() else "R"
+			print("check turnout %s %s %s" % (toname, tostat, stat))
 			if turnout.IsLocked() and tostat != stat:
+				print("it;s OK")
 				rv = True
 
 		return rv
@@ -1092,10 +1094,10 @@ class Nassau (District):
 		self.routes["NRtN21N32"] = Route(self.screen, block, "NRtN21N32", "N21", [ (9, 13), (10, 12), (11, 11), (12, 11), (13, 11), (14, 10), (15, 9), (16, 8), (17, 7), (18, 7), (19, 7) ], "N32", [RESTRICTING, RESTRICTING], ["NSw19", "NSw21", "NSw23", "NSw25", "NSw27", "NSw29"])
 		self.routes["NRtN21W10"] = Route(self.screen, block, "NRtN21W10", "N21", [ (9, 13), (10, 12), (11, 11), (12, 11), (13, 11), (14, 10), (15, 9), (16, 8), (17, 7), (18, 6), (19, 5) ], "W10", [RESTRICTING, RESTRICTING], ["NSw19", "NSw21", "NSw23", "NSw25", "NSw27", "NSw29"])
 		self.routes["NRtN21N12"] = Route(self.screen, block, "NRtN21N12", "N21", [ (9, 13), (10, 12), (11, 11), (12, 11), (13, 11), (14, 11), (15, 11), (16, 11), (17, 11), (18, 11), (19, 11) ], "N12", [SLOW, SLOW], ["NSw19", "NSw21", "NSw27", "NSw29"])
-		self.routes["NRtN21N22"] = Route(self.screen, block, "NRtN21N22", "N21", [ (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13) ], "N22", [SLOW, SLOW], ["NSw19", "NSw21", "NSw29"])
-		self.routes["NRtN21N41"] = Route(self.screen, block, "NRtN21N41", "N21", [ (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 14), (16, 15), (17, 15), (18, 15), (19, 15) ], "N41", [RESTRICTING, RESTRICTING], ["NSw19", "NSw21", "NSw29", "NSw33"])
-		self.routes["NRtN21N42"] = Route(self.screen, block, "NRtN21N42", "N21", [ (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 14), (16, 15), (17, 16), (18, 17), (19, 17) ], "N42", [RESTRICTING, RESTRICTING], ["NSw19", "NSw21", "NSw29", "NSw33", "NSw35"])
-		self.routes["NRtN21W20"] = Route(self.screen, block, "NRtN21W20", "N21", [ (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 14), (16, 15), (17, 16), (18, 17), (19, 18), (20, 19) ], "W20", [RESTRICTING, RESTRICTING], ["NSw19", "NSw21", "NSw29", "NSw33", "NSw35"])
+		self.routes["NRtN21N22"] = Route(self.screen, block, "NRtN21N22", "N21", [ (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13) ], "N22", [SLOW, SLOW], ["NSw19", "NSw29", "NSw31"])
+		self.routes["NRtN21N41"] = Route(self.screen, block, "NRtN21N41", "N21", [ (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 14), (16, 15), (17, 15), (18, 15), (19, 15) ], "N41", [RESTRICTING, RESTRICTING], ["NSw19", "NSw29", "NSw31", "NSw33"])
+		self.routes["NRtN21N42"] = Route(self.screen, block, "NRtN21N42", "N21", [ (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 14), (16, 15), (17, 16), (18, 17), (19, 17) ], "N42", [RESTRICTING, RESTRICTING], ["NSw19", "NSw29", "NSw31", "NSw33", "NSw35"])
+		self.routes["NRtN21W20"] = Route(self.screen, block, "NRtN21W20", "N21", [ (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 14), (16, 15), (17, 16), (18, 17), (19, 18), (20, 19) ], "W20", [RESTRICTING, RESTRICTING], ["NSw19", "NSw29", "NSw31", "NSw33", "NSw35"])
 
 		self.signals["N20R"].AddPossibleRoutes("NWOSTY", [ "NRtT12W10" ])
 		self.signals["N18R"].AddPossibleRoutes("NWOSCY", [ "NRtN60N31", "NRtN60N32", "NRtN60W10", "NRtN60N12", "NRtN60N22", "NRtN60N41", "NRtN60N42", "NRtN60W20" ])

@@ -116,7 +116,7 @@ class Block:
 			return
 
 		if self.train is None:
-			trainID = "???"
+			trainID = "??"
 		else:
 			trainID = self.train.GetIDString()
 
@@ -288,7 +288,7 @@ class Block:
 		if self.occupied:
 			self.cleared = False
 
-			if self.train is None and self.frame.IsDispatcher():
+			if self.train is None:   # and self.frame.IsDispatcher():
 				tr = self.IdentifyTrain()
 				if tr is None:
 					tr = self.frame.NewTrain()

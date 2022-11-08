@@ -24,6 +24,14 @@ breakerNames = {
 	"CBDell":			"Dell",
 }
 
+def BreakerName(iname):
+	try:
+		text = breakerNames[iname]
+	except:
+		text = iname
+
+	return text
+
 
 class BreakerDisplay(wx.TextCtrl):
 	def __init__(self, parent, size=wx.DefaultSize, pos=wx.DefaultPosition):
@@ -62,11 +70,12 @@ class BreakerDisplay(wx.TextCtrl):
 			self.showBreaker()
 
 	def showBreaker(self):
-		brkr = self.breakers[self.currentPosition]
 		try:
-			text = breakerNames[brkr]
-		except:
-			text = brkr
+			brkr = self.breakers[self.currentPosition]
+		except IndexError:
+			return
+
+		text = BreakerName(brkr)
 
 		if len(self.breakers) > 1:
 			text += " (%s/%s)" % (self.currentPosition+1, len(self.breakers))

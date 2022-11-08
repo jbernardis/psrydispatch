@@ -20,6 +20,9 @@ class District:
 		blist = [self.frame.GetBlockByName(n) for n in self.osBlocks.keys()]
 		self.DetermineRoute(blist)
 
+	def OnConnect(self):
+		pass
+
 	def Draw(self):
 		for b in self.blocks.values():
 			b.Draw()
@@ -400,6 +403,9 @@ class District:
 	def DoHandSwitchAction(self, hs, stat):
 		hs.SetValue(stat!=0, refresh=True)
 
+	def DoIndicatorAction(self, ind, value):
+		pass
+	
 	def CrossingEastWestBoundary(self, blk1, blk2):
 		return False
 					
@@ -535,6 +541,10 @@ class Districts:
 	def Initialize(self, sstiles, misctiles):
 		for t in self.districts.values():
 			t.Initialize(sstiles, misctiles)
+
+	def OnConnect(self):
+		for t in self.districts.values():
+			t.OnConnect()
 
 	def Draw(self):
 		for t in self.districts.values():

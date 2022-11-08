@@ -17,7 +17,7 @@ from tile import loadTiles
 from block import Block
 from train import Train
 
-from breaker import BreakerDisplay
+from breaker import BreakerDisplay, BreakerName
 from toaster import Toaster, TB_CENTER
 
 from districts.hyde import Hyde
@@ -37,6 +37,8 @@ from edittraindlg import EditTrainDlg
 (DeliveryEvent, EVT_DELIVERY) = wx.lib.newevent.NewEvent() 
 (DisconnectEvent, EVT_DISCONNECT) = wx.lib.newevent.NewEvent() 
 
+allowedCommands = [ "settrain", "renametrain" ]
+
 class Node:
 	def __init__(self, screen, bitmapName, offset):
 		self.screen = screen
@@ -50,6 +52,8 @@ class MainFrame(wx.Frame):
 		self.subscribed = False
 		logging.info("Display process starting")
 		self.settings = Settings(cmdFolder)
+
+		self.title = "Dispatcher" if self.settings.dispatch else "Remote Display"
 		self.ToasterSetup()
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 		vsz = wx.BoxSizer(wx.VERTICAL)
@@ -163,8 +167,15 @@ class MainFrame(wx.Frame):
 		self.ypos.SetValue("%4d" % y)
 		self.scrn.SetValue("%s" % scr)
 
+	def ShowTitle(self):
+		titleString = self.title
+		if self.subscribed and self.sessionid is not None:
+			titleString += ("  -  Session ID %d" % self.sessionid)
+		self.SetTitle(titleString)
+
 	def Initialize(self):
 		self.listener = None
+		self.ShowTitle()
 		self.Bind(EVT_DELIVERY, self.onDeliveryEvent)
 		self.Bind(EVT_DISCONNECT, self.onDisconnectEvent)
 
@@ -206,14 +217,14 @@ class MainFrame(wx.Frame):
 			self.buttonMap = { (b.GetScreen(), b.GetPos()): b for b in self.buttons.values() }
 			self.signalMap = { (s.GetScreen(), s.GetPos()): s for s in self.signals.values() }
 			self.handswitchMap = { (l.GetScreen(), l.GetPos()): l for l in self.handswitches.values() }
-			self.blockMap = self.BuildBlockMap(self.blocks)
 
 		else:
 			self.turnoutMap = {}
 			self.buttonMap = {}
 			self.signalMap = {}
 			self.handswitchMap = {}
-			self.blockMap = {}
+
+		self.blockMap = self.BuildBlockMap(self.blocks)
 
 		self.buttonsToClear = []
 
@@ -435,7 +446,6 @@ class MainFrame(wx.Frame):
 		if sig:
 			sig.EnableFleeting()
 
-
 	def DrawTile(self, screen, pos, bmp):
 		offset = self.diagrams[screen].offset
 		self.panels[screen].DrawTile(pos[0], pos[1], offset, bmp)
@@ -491,8 +501,6 @@ class MainFrame(wx.Frame):
 		self.toaster.SetBackgroundColour(wx.Colour(255, 179, 154))
 		self.toaster.SetTextColour(wx.Colour(0, 0, 0))
 
-
-
 	def Popup(self, message, background=None, text=None):
 		self.toaster.Append(message)
 
@@ -502,6 +510,7 @@ class MainFrame(wx.Frame):
 			self.listener.join()
 			self.listener = None
 			self.subscribed = False
+			self.sessionid = None
 			self.bSubscribe.SetLabel("Connect")
 			self.bRefresh.Enable(False)
 		else:
@@ -519,6 +528,7 @@ class MainFrame(wx.Frame):
 				self.SendBlockDirRequests()
 				
 		self.breakerDisplay.UpdateDisplay()
+		self.ShowTitle()
 
 	def OnRefresh(self, _):
 		self.rrServer.SendRequest({"refresh": {"SID": self.sessionid}})
@@ -600,6 +610,21 @@ class MainFrame(wx.Frame):
 					if hs is not None and state != hs.GetValue():
 						district = hs.GetDistrict()
 						district.DoHandSwitchAction(hs, state)
+						
+			elif cmd == "indicator":
+				for p in parms:
+					iName = p["name"]
+					value = int(p["value"])
+					
+					try:
+						ind = self.indicators[iName]
+					except:
+						ind = None
+
+					print("indicator %s %d %d" % (iName, value, ind.GetValue()))
+					if ind is not None:
+						district = ind.GetDistrict()
+						district.DoIndicatorAction(ind, value)
 
 			elif cmd == "breaker":
 				for p in parms:
@@ -607,6 +632,7 @@ class MainFrame(wx.Frame):
 					val = p["value"]
 					logging.debug("Set Breaker %s to %s" % (name, "TRIPPED" if val != 0 else "CLEAR"))
 					if val == 1:
+						self.Popup("Breaker: %s" % BreakerName(name))
 						self.breakerDisplay.AddBreaker(name)
 					else:
 						self.breakerDisplay.DelBreaker(name)
@@ -676,13 +702,17 @@ class MainFrame(wx.Frame):
 			elif cmd == "sessionID":
 				self.sessionid = int(parms)
 				logging.info("connected to railroad server with session ID %d" % self.sessionid)
+				self.districts.OnConnect()
+				self.ShowTitle()
+
 		
 	def raiseDisconnectEvent(self): # thread context
 		evt = DisconnectEvent()
 		wx.PostEvent(self, evt)
 
 	def Request(self, req):
-		if self.settings.dispatch:
+		command = list(req.keys())[0]
+		if self.settings.dispatch or command in allowedCommands:
 			if self.subscribed:
 				logging.debug(json.dumps(req))
 				print("Outgoing request: %s" % json.dumps(req))

@@ -8,6 +8,7 @@ class Button:
 		self.tiles = tiles
 		self.aspect = 0
 		self.pressed = False
+		self.on = False
 		self.acknowledged = False
 		self.invalid = False
 
@@ -29,7 +30,7 @@ class Button:
 	def Draw(self):
 		if self.acknowledged:
 			bmp = self.tiles.acknowledged
-		elif self.invalid:
+		elif self.invalid or self.on:
 			bmp = self.tiles.error
 		elif self.pressed:
 			bmp = self.tiles.dark
@@ -46,6 +47,14 @@ class Button:
 			self.Draw()
 
 		return True
+
+	def TurnOn(self, flag=True, refresh=False):
+		self.on = flag
+		if refresh:
+			self.Draw()
+
+	def IsOn(self):
+		return self.on
 
 	def Acknowledge(self, refresh=False):
 		if self.acknowledged:

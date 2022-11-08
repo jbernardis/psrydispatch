@@ -6,8 +6,8 @@ class Train:
 		if name:
 			self.name = name
 		else:
-			self.name = "??%d??" % self.index
-		self.loco = "???"
+			self.name = "??%d" % self.index
+		self.loco = "??"
 		self.blocks = {}
 
 	def tstring(self):
@@ -35,8 +35,8 @@ class Train:
 		return self.name, self.loco
 
 	def GetIDString(self):
-		n = self.name if self.name else "???"
-		l = self.loco if self.loco else "???"
+		n = self.name if self.name else "??"
+		l = self.loco if self.loco else "??"
 		return n+"/"+l
 
 	def Draw(self):

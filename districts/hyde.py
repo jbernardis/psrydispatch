@@ -4,12 +4,26 @@ from block import Block, OverSwitch, Route
 from turnout import Turnout
 from signal import Signal
 from button import Button
+from indicator import Indicator
 
 from constants import LaKr, RESTRICTING, MAIN, DIVERGING, RegAspects
 
 class Hyde (District):
 	def __init__(self, name, frame, screen):
 		District.__init__(self, name, frame, screen)
+
+	def Initialize(self, sstiles, misctiles):
+		District.Initialize(self, sstiles, misctiles)
+
+		self.buttons["HydeWestPower"].TurnOn(refresh=True)
+		self.buttons["HydeEastPower"].TurnOn(refresh=True)
+
+	def OnConnect(self):
+		District.OnConnect(self)
+
+		for bname in ["HydeEastPower", "HydeWestPower"]:
+			onFlag = 1 if self.buttons[bname].IsOn() else 0
+			self.indicators[bname].SetValue(onFlag)
 
 	def DetermineRoute(self, blocks):
 		s1 = 'N' if self.turnouts["HSw1"].IsNormal() else 'R'
@@ -166,6 +180,20 @@ class Hyde (District):
 				self.MatrixTurnoutRequest([["HSw23", "N"], ["HSw25", "N"], ["HSw27", "R"], ["HSw29", "N"]])
 			elif bname == "HEEB5":
 				self.MatrixTurnoutRequest([["HSw29", "R"]])
+
+		elif bname in [ "HydeEastPower", "HydeWestPower" ]:
+			onFlag = self.buttons[bname].IsOn()
+			nv = 0 if onFlag else 1
+			self.indicators[bname].SetValue(nv)
+
+	def DoIndicatorAction(self, ind, val):
+		District.DoIndicatorAction(self, ind, val)
+
+		print("Hyde do indicator action for %s value %d" % (ind.GetName(), val))
+		iName = ind.GetName()
+		if iName in self.buttons:
+			btn = self.buttons[iName]
+			btn.TurnOn(flag=(val==1), refresh=True)
 
 	def DefineBlocks(self, tiles):
 		self.blocks = {}
@@ -844,6 +872,14 @@ class Hyde (District):
 		self.osSignals["HOSEE"] = [ "H10L", "H10RA", "H10RB", "H10RC", "H10RD", "H10RE" ]
 		return self.signals
 
+	def DefineIndicators(self):
+		self.indicators = {}
+		indNames = [ "HydeEastPower", "HydeWestPower" ]
+		for ind in indNames:
+			self.indicators[ind] = Indicator(self.frame, self, ind)
+
+		return self.indicators
+
 	def DefineButtons(self, tiles):
 		self.buttons = {}
 		self.osButtons = {}
@@ -916,5 +952,11 @@ class Hyde (District):
 		self.buttons["HEEB5"] = b
 
 		self.osButtons["HOSEE"] = [ "HEEB1", "HEEB2", "HEEB3", "HEEB4", "HEEB5" ]
+
+		b = Button(self, self.screen, self.frame, "HydeEastPower", (11, 4), tiles)
+		self.buttons["HydeEastPower"] = b
+
+		b = Button(self, self.screen, self.frame, "HydeWestPower", (11, 6), tiles)
+		self.buttons["HydeWestPower"] = b
 
 		return self.buttons

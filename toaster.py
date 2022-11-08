@@ -74,8 +74,16 @@ class Toaster(wx.Frame):
 			self.Show()
 		
 	def onTimer(self, evt):
-		del self.Timers[0]
-		self.lb.Delete(0)
+		delx = []
+		for tx in range(len(self.Timers)):
+			if not self.Timers[tx].IsRunning():
+				delx.append(tx)
+
+		if len(delx) > 0:
+			for dx in reversed(delx):
+				del self.Timers[dx]
+				self.lb.Delete(dx)
+
 		if len(self.Timers) == 0:
 			self.Hide()
 		

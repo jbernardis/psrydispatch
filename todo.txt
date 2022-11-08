@@ -15,10 +15,12 @@ Districts:
 
 	HydeInOut.cpp 		Done
 
+
+  check other districts use of indicators and if it's consistent with yard
+
 inputs/outputs unused or uncertain of
  
     HYDE:
-          HydeEastPower, HydeWestPower (outputs) - need implementation in display - dispatcher is done
           		#outb[4] = setBit(outb[4], 0, self.rr.GetInput("CBHydeJct").GetValue())   Clivedon  #Circuit breakers
 		
     LATHAM:
@@ -32,11 +34,7 @@ inputs/outputs unused or uncertain of
 
 		# outb[4] = setBit(outb[4], 2, self.rr.GetInput("P50").GetValue())  port
     
-          #     KAOut[1].bit.b1 = Y22Ra;
-          #     KAOut[1].bit.b2 = Y22Rb;
-          #     KAOut[0].bit.b6 = Y20H;
-          #     KAOut[0].bit.b7 = Y20D;
-           # 		if(RBYard->Checked)
+            # 		if(RBYard->Checked)
           # 		{
           # 			YSigL2.R = YDIn[0].bit.b2;      //Signals
           # 			YSigL2.Callon = YDIn[0].bit.b3;
@@ -81,16 +79,10 @@ inputs/outputs unused or uncertain of
           # 	YSWOut[4].bit.b6 = SBY83E;
           # 	YSWOut[4].bit.b7 = SBY84E;
 SHORE
-SXL1 = SXL2 = False
-BX = False
-SXG = False
-#outb[2] = setBit(outb[2], 4, self.rr.GetOutput("F10H").GetStatus())  # Branch signals
-#outb[2] = setBit(outb[2], 5, self.rr.GetOutput("F10D").GetStatus())
-# outb[3] = setBit(outb[3], 5, self.rr.GetInput("P32").GetValue())  port
+ outb[3] = setBit(outb[3], 5, self.rr.GetInput("P32").GetValue())  port
 #outb[3] = setBit(outb[3], 6, self.rr.GetInput("CBShore").GetValue())
 #outb[3] = setBit(outb[3], 7, self.rr.GetInput("CBHarpers").GetValue())
 outb[6] = setBit(outb[6], 0, self.rr.GetOutput("H30.srel").GetStatus()) # in conjunction with H30Power
-# 		SXON  = SIn[4].bit.b1;	//Crossing gate off normal
   # self.rr.GetInput("CSw15").SetState(nb, rb)  clivedon
 # outb[2] = setBit(outb[2], 6, self.rr.GetOutput("P42.srel").GetStatus())	port
 
