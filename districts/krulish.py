@@ -335,9 +335,9 @@ class Krulish (District):
 		blockSigs = {
 			# # which signals govern stopping sections, west and east
 			"N10": ("N10W",  "K8R"),
-			"N11": ("K8B",  "N16R"),
-			"N20": ("N20W", "K2R"),
-			"N21": ("K2L",  "N14R"),
+			"N11": ("K8LB",  "N16R"),
+			"N20": ("N20W",  "K2R"),
+			"N21": ("K2L",   "N14R"),
 			"N25": ("S16L",  "K4R")
 		}
 

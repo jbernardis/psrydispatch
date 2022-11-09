@@ -479,6 +479,22 @@ class Nassau (District):
 				(tiles["horiznc"],  self.screen, (45, 9), False),
 				(tiles["horiz"],    self.screen, (46, 9), False),
 			], False)
+		self.blocks["R10"].AddTrainLoc(self.screen, (47, 9))
+
+		self.blocks["B10"] = Block(self, self.frame, "B10",
+			[
+				(tiles["horiz"],    self.screen, (48, 11), False),
+				(tiles["horiznc"],  self.screen, (49, 11), False),
+				(tiles["horiz"],    self.screen, (50, 11), False),
+				(tiles["horiznc"],  self.screen, (51, 11), False),
+				(tiles["eobright"],    self.screen, (52, 11), False),
+			], False)
+		self.blocks["B10"].AddStoppingBlock([
+				(tiles["horiznc"],  self.screen, (45, 11), False),
+				(tiles["horiz"],    self.screen, (46, 11), False),
+				(tiles["horiznc"],  self.screen, (47, 11), False),
+			], False)
+		self.blocks["B10"].AddTrainLoc(self.screen, (47, 11))
 
 		self.blocks["W10"] = Block(self, self.frame, "W10",
 			[
@@ -1065,6 +1081,16 @@ class Nassau (District):
 
 		for signm, atype, east, tileSet, pos in sigList:
 			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])  
+
+		blockSigs = {
+			# # which signals govern stopping sections, west and east
+			"B10": ("N26L",  None),
+			"N21": ("K2L",   "N14R"),
+			"R10": ("N28L",  None),
+		}
+
+		for blknm, siglist in blockSigs.items():
+			self.blocks[blknm].SetSignals(siglist)
 
 		block = self.blocks["NWOSTY"]
 		self.routes["NRtT12W10"] = Route(self.screen, block, "NRtT12W10", "W10", [ (17, 5), (18, 5), (19, 5) ], "T12", [RESTRICTING, RESTRICTING], ["NSw25"])

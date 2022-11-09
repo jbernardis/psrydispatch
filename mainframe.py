@@ -27,6 +27,7 @@ from districts.dell import Dell
 from districts.shore import Shore
 from districts.krulish import Krulish
 from districts.nassau import Nassau
+from districts.bank import Bank
 
 from constants import HyYdPt, LaKr, NaCl, screensList, EMPTY, OCCUPIED, NORMAL, REVERSE
 from listener import Listener
@@ -187,6 +188,7 @@ class MainFrame(wx.Frame):
 		self.districts.AddDistrict(Shore("Shore", self, LaKr))
 		self.districts.AddDistrict(Krulish("Krulish", self, LaKr))
 		self.districts.AddDistrict(Nassau("Nassau", self, NaCl))
+		self.districts.AddDistrict(Bank("Bank", self, NaCl))
 		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
 
 		self.blocks, self.osBlocks = self.districts.DefineBlocks(self.tiles)
@@ -325,14 +327,6 @@ class MainFrame(wx.Frame):
 			print("You can remove bogus entry for block P50")
 		else:
 			self.blocks["P50"] = Block(self, self, "P50",	[], False)
-		if "B10" in self.blocks:
-			print("You can remove bogus entry for block B10")
-		else:
-			self.blocks["B10"] = Block(self, self, "B10",	[], False)
-		if "B20" in self.blocks:
-			print("You can remove bogus entry for block B20")
-		else:
-			self.blocks["B20"] = Block(self, self, "B20",	[], False)
 
 	def DrawOthers(self, block):
 		print("Remove this bogus drawothers method from mainframe")
