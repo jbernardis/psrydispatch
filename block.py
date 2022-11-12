@@ -117,8 +117,9 @@ class Block:
 
 		if self.train is None:
 			trainID = "??"
+			locoID = "??"
 		else:
-			trainID = self.train.GetIDString()
+			trainID, locoID = self.train.GetNameAndLoco()
 
 		anyOccupied = self.occupied
 		if self.sbEast and self.sbEast.IsOccupied():
@@ -126,14 +127,13 @@ class Block:
 		if self.sbWest and self.sbWest.IsOccupied():
 			anyOccupied = True
 
-		if self.StoppingRelayActivated():
-			trainID = "* " + trainID
+		stopRelay = self.StoppingRelayActivated()
 
 		for screen, loc in self.trainLoc:
 			if anyOccupied:
-				self.frame.DrawText(screen, loc, trainID)
+				self.frame.DrawTrain(screen, loc, trainID, locoID, stopRelay)
 			else:
-				self.frame.ClearText(screen, loc)
+				self.frame.ClearTrain(screen, loc)
 
 	def StoppingRelayActivated(self):
 		active = False

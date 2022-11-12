@@ -64,28 +64,29 @@ class District:
 
 	def FindRoute(self, sig):
 		signm = sig.GetName()
-		#print("find route for signal %s" % signm)
-		#print("possible routes: %s" % json.dumps(sig.possibleRoutes))
+		print("find route for signal %s" % signm)
+		print("possible routes: %s" % json.dumps(sig.possibleRoutes))
 		for blknm, siglist in self.osSignals.items():
-			#print("block, sigs = %s %s" % (blknm, str(siglist)))
+			print("block, sigs = %s %s" % (blknm, str(siglist)))
 			if signm in siglist:
 				osblk = self.frame.blocks[blknm]
 				osblknm = blknm
 				rname = osblk.GetRouteName()
-				#print("os: %s route: %s" % (osblknm, str(rname)))
+				print("os: %s route: %s" % (osblknm, str(rname)))
 				if osblk.route is None:
 					continue
 
 				rt = self.routes[rname]
 				if sig.IsPossibleRoute(blknm, rname):
-					#print("good route")
+					print("good route")
 					return rt, osblk
-				#print("not a possible route")
+				print("not a possible route")
 
-		#print("no route found")
+		print("no route found")
 		return None, None
 
 	def PerformSignalAction(self, sig):
+		print("PSA %s %s" % (sig.GetName(), sig.GetAspect()))
 		currentMovement = sig.GetAspect() != 0  # does the CURRENT signal status allow movement
 		signm = sig.GetName()
 		rt, osblk = self.FindRoute(sig)
@@ -102,12 +103,15 @@ class District:
 
 		# this is a valid signal for the current route	
 		if not currentMovement:	  # we are trying to change the signal to allow movement
+			print("trying to move train")
 			if osblk.IsBusy():
 				self.frame.Popup("Block is busy")
 				return
 
 			sigE = sig.GetEast()
+			print("OS Reverse check: %s %s" % (sigE, osblk.GetEast()))
 			if sigE != osblk.GetEast():
+				print("reversing OS")
 				# the block will need to be reversed, but it's premature
 				# to do so now - so force return values as if reversed
 				doReverseExit = True
@@ -115,7 +119,9 @@ class District:
 				doReverseExit = False
 
 			exitBlkNm = rt.GetExitBlock(reverse=doReverseExit)
+			print("exit block = %s" % exitBlkNm)
 			rType = rt.GetRouteType(reverse=doReverseExit)
+			print("Route type: %d" % rType)
 
 			exitBlk = self.frame.blocks[exitBlkNm]
 			if exitBlk.IsOccupied():
@@ -133,14 +139,17 @@ class District:
 
 			nb = exitBlk.NextBlock(reverse=doReverseExit)
 			if nb:
+				print("next block: %s" % nb.GetName())
 				nbStatus = nb.GetStatus()
 				nbRType = nb.GetRouteType()
 				# try to go one more block, skipping past an OS block
 
 
+				print("%s %s" % (sigE, nb.GetEast()))
 				if sigE != nb.GetEast():
 				# the block will need to be reversed, but it's premature
 				# to do so now - so force return values as if reversed
+					print("reversing")
 					doReverseNext = True
 				else:
 					doReverseNext = False
@@ -179,6 +188,7 @@ class District:
 		if currentMovement:
 			aspect = 0
 		else:
+			print("calling get aspect %d %d %s %s %s" % (sig.GetAspectType(), rType, str(nbStatus), str(nbRType), str(nnbClear)))
 			aspect = self.GetAspect(sig.GetAspectType(), rType, nbStatus, nbRType, nnbClear)
 
 		self.CheckBlockSignals(sig, aspect, exitBlk, doReverseExit, rType, nbStatus, nbRType, nnbClear)
@@ -208,7 +218,7 @@ class District:
 			elif rtype == DIVERGING and (nbstatus != CLEARED or nbrtype  != MAIN):
 				return 0b101  # Medium Approach
 
-			elif rtype == RESTRICTING:
+			elif rtype in [RESTRICTING, SLOW]:
 				return 0b100  # Restricting
 
 			else:
@@ -441,7 +451,7 @@ class District:
 		self.frame.Popup("Block is busy")
 
 	def ReportTurnoutLocked(self, tonm):
-		self.frame.Popup("Turnout is locked" % tonm)
+		self.frame.Popup("Turnout is locked")
 
 	def Audit(self):
 		passedAudit = True

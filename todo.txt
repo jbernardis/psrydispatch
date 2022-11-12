@@ -1,36 +1,21 @@
 figure out how to handle signal aspects
 
 Districts:
-	YardInOut.cpp  		Done
-	LathamInOut.cpp 	Done
-	DellInOut.cpp 		Done
-	ShoreInOut.cpp    Done
-	KrulishInOut.cpp 
-	NassauInOut.cpp
-	BankInOut.cpp  
-	ClivedenInOut.cpp 
 	CliffInOut.cpp  
 
 	PortInOut.cpp
 
-	HydeInOut.cpp 		Done
-
 
   check other districts use of indicators and if it's consistent with yard
+sendio loogic for nassau, bank, hyde
+
 
 inputs/outputs unused or uncertain of
  
-    HYDE:
-          		#outb[4] = setBit(outb[4], 0, self.rr.GetInput("CBHydeJct").GetValue())   Clivedon  #Circuit breakers
-		
     LATHAM:
 		# outb[3] = setBit(outb[3], 5, self.rr.GetInput("P11").GetValue().GetStatus())   port
 
     YARD: 
-		#outb[3] = setBit(outb[3], 4, self.rr.GetInput("CBKale").GetValue())  Bank    #Circuit breakers
-		#outb[3] = setBit(outb[3], 5, self.rr.GetInput("CBEastEnd").GetValue()) Bank
-		#outb[3] = setBit(outb[3], 7, self.rr.GetInput("CBEngineYard").GetValue())  Bank
-		#outb[4] = setBit(outb[4], 0, self.rr.GetInput("CBWaterman").GetValue()) Bank
 
 		# outb[4] = setBit(outb[4], 2, self.rr.GetInput("P50").GetValue())  port
     
@@ -80,16 +65,11 @@ inputs/outputs unused or uncertain of
           # 	YSWOut[4].bit.b7 = SBY84E;
 SHORE
  outb[3] = setBit(outb[3], 5, self.rr.GetInput("P32").GetValue())  port
-#outb[3] = setBit(outb[3], 6, self.rr.GetInput("CBShore").GetValue())
-#outb[3] = setBit(outb[3], 7, self.rr.GetInput("CBHarpers").GetValue())
-outb[6] = setBit(outb[6], 0, self.rr.GetOutput("H30.srel").GetStatus()) # in conjunction with H30Power
-  # self.rr.GetInput("CSw15").SetState(nb, rb)  clivedon
 # outb[2] = setBit(outb[2], 6, self.rr.GetOutput("P42.srel").GetStatus())	port
 
 
 
 NASSAU:
-#		outb[3] = setBit(outb[3], 1, self.rr.GetInput("B20").GetValue())  bank #	Bank approach indicator
 # 	NWOut[3].bit.b2 = !NFltL12.R;		//Fleet indicator
 # 	NWOut[3].bit.b3 = NFltL12.R;
 

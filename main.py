@@ -5,7 +5,7 @@ if cmdFolder not in sys.path:
 	sys.path.insert(0, cmdFolder)
 
 import logging
-logging.basicConfig(filename='pydisplay.log', format='%(asctime)s %(message)s', level=logging.DEBUG)
+logging.basicConfig(filename='pydisplay.log', filemode='w', format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 from mainframe import MainFrame 
 

@@ -28,6 +28,7 @@ from districts.shore import Shore
 from districts.krulish import Krulish
 from districts.nassau import Nassau
 from districts.bank import Bank
+from districts.cliveden import Cliveden
 
 from constants import HyYdPt, LaKr, NaCl, screensList, EMPTY, OCCUPIED, NORMAL, REVERSE
 from listener import Listener
@@ -189,6 +190,7 @@ class MainFrame(wx.Frame):
 		self.districts.AddDistrict(Krulish("Krulish", self, LaKr))
 		self.districts.AddDistrict(Nassau("Nassau", self, NaCl))
 		self.districts.AddDistrict(Bank("Bank", self, NaCl))
+		self.districts.AddDistrict(Cliveden("Cliveden", self, NaCl))
 		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
 
 		self.blocks, self.osBlocks = self.districts.DefineBlocks(self.tiles)
@@ -273,23 +275,28 @@ class MainFrame(wx.Frame):
 			return self.blockOSMap[blknm]
 
 	def AddPendingFleet(self, block, sig):
+		print("add pending fleet, block %s, signal %s" % (block.GetName(), sig.GetName()))
 		self.pendingFleets[block.GetName()] = sig
 
 	def DelPendingFleet(self, block):
 		bname = block.GetName()
+		print("removing pending fleet for block %s" % bname)
 		if bname not in self.pendingFleets:
+			print("but there are none there")
 			return
 
 		del(self.pendingFleets[bname])
 
 	def DoFleetPending(self, block):
 		bname = block.GetName()
+		print("doing the pending fleeting for block %s" % bname)
 		if bname not in self.pendingFleets:
 			return
 
 		sig = self.pendingFleets[bname]
 		del(self.pendingFleets[bname])
 
+		print("calling signal %s" % sig.GetName())
 		sig.DoFleeting()		
 
 	def BuildBlockMap(self, bl):
@@ -327,6 +334,10 @@ class MainFrame(wx.Frame):
 			print("You can remove bogus entry for block P50")
 		else:
 			self.blocks["P50"] = Block(self, self, "P50",	[], False)
+		if "C13" in self.blocks:
+			print("You can remove bogus entry for block C13")
+		else:
+			self.blocks["C13"] = Block(self, self, "C13",	[], False)
 
 	def DrawOthers(self, block):
 		print("Remove this bogus drawothers method from mainframe")
@@ -451,6 +462,14 @@ class MainFrame(wx.Frame):
 	def ClearText(self, screen, pos):
 		offset = self.diagrams[screen].offset
 		self.panels[screen].ClearText(pos[0], pos[1], offset)
+
+	def DrawTrain(self, screen, pos, trainID, locoID, stopRelay):
+		offset = self.diagrams[screen].offset
+		self.panels[screen].DrawTrain(pos[0], pos[1], offset, trainID, locoID, stopRelay)
+
+	def ClearTrain(self, screen, pos):
+		offset = self.diagrams[screen].offset
+		self.panels[screen].ClearTrain(pos[0], pos[1], offset)
 
 	def SwapToScreen(self, screen):
 		if screen not in screensList:

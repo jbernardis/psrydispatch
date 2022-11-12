@@ -955,8 +955,8 @@ class Yard (District):
 
 		# Kale west end
 		block = self.blocks["YOSKL4"]
-		self.routes["YRtY30Y51"] = Route(self.screen, block, "YRtY30Y51", "Y30", [ (84, 13), (85, 13), (86, 13), (87, 13), (88, 13) ], "Y51", [SLOW, RESTRICTING], ["YSw33"])
-		self.routes["YRtY30Y50"] = Route(self.screen, block, "YRtY30Y50", "Y30", [ (84, 13), (85, 13), (86, 14), (87, 15), (88, 15) ], "Y50", [SLOW, RESTRICTING], ["YSw33"])
+		self.routes["YRtY30Y51"] = Route(self.screen, block, "YRtY30Y51", "Y30", [ (84, 13), (85, 13), (86, 13), (87, 13), (88, 13) ], "Y51", [RESTRICTING, SLOW], ["YSw33"])
+		self.routes["YRtY30Y50"] = Route(self.screen, block, "YRtY30Y50", "Y30", [ (84, 13), (85, 13), (86, 14), (87, 15), (88, 15) ], "Y50", [RESTRICTING, SLOW], ["YSw33"])
 
 		self.signals["Y34L"].AddPossibleRoutes("YOSKL4", [ "YRtY30Y51", "YRtY30Y50" ])
 		self.signals["Y34RA"].AddPossibleRoutes("YOSKL4", [ "YRtY30Y50" ])

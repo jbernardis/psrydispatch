@@ -13,83 +13,29 @@ class Bank (District):
 		District.__init__(self, name, frame, screen)
 
 	def DetermineRoute(self, blocks):
-		pass
-		# s1 = 'N' if self.turnouts["LSw1"].IsNormal() else 'R'
-		# s3 = 'N' if self.turnouts["LSw3"].IsNormal() else 'R'
-		# s5 = 'N' if self.turnouts["LSw5"].IsNormal() else 'R'
-		# s7 = 'N' if self.turnouts["LSw7"].IsNormal() else 'R'
-		# s9 = 'N' if self.turnouts["LSw9"].IsNormal() else 'R'
-		# s15 = 'N' if self.turnouts["LSw15"].IsNormal() else 'R'
-		# s17 = 'N' if self.turnouts["LSw17"].IsNormal() else 'R'
-		# self.turnouts["LSw3"].SetLock("LSw9", s9=='R', refresh=True)
-		# self.turnouts["LSw3b"].SetLock("LSw9", s9=='R', refresh=True)
-		# self.turnouts["LSw9"].SetLock("LSw3", s3=='R', refresh=True)
-		# self.turnouts["LSw9b"].SetLock("LSw3", s3=='R', refresh=True)
-		# self.turnouts["LSw5"].SetLock("LSw7", s7=='R', refresh=True)
-		# self.turnouts["LSw5b"].SetLock("LSw7", s7=='R', refresh=True)
-		# self.turnouts["LSw7"].SetLock("LSw5", s5=='R', refresh=True)
-		# self.turnouts["LSw7b"].SetLock("LSw5", s5=='R', refresh=True)
-		# for block in blocks:
-		# 	bname = block.GetName()
-		# 	if bname == "LOSLAW":
-		# 		if s5+s7 == "NN":
-		# 			block.SetRoute(self.routes["LRtL10L11A"])
-		# 		elif s5+s7 == "RR":
-		# 			block.SetRoute(self.routes["LRtL10L11B"])
-		# 		elif s5+s7+s9 == "RNN":
-		# 			block.SetRoute(self.routes["LRtL10L21"])
-		# 		elif s5+s7+s9 == "RNR":
-		# 			block.SetRoute(self.routes["LRtL10L31"])
-		# 		else:
-		# 			block.SetRoute(None)
+		s17 = 'N' if self.turnouts["CSw17"].IsNormal() else 'R'
+		s23 = 'N' if self.turnouts["CSw23"].IsNormal() else 'R'
 
-		# 	elif bname == "LOSLAM":
-		# 		if s1+s3+s5+s7 == "NNNR":
-		# 			block.SetRoute(self.routes["LRtL20L11"])
-		# 		elif s1+s3+s5+s7+s9 == "NNNNN":
-		# 			block.SetRoute(self.routes["LRtL20L21"])
-		# 		elif s1+s3+s5+s7+s9 == "NNNNR":
-		# 			block.SetRoute(self.routes["LRtL20L31"])
-		# 		elif s1+s3+s5+s7 == "RNNR":
-		# 			block.SetRoute(self.routes["LRtP11L11"])
-		# 		elif s1+s3+s5+s7+s9 == "RNNNN":
-		# 			block.SetRoute(self.routes["LRtP11L21"])
-		# 		elif s1+s3+s5+s7+s9 == "RNNNR":
-		# 			block.SetRoute(self.routes["LRtP11L31"])
-		# 		else:
-		# 			block.SetRoute(None)
+		for block in blocks:
+			bname = block.GetName()
+			if bname == "BOSWW":
+				if s23 == "N":
+					block.SetRoute(self.routes["BRtB10B11"])
+				else:
+					block.SetRoute(self.routes["BRtB10B21"])
+
+			elif bname == "BOSWE":
+				if s23 == "N":
+					block.SetRoute(self.routes["BRtB20B21"])
+				else:
+					block.SetRoute(None)
 			
-		# 	elif bname == "LOSLAE":
-		# 		if s3+s5+s7 == "RNR":
-		# 			block.SetRoute(self.routes["LRtP21L11"])
-		# 		elif s3+s5+s7+s9 == "RNNN":
-		# 			block.SetRoute(self.routes["LRtP21L21"])
-		# 		elif s3+s9 == "NN":
-		# 			block.SetRoute(self.routes["LRtP21L31A"])
-		# 		elif s3+s5+s7+s9 == "RNNR":
-		# 			block.SetRoute(self.routes["LRtP21L31B"])
-		# 		else:
-		# 			block.SetRoute(None)
+			elif bname == "BOSE":
+				if s17 == "R":
+					block.SetRoute(self.routes["BRtB11C13"])
+				else:
+					block.SetRoute(self.routes["BRtB21C13"])
 
-		# 	elif bname == "LOSCAW":
-		# 		if s15 == "N":
-		# 			block.SetRoute(self.routes["LRtL11D10"])
-		# 		else:
-		# 			block.SetRoute(None)
-
-		# 	elif bname == "LOSCAM":
-		# 		if s15+s17 == "NN":
-		# 			block.SetRoute(self.routes["LRtL21D20"])
-		# 		elif s15 == "R":
-		# 			block.SetRoute(self.routes["LRtL21D10"])
-		# 		else:
-		# 			block.SetRoute(None)
-
-		# 	elif bname == "LOSCAE":
-		# 		if s17 == "R":
-		# 			block.SetRoute(self.routes["LRtL31D20"])
-		# 		else:
-		# 			block.SetRoute(None)
 	def DefineBlocks(self, tiles):
 		self.blocks = {}
 		self.osBlocks = {}
@@ -181,7 +127,7 @@ class Bank (District):
 		self.turnouts = {}
 
 		toList = [
-			[ "CSw17",  "torightright",  ["BOSE"], (71, 13) ],
+			[ "CSw17",  "torightleft",  ["BOSE"], (71, 13) ],
 			[ "CSw19",  "torightright",  ["B21"], (63, 13) ],
 			[ "CSw21a", "torightleft",   ["B11"], (66, 11) ],
 			[ "CSw21b", "torightleft",   ["B11"], (63, 11) ],
@@ -203,28 +149,29 @@ class Bank (District):
 		self.turnouts["CSw21b"].SetDisabled(True)
 
 		return self.turnouts
+		
 	def DefineSignals(self, tiles):
 		self.signals = {}
 
 		sigList = [
-			[ "C18LB",  RegAspects, True,    "right", (68, 12) ],
-			[ "C18LA",  RegAspects, True,    "rightlong", (68, 14) ],
-			[ "C18R",   RegAspects, False,   "leftlong", (72, 12) ],
+			[ "C18RB",  RegAspects, True,    "right", (68, 12) ],
+			[ "C18RA",  RegAspects, True,    "rightlong", (68, 14) ],
+			[ "C18L",   RegAspects, False,   "leftlong", (72, 12) ],
 
-			[ "C22L",   RegAspects, True,    "right", (53, 12) ],
-			[ "C22R",   RegAspects, False,   "leftlong", (57, 10) ],
+			[ "C22R",   RegAspects, True,    "right", (53, 12) ],
+			[ "C22L",   RegAspects, False,   "leftlong", (57, 10) ],
 
-			[ "C24L",   RegAspects, True,    "rightlong", (53, 14) ],
-			[ "C24R",   RegAspects, False,   "leftlong", (57, 12) ],
+			[ "C24R",   RegAspects, True,    "rightlong", (53, 14) ],
+			[ "C24L",   RegAspects, False,   "leftlong", (57, 12) ],
 		]
 		for signm, atype, east, tileSet, pos in sigList:
 			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])  
 
 		blockSigs = {
 			# # which signals govern stopping sections, west and east
-			"B11": ("C22R",  None),
-			"B20": (None,    "C24L"),
-			"B21": ("C24R",  "C18LA"),
+			"B11": ("C22L",  None),
+			"B20": (None,    "C24R"),
+			"B21": ("C24L",  "C18RA"),
 		}
 
 		for blknm, siglist in blockSigs.items():
@@ -233,46 +180,31 @@ class Bank (District):
 		self.routes = {}
 		self.osSignals = {}
 
-		# latham OS
-		# block = self.blocks["LOSLAW"]
-		# self.routes["LRtL10L11A"] = Route(self.screen, block, "LRtL10L11A", "L11", [ (8, 11), (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 11), (15, 11), (16, 11), (17, 11), (18, 11), (19, 11), (20, 11) ], "L10", [RESTRICTING, MAIN], ["LSw5", "LSw7"])
-		# self.routes["LRtL10L11B"] = Route(self.screen, block, "LRtL10L11B", "L11", [ (8, 11), (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 12), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "L10", [RESTRICTING, RESTRICTING], ["LSw5", "LSw7"])
-		# self.routes["LRtL10L21"] = Route(self.screen, block, "LRtL10L21", "L21",   [ (8, 11), (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 12), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "L10", [RESTRICTING, DIVERGING], ["LSw5", "LSw7", "LSw9"])
-		# self.routes["LRtL10L31"] = Route(self.screen, block, "LRtL10L31", "L31",   [ (8, 11), (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 12), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "L10", [RESTRICTING, DIVERGING], ["LSw5", "LSw7", "LSw9"])
+		block = self.blocks["BOSWW"]
+		self.routes["BRtB10B11"] = Route(self.screen, block, "BRtB10B11", "B11", [ (53, 11), (54, 11), (55, 11), (56, 11), (57, 11) ], "B10", [RESTRICTING, MAIN], ["CSw23"])
+		self.routes["BRtB10B21"] = Route(self.screen, block, "BRtB10B21", "B21", [ (53, 11), (54, 11), (55, 12), (56, 13), (57, 13) ], "B10", [RESTRICTING, DIVERGING], ["CSw23"])
 
-		# block=self.blocks["LOSLAM"]
-		# self.routes["LRtL20L11"] = Route(self.screen, block, "LRtL20L11", "L20", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "L11", [RESTRICTING, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7"])
-		# self.routes["LRtP11L11"] = Route(self.screen, block, "LRtP11L11", "P11", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "L11", [RESTRICTING, DIVERGING], ["LSw1", "LSw3", "LSw5", "LSw7"])
-		# self.routes["LRtL20L21"] = Route(self.screen, block, "LRtL20L21", "L20", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "L21", [MAIN, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
-		# self.routes["LRtP11L21"] = Route(self.screen, block, "LRtP11L21", "P11", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "L21", [RESTRICTING, DIVERGING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
-		# self.routes["LRtL20L31"] = Route(self.screen, block, "LRtL20L31", "L20", [ (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "L31", [DIVERGING, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
-		# self.routes["LRtP11L31"] = Route(self.screen, block, "LRtP11L31", "P11", [ (8, 15), (9, 15), (10, 14), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "L31", [RESTRICTING, RESTRICTING], ["LSw1", "LSw3", "LSw5", "LSw7", "LSw9"])
+		block=self.blocks["BOSWE"]
+		self.routes["BRtB20B21"] = Route(self.screen, block, "BRtB20B21", "B21", [ (53, 13), (54, 13), (55, 13), (56, 13), (57, 13) ], "B20", [MAIN, RESTRICTING], ["CSw23"])
 
-		# block=self.blocks["LOSLAE"]
-		# self.routes["LRtP21L11"] = Route(self.screen, block, "LRtP21L11", "P21", [ (8, 17), (9, 17), (10, 17), (11, 16), (12, 15), (13, 14), (14, 13), (15, 13), (16, 13), (17, 12), (18, 11), (19, 11), (20, 11) ], "L11", [RESTRICTING, RESTRICTING], ["LSw3", "LSw5", "LSw7"])
-		# self.routes["LRtP21L21"] = Route(self.screen, block, "LRtP21L21", "P21", [ (8, 17), (9, 17), (10, 17), (11, 16), (12, 15), (13, 14), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13) ], "L21", [RESTRICTING, RESTRICTING], ["LSw3", "LSw5", "LSw7", "LSw9"])
-		# self.routes["LRtP21L31A"] = Route(self.screen, block, "LRtP21L31A", "P21", [ (8, 17), (9, 17), (10, 17), (11, 16), (12, 15), (13, 15), (14, 15), (15, 15), (16, 15), (17, 15), (18, 15), (19, 15), (20, 15) ], "L31", [MAIN, RESTRICTING], ["LSw3", "LSw9"])
-		# self.routes["LRtP21L31B"] = Route(self.screen, block, "LRtP21L31B", "P21", [ (8, 17), (9, 17), (10, 17), (11, 16), (12, 15), (13, 14), (14, 13), (15, 13), (16, 13), (17, 13), (18, 14), (19, 15), (20, 15) ], "L31", [RESTRICTING, RESTRICTING], ["LSw3", "LSw5", "LSw7", "LSw9"])
+		block=self.blocks["BOSE"]
+		self.routes["BRtB11C13"] = Route(self.screen, block, "BRtB11C13", "B11", [ (68, 11), (69, 11), (70, 12), (71, 13), (72, 13) ], "C13", [RESTRICTING, DIVERGING], ["CSW17"])
+		self.routes["BRtB21C13"] = Route(self.screen, block, "BRtB21C13", "B21", [ (68, 13), (69, 13), (70, 13), (71, 13), (72, 13) ], "C13", [MAIN, MAIN], ["CSW17"])
 
-		# self.signals["L8R"].AddPossibleRoutes("LOSLAW", [ "LRtL10L11A", "LRtL10L11B", "LRtL10L21", "LRtL10L31" ])
-		# self.signals["L8L"].AddPossibleRoutes("LOSLAW", [ "LRtL10L11A", "LRtL10L11B" ])
-		# self.signals["L8L"].AddPossibleRoutes("LOSLAM", [ "LRtL20L11", "LRtP11L11" ])
-		# self.signals["L8L"].AddPossibleRoutes("LOSLAE", [ "LRtP21L11" ])
+		self.signals["C22R"].AddPossibleRoutes("BOSWW", [ "BRtB10B11", "BRtB10B21" ])
+		self.signals["C22L"].AddPossibleRoutes("BOSWW", [ "BRtB10B11" ])
 
-		# self.signals["L6RA"].AddPossibleRoutes("LOSLAM", [ "LRtL20L11", "LRtL20L21", "LRtL20L31" ])
-		# self.signals["L6RB"].AddPossibleRoutes("LOSLAM", [ "LRtP11L11", "LRtP11L21", "LRtP11L31" ])
-		# self.signals["L6L"].AddPossibleRoutes("LOSLAW", [ "LRtL10L21" ])
-		# self.signals["L6L"].AddPossibleRoutes("LOSLAM", [ "LRtL20L21", "LRtP11L21" ])
-		# self.signals["L6L"].AddPossibleRoutes("LOSLAE", [ "LRtP21L21" ])
+		self.signals["C24R"].AddPossibleRoutes("BOSWE", [ "BRtB20B21" ])
+		self.signals["C24L"].AddPossibleRoutes("BOSWE", [ "BRtB20B21" ])
+		self.signals["C24L"].AddPossibleRoutes("BOSWW", [ "BRtB10B21" ])
 
-		# self.signals["L4R"].AddPossibleRoutes("LOSLAE", [ "LRtP21L11", "LRtP21L21", "LRtP21L31A", "LRtP21L31B" ])
-		# self.signals["L4L"].AddPossibleRoutes("LOSLAW", [ "LRtL10L31" ])
-		# self.signals["L4L"].AddPossibleRoutes("LOSLAM", [ "LRtL20L31", "LRtP11L31" ])
-		# self.signals["L4L"].AddPossibleRoutes("LOSLAE", [ "LRtP21L31A", "LRtP21L31B" ])
+		self.signals["C18RB"].AddPossibleRoutes("BOSE", ["BRtB11C13"])
+		self.signals["C18RA"].AddPossibleRoutes("BOSE", ["BRtB21C13"])
+		self.signals["C18L"].AddPossibleRoutes("BOSE", ["BRtB11C13", "BRtB21C13"])
 
-		# self.osSignals["LOSLAW"] = [ "L8R", "L8L", "L6L", "L4L" ]
-		# self.osSignals["LOSLAM"] = [ "L6RA", "L6RB", "L8L", "L6L", "L4L" ]
-		# self.osSignals["LOSLAE"] = [ "L4R", "L8L", "L6L", "L4L" ]
+		self.osSignals["BOSWW"] = [ "C22R", "C22L", "C24L" ]
+		self.osSignals["BOSWE"] = [ "C24R", "C24L" ]
+		self.osSignals["BOSE"] = [ "C18RB", "C18RA", "C18L" ]
 
 		return self.signals
 

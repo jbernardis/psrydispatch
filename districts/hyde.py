@@ -21,7 +21,7 @@ class Hyde (District):
 	def OnConnect(self):
 		District.OnConnect(self)
 
-		for bname in ["HydeEastPower", "HydeWestPower"]:
+		for bname in ["HydeEastPower", "HydeWestPower" ]:
 			onFlag = 1 if self.buttons[bname].IsOn() else 0
 			self.indicators[bname].SetValue(onFlag)
 

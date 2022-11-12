@@ -15,6 +15,7 @@ class TrackDiagram(wx.Panel):
 
 		self.tiles = {}
 		self.text = {}
+		self.trains = {}
 		self.bitmaps = {}
 		self.tx = 0
 		self.ty = 0
@@ -91,12 +92,23 @@ class TrackDiagram(wx.Panel):
 		del(self.text[textKey])
 		self.Refresh()
 
+	def DrawTrain(self, x, y, offset, trainID, locoID, stopRelay):
+		self.trains[(x*16+offset, y*16)] = [trainID, locoID, stopRelay];
+		self.Refresh()
+
+	def ClearTrain(self, x, y, offset):
+		textKey = (x*16+offset, y*16)
+		if textKey not in self.trains:
+			return
+		del(self.trains[textKey])
+		self.Refresh()
+
 	def OnPaint(self, evt):
 		dc = wx.BufferedPaintDC(self)
 		dc.SetTextForeground(wx.Colour(255, 0, 0))
 		dc.SetTextBackground(wx.Colour(255, 255, 255))
 		dc.SetBackgroundMode(wx.BRUSHSTYLE_SOLID)
-		dc.SetFont(wx.Font(wx.Font(12, wx.FONTFAMILY_ROMAN, wx.NORMAL, wx.FONTWEIGHT_BOLD, faceName="Arial")))
+		dc.SetFont(wx.Font(wx.Font(10, wx.FONTFAMILY_ROMAN, wx.NORMAL, wx.FONTWEIGHT_BOLD, faceName="Arial")))
 		self.DrawBackground(dc)
 		for bx, bmp in self.tiles.items():
 			dc.DrawBitmap(bmp, bx[0], bx[1])
@@ -104,3 +116,19 @@ class TrackDiagram(wx.Panel):
 			dc.DrawBitmap(bmp, bx[0], bx[1])
 		for bx, txt in self.text.items():
 			dc.DrawText(txt, bx[0], bx[1])
+		for bx, tinfo in self.trains.items():
+			x = bx[0]
+			y = bx[1]
+			dc.SetTextForeground(wx.Colour(255, 0, 0))
+			dc.SetTextBackground(wx.Colour(255, 255, 255))
+			if tinfo[2]:
+				txt = "* "
+				dc.DrawText(txt, x, y)
+				x += dc.GetTextExtent(txt)[0]
+
+			dc.DrawText(tinfo[0]+" ", x, y)
+			x += dc.GetTextExtent(tinfo[0])[0]+2
+
+			dc.SetTextForeground(wx.Colour(255, 255, 255))
+			dc.SetTextBackground(wx.Colour(255, 0, 0))
+			dc.DrawText(tinfo[1], x, y)
