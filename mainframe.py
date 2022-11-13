@@ -55,7 +55,7 @@ class MainFrame(wx.Frame):
 		logging.info("Display process starting")
 		self.settings = Settings(cmdFolder)
 
-		self.title = "Dispatcher" if self.settings.dispatch else "Remote Display"
+		self.title = "PSRY Dispatcher" if self.settings.dispatch else "PSRY Monitor"
 		self.ToasterSetup()
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 		vsz = wx.BoxSizer(wx.VERTICAL)
@@ -202,9 +202,6 @@ class MainFrame(wx.Frame):
 
 		self.pendingFleets = {}
 
-		if not self.districts.Audit():
-			logging.error("Audit failed")
-
 		self.resolveObjects()
 
 		self.AddBogusStuff()
@@ -216,6 +213,7 @@ class MainFrame(wx.Frame):
 
 		self.districts.Initialize(self.sstiles, self.misctiles)
 
+		# only set up hot spots on the diagram for dispatchr - not for remote display
 		if self.settings.dispatch:
 			self.turnoutMap = { (t.GetScreen(), t.GetPos()): t for t in self.turnouts.values() if not t.IsRouteControlled() }
 			self.buttonMap = { (b.GetScreen(), b.GetPos()): b for b in self.buttons.values() }
@@ -228,6 +226,7 @@ class MainFrame(wx.Frame):
 			self.signalMap = {}
 			self.handswitchMap = {}
 
+		# set up hot spots for entering/modifying train/loco ID - displays can do this too
 		self.blockMap = self.BuildBlockMap(self.blocks)
 
 		self.buttonsToClear = []
@@ -275,28 +274,23 @@ class MainFrame(wx.Frame):
 			return self.blockOSMap[blknm]
 
 	def AddPendingFleet(self, block, sig):
-		print("add pending fleet, block %s, signal %s" % (block.GetName(), sig.GetName()))
 		self.pendingFleets[block.GetName()] = sig
 
 	def DelPendingFleet(self, block):
 		bname = block.GetName()
-		print("removing pending fleet for block %s" % bname)
 		if bname not in self.pendingFleets:
-			print("but there are none there")
 			return
 
 		del(self.pendingFleets[bname])
 
 	def DoFleetPending(self, block):
 		bname = block.GetName()
-		print("doing the pending fleeting for block %s" % bname)
 		if bname not in self.pendingFleets:
 			return
 
 		sig = self.pendingFleets[bname]
 		del(self.pendingFleets[bname])
 
-		print("calling signal %s" % sig.GetName())
 		sig.DoFleeting()		
 
 	def BuildBlockMap(self, bl):
@@ -310,7 +304,7 @@ class MainFrame(wx.Frame):
 				blkMap[lkey].append((pos[0], b))
 
 		return blkMap
-
+###################################################### TO BE REMOVED 
 	def AddBogusStuff(self):
 		#this is to add bogus entries for block that we need before we get to their district
 
@@ -334,18 +328,20 @@ class MainFrame(wx.Frame):
 			print("You can remove bogus entry for block P50")
 		else:
 			self.blocks["P50"] = Block(self, self, "P50",	[], False)
-		if "C13" in self.blocks:
-			print("You can remove bogus entry for block C13")
-		else:
-			self.blocks["C13"] = Block(self, self, "C13",	[], False)
 
 	def DrawOthers(self, block):
 		print("Remove this bogus drawothers method from mainframe")
 
 	def DoBlockAction(self, blk, blockend, state):
 		print("Remove this bogus doblockaction method from mainframe")
+
+####################################################### END OF TO BE REMOVED
 		
 	def onTicker(self, _):
+		self.ClearExpiredButtons()
+		self.breakerDisplay.ticker()
+
+	def ClearExpiredButtons(self):
 		collapse = False
 		for b in self.buttonsToClear:
 			b[0] -= 1
@@ -355,8 +351,6 @@ class MainFrame(wx.Frame):
 
 		if collapse:
 			self.buttonsToClear = [x for x in self.buttonsToClear if x[0] > 0]
-
-		self.breakerDisplay.ticker()
 
 	def ClearButtonAfter(self, secs, btn):
 		self.buttonsToClear.append([secs, btn])

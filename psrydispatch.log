@@ -1,0 +1,249 @@
+2022-11-13 00:17:29,791 Display process starting
+2022-11-13 00:17:30,017 Creating district Yard
+2022-11-13 00:17:30,017 Creating district Latham
+2022-11-13 00:17:30,017 Creating district Dell
+2022-11-13 00:17:30,017 Creating district Shore
+2022-11-13 00:17:30,017 Creating district Krulish
+2022-11-13 00:17:30,017 Creating district Nassau
+2022-11-13 00:17:30,017 Creating district Bank
+2022-11-13 00:17:30,017 Creating district Cliveden
+2022-11-13 00:17:30,017 Creating district Hyde
+2022-11-13 00:17:30,019 Block KOSN10S11: set route to KRtN10S11: N10 => [] => S11 []
+2022-11-13 00:17:30,019 Block N10: next west block is KOSN10S11
+2022-11-13 00:17:30,020 Block KOSN10S11: next east block is N10
+2022-11-13 00:17:30,020 Block S11: next east block is KOSN10S11
+2022-11-13 00:17:30,020 Block KOSN10S11: next west block is S11
+2022-11-13 00:17:30,020 Block KOSN20S21: set route to KRtN20S21: S21 => [] => N20 []
+2022-11-13 00:17:30,020 Block S21: next east block is KOSN20S21
+2022-11-13 00:17:30,020 Block KOSN20S21: next west block is S21
+2022-11-13 00:17:30,020 Block N20: next west block is KOSN20S21
+2022-11-13 00:17:30,020 Block KOSN20S21: next east block is N20
+2022-11-13 00:17:30,020 Block N60: set route to NRtN60D: None => [(1, 9), (2, 9), (3, 9), (4, 9), (5, 9), (6, 9), (7, 9), (8, 9)] => NWOSCY ['NSw15', 'NSw17']
+2022-11-13 00:17:30,020 could not determine entry block for N60/NRtN60D from name None
+2022-11-13 00:17:30,020 Block N60: next east block is None
+2022-11-13 00:17:30,020 Block NWOSCY: next east block is N60
+2022-11-13 00:17:30,020 Block N60: next west block is NWOSCY
+2022-11-13 00:17:30,021 Block YOSCJW: set route to YRtY11L10: L10 => [(129, 11), (130, 11), (131, 11), (132, 11), (133, 11), (134, 11), (135, 11), (136, 11)] => Y11 ['YSw3']
+2022-11-13 00:17:30,021 Block L10: next west block is YOSCJW
+2022-11-13 00:17:30,021 Block YOSCJW: next east block is L10
+2022-11-13 00:17:30,021 Block Y11: next east block is YOSCJW
+2022-11-13 00:17:30,021 Block YOSCJW: next west block is Y11
+2022-11-13 00:17:30,021 Block YOSCJE: set route to YRtY21L20: Y21 => [(129, 13), (130, 13), (131, 13), (132, 13), (133, 13), (134, 13), (135, 13), (136, 13)] => L20 ['YSw1', 'YSw3']
+2022-11-13 00:17:30,022 Block Y21: next east block is YOSCJE
+2022-11-13 00:17:30,022 Block YOSCJE: next west block is Y21
+2022-11-13 00:17:30,022 Block L20: next west block is YOSCJE
+2022-11-13 00:17:30,022 Block YOSCJE: next east block is L20
+2022-11-13 00:17:30,022 Block YOSEJW: set route to YRtY10Y11: Y11 => [(114, 11), (115, 11), (116, 11), (117, 11), (118, 11), (119, 11), (120, 11), (121, 11)] => Y10 ['YSw7', 'YSw9']
+2022-11-13 00:17:30,022 Block Y11: next west block is YOSEJW
+2022-11-13 00:17:30,022 Block YOSEJW: next east block is Y11
+2022-11-13 00:17:30,022 Block Y10: next east block is YOSEJW
+2022-11-13 00:17:30,023 Block YOSEJW: next west block is Y10
+2022-11-13 00:17:30,024 Block YOSEJE: set route to YRtY20Y21: Y20 => [(114, 13), (115, 13), (116, 13), (117, 13), (118, 13), (119, 13), (120, 13), (121, 13)] => Y21 ['YSw7']
+2022-11-13 00:17:30,024 Block Y20: next east block is YOSEJE
+2022-11-13 00:17:30,024 Block YOSEJE: next west block is Y20
+2022-11-13 00:17:30,024 Block Y21: next west block is YOSEJE
+2022-11-13 00:17:30,024 Block YOSEJE: next east block is Y21
+2022-11-13 00:17:30,024 Block YOSKL2: set route to YRtY10Y52: Y10 => [(95, 9), (96, 9), (97, 9), (98, 9), (99, 10), (100, 11), (101, 11), (102, 11), (103, 11), (104, 11), (105, 11), (106, 11)] => Y52 ['YSw17', 'YSw19', 'YSw21', 'YSw29']
+2022-11-13 00:17:30,024 Block Y10: next west block is YOSKL2
+2022-11-13 00:17:30,024 Block YOSKL2: next east block is Y10
+2022-11-13 00:17:30,024 Block Y52: next east block is YOSKL2
+2022-11-13 00:17:30,024 Block YOSKL2: next west block is Y52
+2022-11-13 00:17:30,024 Block YOSKL1: set route to YRtY20Y51: Y51 => [(96, 13), (97, 13), (98, 13), (99, 13), (100, 13), (101, 13), (102, 13), (103, 13), (104, 13), (105, 13), (106, 13)] => Y20 ['YSw17', 'YSw21', 'YSw23', 'YSw25', 'YSw27']
+2022-11-13 00:17:30,024 Block Y51: next east block is YOSKL1
+2022-11-13 00:17:30,024 Block YOSKL1: next west block is Y51
+2022-11-13 00:17:30,024 Block Y20: next west block is YOSKL1
+2022-11-13 00:17:30,024 Block YOSKL1: next east block is Y20
+2022-11-13 00:17:30,024 Block YOSKL3: route is None
+2022-11-13 00:17:30,025 Block YOSKL4: set route to YRtY30Y51: Y30 => [(84, 13), (85, 13), (86, 13), (87, 13), (88, 13)] => Y51 ['YSw33']
+2022-11-13 00:17:30,025 Block Y30: next east block is YOSKL4
+2022-11-13 00:17:30,025 Block YOSKL4: next west block is Y30
+2022-11-13 00:17:30,025 Block Y51: next west block is YOSKL4
+2022-11-13 00:17:30,025 Block YOSKL4: next east block is Y51
+2022-11-13 00:17:30,025 Block YOSWYW: set route to YRtY70Y81: Y81 => [(21, 30), (22, 30), (23, 30), (24, 30), (25, 30), (26, 30), (27, 30), (28, 30), (29, 30), (30, 30), (31, 30)] => Y70 ['YSw113', 'YSw115']
+2022-11-13 00:17:30,025 Block Y81: next west block is YOSWYW
+2022-11-13 00:17:30,025 Block YOSWYW: next east block is Y81
+2022-11-13 00:17:30,025 Block Y70: next east block is YOSWYW
+2022-11-13 00:17:30,025 Block YOSWYW: next west block is Y70
+2022-11-13 00:17:30,025 Block YOSWYE: set route to YRtY87Y81: Y81 => [(46, 30), (47, 30), (48, 30), (49, 30), (50, 30), (51, 30), (52, 30), (53, 30), (54, 30), (55, 30)] => Y87 ['YSw134', 'YSw132']
+2022-11-13 00:17:30,025 Block Y81: next east block is YOSWYE
+2022-11-13 00:17:30,025 Block YOSWYE: next west block is Y81
+2022-11-13 00:17:30,025 Block Y87: next west block is YOSWYE
+2022-11-13 00:17:30,025 Block YOSWYE: next east block is Y87
+2022-11-13 00:17:30,025 Block LOSLAW: set route to LRtL10L11A: L11 => [(8, 11), (9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 11), (15, 11), (16, 11), (17, 11), (18, 11), (19, 11), (20, 11)] => L10 ['LSw5', 'LSw7']
+2022-11-13 00:17:30,025 Block L11: next west block is LOSLAW
+2022-11-13 00:17:30,025 Block LOSLAW: next east block is L11
+2022-11-13 00:17:30,025 Block L10: next east block is LOSLAW
+2022-11-13 00:17:30,025 Block LOSLAW: next west block is L10
+2022-11-13 00:17:30,026 Block LOSLAM: set route to LRtL20L21: L20 => [(8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13), (20, 13)] => L21 ['LSw1', 'LSw3', 'LSw5', 'LSw7', 'LSw9']
+2022-11-13 00:17:30,026 Block L20: next east block is LOSLAM
+2022-11-13 00:17:30,026 Block LOSLAM: next west block is L20
+2022-11-13 00:17:30,026 Block L21: next west block is LOSLAM
+2022-11-13 00:17:30,026 Block LOSLAM: next east block is L21
+2022-11-13 00:17:30,026 Block LOSLAE: set route to LRtP21L31A: P21 => [(8, 17), (9, 17), (10, 17), (11, 16), (12, 15), (13, 15), (14, 15), (15, 15), (16, 15), (17, 15), (18, 15), (19, 15), (20, 15)] => L31 ['LSw3', 'LSw9']
+2022-11-13 00:17:30,026 Block P21: next east block is LOSLAE
+2022-11-13 00:17:30,026 Block LOSLAE: next west block is P21
+2022-11-13 00:17:30,026 Block L31: next west block is LOSLAE
+2022-11-13 00:17:30,026 Block LOSLAE: next east block is L31
+2022-11-13 00:17:30,026 Block LOSCAW: set route to LRtL11D10: D10 => [(30, 11), (31, 11), (32, 11), (33, 11), (34, 11), (35, 11)] => L11 ['LSw15']
+2022-11-13 00:17:30,026 Block D10: next west block is LOSCAW
+2022-11-13 00:17:30,026 Block LOSCAW: next east block is D10
+2022-11-13 00:17:30,026 Block L11: next east block is LOSCAW
+2022-11-13 00:17:30,026 Block LOSCAW: next west block is L11
+2022-11-13 00:17:30,027 Block LOSCAM: set route to LRtL21D20: L21 => [(30, 13), (31, 13), (32, 13), (33, 13), (34, 13), (35, 13)] => D20 ['LSw15', 'LSw17']
+2022-11-13 00:17:30,027 Block L21: next east block is LOSCAM
+2022-11-13 00:17:30,027 Block LOSCAM: next west block is L21
+2022-11-13 00:17:30,027 Block D20: next west block is LOSCAM
+2022-11-13 00:17:30,027 Block LOSCAM: next east block is D20
+2022-11-13 00:17:30,027 Block LOSCAE: route is None
+2022-11-13 00:17:30,027 Block DOSVJE: set route to DRtD20D21: D20 => [(46, 13), (47, 13), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13)] => D21 ['DSw3', 'DSw5', 'DSw7']
+2022-11-13 00:17:30,027 Block D20: next east block is DOSVJE
+2022-11-13 00:17:30,027 Block DOSVJE: next west block is D20
+2022-11-13 00:17:30,027 Block D21: next west block is DOSVJE
+2022-11-13 00:17:30,027 Block DOSVJE: next east block is D21
+2022-11-13 00:17:30,027 Block DOSVJW: set route to DRtD10D11: D11 => [(46, 11), (47, 11), (48, 11), (49, 11), (50, 11), (51, 11), (52, 11), (53, 11), (54, 11), (55, 11)] => D10 ['DSw1', 'DSw5', 'DSw7']
+2022-11-13 00:17:30,027 Block D11: next west block is DOSVJW
+2022-11-13 00:17:30,027 Block DOSVJW: next east block is D11
+2022-11-13 00:17:30,027 Block D10: next east block is DOSVJW
+2022-11-13 00:17:30,027 Block DOSVJW: next west block is D10
+2022-11-13 00:17:30,028 Block DOSFOE: set route to DRtD21S20: D21 => [(66, 13), (67, 13), (68, 13), (69, 13), (70, 13)] => S20 ['DSw11']
+2022-11-13 00:17:30,028 Block D21: next east block is DOSFOE
+2022-11-13 00:17:30,028 Block DOSFOE: next west block is D21
+2022-11-13 00:17:30,028 Block S20: next west block is DOSFOE
+2022-11-13 00:17:30,028 Block DOSFOE: next east block is S20
+2022-11-13 00:17:30,028 Block DOSFOW: set route to DRtD11S10: S10 => [(66, 11), (67, 11), (68, 11), (69, 11), (70, 11)] => D11 ['DSw11']
+2022-11-13 00:17:30,028 Block S10: next west block is DOSFOW
+2022-11-13 00:17:30,028 Block DOSFOW: next east block is S10
+2022-11-13 00:17:30,028 Block D11: next east block is DOSFOW
+2022-11-13 00:17:30,028 Block DOSFOW: next west block is D11
+2022-11-13 00:17:30,028 Block SOSW: set route to SRtS10H10: H10 => [(83, 11), (84, 11), (85, 11), (86, 11), (87, 11), (88, 11), (89, 11), (90, 11), (91, 11), (92, 11), (93, 11), (94, 11), (95, 11), (96, 11), (97, 11), (98, 11), (99, 11), (100, 11), (101, 11), (102, 11), (103, 11), (104, 11), (105, 11)] => S10 ['SSw3', 'SSw5', 'SSw11', 'SSw13']
+2022-11-13 00:17:30,028 Block H10: next west block is SOSW
+2022-11-13 00:17:30,028 Block SOSW: next east block is H10
+2022-11-13 00:17:30,028 Block S10: next east block is SOSW
+2022-11-13 00:17:30,028 Block SOSW: next west block is S10
+2022-11-13 00:17:30,028 Block SOSE: set route to SRtS20H20: S20 => [(83, 13), (84, 13), (85, 13), (86, 13), (87, 13), (88, 13), (89, 13), (90, 13), (91, 13), (92, 13), (93, 13), (94, 13), (95, 13), (96, 13), (97, 13), (98, 13), (99, 13), (100, 13), (101, 13), (102, 13), (103, 13), (104, 13), (105, 13)] => H20 ['SSw3', 'SSw5', 'SSw7', 'SSw9']
+2022-11-13 00:17:30,028 Block S20: next east block is SOSE
+2022-11-13 00:17:30,028 Block SOSE: next west block is S20
+2022-11-13 00:17:30,028 Block H20: next west block is SOSE
+2022-11-13 00:17:30,028 Block SOSE: next east block is H20
+2022-11-13 00:17:30,029 Block SOSHF: set route to SRtF10F11: F10 => [(87, 9), (88, 9), (89, 10), (90, 11), (91, 12), (92, 13), (93, 14), (94, 15), (95, 15)] => F11 []
+2022-11-13 00:17:30,029 Block F10: next east block is SOSHF
+2022-11-13 00:17:30,029 Block SOSHF: next west block is F10
+2022-11-13 00:17:30,029 Block F11: next west block is SOSHF
+2022-11-13 00:17:30,029 Block SOSHF: next east block is F11
+2022-11-13 00:17:30,029 Block SOSHJW: set route to SRtH10H11: H11 => [(114, 11), (115, 11), (116, 11), (117, 11), (118, 11), (119, 11), (120, 11), (121, 11), (122, 11)] => H10 ['SSw19']
+2022-11-13 00:17:30,029 Block H11: next west block is SOSHJW
+2022-11-13 00:17:30,029 Block SOSHJW: next east block is H11
+2022-11-13 00:17:30,029 Block H10: next east block is SOSHJW
+2022-11-13 00:17:30,029 Block SOSHJW: next west block is H10
+2022-11-13 00:17:30,029 Block SOSHJM: set route to SRtH20H21: H20 => [(114, 13), (115, 13), (116, 13), (117, 13), (118, 13), (119, 13), (120, 13), (121, 13), (122, 13)] => H21 ['SSw15', 'SSw17', 'SSw19']
+2022-11-13 00:17:30,029 Block H20: next east block is SOSHJM
+2022-11-13 00:17:30,029 Block SOSHJM: next west block is H20
+2022-11-13 00:17:30,029 Block H21: next west block is SOSHJM
+2022-11-13 00:17:30,029 Block SOSHJM: next east block is H21
+2022-11-13 00:17:30,029 Block SOSHJE: set route to SRtP42N25: P42 => [(114, 15), (115, 15), (116, 15), (117, 15), (118, 16), (119, 17), (120, 17)] => N25 ['SSw15']
+2022-11-13 00:17:30,029 Block P42: next east block is SOSHJE
+2022-11-13 00:17:30,029 Block SOSHJE: next west block is P42
+2022-11-13 00:17:30,029 Block N25: next west block is SOSHJE
+2022-11-13 00:17:30,029 Block SOSHJE: next east block is N25
+2022-11-13 00:17:30,030 Block KOSW: set route to KRtN10N11: N11 => [(141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 11), (147, 11), (148, 11), (149, 11)] => N10 ['KSw3', 'KSw5', 'KSw7']
+2022-11-13 00:17:30,030 Block N11: next west block is KOSW
+2022-11-13 00:17:30,030 Block KOSW: next east block is N11
+2022-11-13 00:17:30,030 Block N10: next east block is KOSW
+2022-11-13 00:17:30,030 Block KOSW: next west block is N10
+2022-11-13 00:17:30,030 Block KOSM: route is None
+2022-11-13 00:17:30,030 Block KOSE: set route to KRtN20N21: N20 => [(141, 15), (142, 15), (143, 15), (144, 14), (145, 13), (146, 13), (147, 13), (148, 13), (149, 13)] => N21 ['KSw1', 'KSw5']
+2022-11-13 00:17:30,030 Block N20: next east block is KOSE
+2022-11-13 00:17:30,030 Block KOSE: next west block is N20
+2022-11-13 00:17:30,030 Block N21: next west block is KOSE
+2022-11-13 00:17:30,030 Block KOSE: next east block is N21
+2022-11-13 00:17:30,030 Block NWOSTY: set route to NRtT12W10: W10 => [(17, 5), (18, 5), (19, 5)] => T12 ['NSw25']
+2022-11-13 00:17:30,030 Block W10: next west block is NWOSTY
+2022-11-13 00:17:30,030 Block NWOSTY: next east block is W10
+2022-11-13 00:17:30,030 Block T12: next east block is NWOSTY
+2022-11-13 00:17:30,030 Block NWOSTY: next west block is T12
+2022-11-13 00:17:30,030 Block NWOSCY: set route to NRtN60N31: N31 => [(10, 9), (11, 9), (12, 9), (13, 9), (14, 9), (15, 9), (16, 9), (17, 9), (18, 9), (19, 9)] => N60 ['NSw21', 'NSw23', 'NSw27']
+2022-11-13 00:17:30,030 Block N31: next west block is NWOSCY
+2022-11-13 00:17:30,030 Block NWOSCY: next east block is N31
+2022-11-13 00:17:30,030 Block N60: next east block is NWOSCY
+2022-11-13 00:17:30,030 Block NWOSCY: next west block is N60
+2022-11-13 00:17:30,031 Block NWOSW: set route to NRtN11N12: N12 => [(9, 11), (10, 11), (11, 11), (12, 11), (13, 11), (14, 11), (15, 11), (16, 11), (17, 11), (18, 11), (19, 11)] => N11 ['NSw19', 'NSw21', 'NSw27', 'NSw29']
+2022-11-13 00:17:30,031 Block N12: next west block is NWOSW
+2022-11-13 00:17:30,031 Block NWOSW: next east block is N12
+2022-11-13 00:17:30,031 Block N11: next east block is NWOSW
+2022-11-13 00:17:30,031 Block NWOSW: next west block is N11
+2022-11-13 00:17:30,031 Block NWOSE: set route to NRtN21N22: N21 => [(9, 13), (10, 13), (11, 13), (12, 13), (13, 13), (14, 13), (15, 13), (16, 13), (17, 13), (18, 13), (19, 13)] => N22 ['NSw19', 'NSw29', 'NSw31']
+2022-11-13 00:17:30,031 Block N21: next east block is NWOSE
+2022-11-13 00:17:30,031 Block NWOSE: next west block is N21
+2022-11-13 00:17:30,031 Block N22: next west block is NWOSE
+2022-11-13 00:17:30,031 Block NWOSE: next east block is N22
+2022-11-13 00:17:30,031 Block NEOSRH: set route to NRtR10W11: R10 => [(33, 5), (34, 6), (35, 7), (36, 8), (37, 9), (38, 9), (39, 9), (40, 9), (41, 9), (42, 9), (43, 9)] => W11 ['NSw47', 'NSw55']
+2022-11-13 00:17:30,031 Block R10: next west block is NEOSRH
+2022-11-13 00:17:30,031 Block NEOSRH: next east block is R10
+2022-11-13 00:17:30,031 Block W11: next east block is NEOSRH
+2022-11-13 00:17:30,031 Block NEOSRH: next west block is W11
+2022-11-13 00:17:30,031 Block NEOSW: set route to NRtB10N12: B10 => [(30, 11), (31, 11), (32, 11), (33, 11), (34, 11), (35, 11), (36, 11), (37, 11), (38, 11), (39, 11), (40, 11), (41, 11), (42, 11), (43, 11)] => N12 ['NSw45', 'NSw47', 'NSw53', 'NSw55', 'NSw57']
+2022-11-13 00:17:30,031 Block B10: next west block is NEOSW
+2022-11-13 00:17:30,031 Block NEOSW: next east block is B10
+2022-11-13 00:17:30,031 Block N12: next east block is NEOSW
+2022-11-13 00:17:30,031 Block NEOSW: next west block is N12
+2022-11-13 00:17:30,032 Block NEOSE: set route to NRtB20N22: N22 => [(30, 13), (31, 13), (32, 13), (33, 13), (34, 13), (35, 13), (36, 13), (37, 13), (38, 13), (39, 13), (40, 13), (41, 13), (42, 13), (43, 13)] => B20 ['NSw43', 'NSw45', 'NSw57']
+2022-11-13 00:17:30,032 Block N22: next east block is NEOSE
+2022-11-13 00:17:30,032 Block NEOSE: next west block is N22
+2022-11-13 00:17:30,032 Block B20: next west block is NEOSE
+2022-11-13 00:17:30,032 Block NEOSE: next east block is B20
+2022-11-13 00:17:30,032 Block BOSWW: set route to BRtB10B11: B11 => [(53, 11), (54, 11), (55, 11), (56, 11), (57, 11)] => B10 ['CSw23']
+2022-11-13 00:17:30,032 Block B11: next west block is BOSWW
+2022-11-13 00:17:30,032 Block BOSWW: next east block is B11
+2022-11-13 00:17:30,032 Block B10: next east block is BOSWW
+2022-11-13 00:17:30,032 Block BOSWW: next west block is B10
+2022-11-13 00:17:30,032 Block BOSWE: set route to BRtB20B21: B21 => [(53, 13), (54, 13), (55, 13), (56, 13), (57, 13)] => B20 ['CSw23']
+2022-11-13 00:17:30,032 Block B21: next west block is BOSWE
+2022-11-13 00:17:30,032 Block BOSWE: next east block is B21
+2022-11-13 00:17:30,032 Block B20: next east block is BOSWE
+2022-11-13 00:17:30,032 Block BOSWE: next west block is B20
+2022-11-13 00:17:30,032 Block BOSE: set route to BRtB21C13: B21 => [(68, 13), (69, 13), (70, 13), (71, 13), (72, 13)] => C13 ['CSW17']
+2022-11-13 00:17:30,032 Block B21: next east block is BOSE
+2022-11-13 00:17:30,032 Block BOSE: next west block is B21
+2022-11-13 00:17:30,032 Block C13: next west block is BOSE
+2022-11-13 00:17:30,032 Block BOSE: next east block is C13
+2022-11-13 00:17:30,032 Block COSCLW: set route to CRtC13C23: C23 => [(82, 13), (83, 13), (84, 13), (85, 13), (86, 13)] => C13 ['CSw13']
+2022-11-13 00:17:30,033 Block C23: next west block is COSCLW
+2022-11-13 00:17:30,033 Block COSCLW: next east block is C23
+2022-11-13 00:17:30,033 Block C13: next east block is COSCLW
+2022-11-13 00:17:30,033 Block COSCLW: next west block is C13
+2022-11-13 00:17:30,033 Block COSCLEW: set route to CRtC23C22: C22 => [(95, 13), (96, 13), (97, 13), (98, 13), (99, 13)] => C23 ['CSw9']
+2022-11-13 00:17:30,033 Block C22: next west block is COSCLEW
+2022-11-13 00:17:30,033 Block COSCLEW: next east block is C22
+2022-11-13 00:17:30,033 Block C23: next east block is COSCLEW
+2022-11-13 00:17:30,033 Block COSCLEW: next west block is C23
+2022-11-13 00:17:30,033 Block COSCLEE: set route to CRtC12C11: C12 => [(95, 15), (96, 15), (97, 15), (98, 15), (99, 15)] => C11 ['CSw9']
+2022-11-13 00:17:30,033 Block C12: next east block is COSCLEE
+2022-11-13 00:17:30,033 Block COSCLEE: next west block is C12
+2022-11-13 00:17:30,033 Block C11: next west block is COSCLEE
+2022-11-13 00:17:30,033 Block COSCLEE: next east block is C11
+2022-11-13 00:17:30,033 Block HOSWW: set route to HRtH11H12: H12 => [(21, 13), (22, 13), (23, 13), (24, 13), (25, 13), (26, 13), (27, 13), (28, 13), (29, 13), (30, 13), (31, 13)] => H11 ['HSw1', 'HSw3']
+2022-11-13 00:17:30,033 Block H12: next west block is HOSWW
+2022-11-13 00:17:30,033 Block HOSWW: next east block is H12
+2022-11-13 00:17:30,033 Block H11: next east block is HOSWW
+2022-11-13 00:17:30,033 Block HOSWW: next west block is H11
+2022-11-13 00:17:30,033 Block HOSWW2: set route to HRtH30H31: H31 => [(28, 5), (29, 5), (30, 5), (31, 5)] => H30 ['HSw7b']
+2022-11-13 00:17:30,033 Block H31: next west block is HOSWW2
+2022-11-13 00:17:30,033 Block HOSWW2: next east block is H31
+2022-11-13 00:17:30,034 Block H30: next east block is HOSWW2
+2022-11-13 00:17:30,034 Block HOSWW2: next west block is H30
+2022-11-13 00:17:30,034 Block HOSWE: set route to HRtH21H22: H21 => [(21, 15), (22, 15), (23, 15), (24, 15), (25, 15), (26, 15), (27, 15), (28, 15), (29, 15), (30, 15), (31, 15)] => H22 ['HSw9', 'HSw11']
+2022-11-13 00:17:30,034 Block H21: next east block is HOSWE
+2022-11-13 00:17:30,034 Block HOSWE: next west block is H21
+2022-11-13 00:17:30,034 Block H22: next west block is HOSWE
+2022-11-13 00:17:30,034 Block HOSWE: next east block is H22
+2022-11-13 00:17:30,034 Block HOSEW: set route to HRtH12H13: H13 => [(42, 13), (43, 13), (44, 13), (45, 13), (46, 13), (47, 13), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13), (56, 13)] => H12 ['HSw15', 'HSw17', 'HSw19', 'HSw21']
+2022-11-13 00:17:30,034 Block H13: next west block is HOSEW
+2022-11-13 00:17:30,034 Block HOSEW: next east block is H13
+2022-11-13 00:17:30,034 Block H12: next east block is HOSEW
+2022-11-13 00:17:30,034 Block HOSEW: next west block is H12
+2022-11-13 00:17:30,034 Block HOSEE: set route to HRtH22H23: H22 => [(42, 15), (43, 15), (44, 15), (45, 15), (46, 15), (47, 15), (48, 15), (49, 15), (50, 15), (51, 15), (52, 15), (53, 15), (54, 15), (55, 15), (56, 15)] => H23 ['HSw27', 'HSw29']
+2022-11-13 00:17:30,034 Block H22: next east block is HOSEE
+2022-11-13 00:17:30,034 Block HOSEE: next west block is H22
+2022-11-13 00:17:30,034 Block H23: next west block is HOSEE
+2022-11-13 00:17:30,034 Block HOSEE: next east block is H23
+2022-11-13 00:17:40,325 Display process ending

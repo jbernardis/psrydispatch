@@ -13,5 +13,5 @@ class RRServer(object):
 			try:
 				r = requests.get(self.ipAddr + "/" + cmd, params=parms)
 			except requests.exceptions.ConnectionError:
-				logging.error("Unable to send request  is dispatcher running?")
+				logging.error("Unable to send request  is rr server running?")
 

@@ -7,8 +7,6 @@ Districts:
 
 
   check other districts use of indicators and if it's consistent with yard
-sendio loogic for nassau, bank, hyde
-
 
 inputs/outputs unused or uncertain of
  
@@ -127,12 +125,12 @@ fleeting
             2) should signals operate in fleeting "Groups" instead of individually
 
 deduction of train movement - reporting train location
-  allow loading of initial positions of traina and locos
-  allow saving current locations
-  keeping track of trains - a master list - the ability to draw a train via the master list by having a list of containing Blocks
   checking train for non-contiguous Blocks
-  we need to have an empty train object when a train has not yet been identified so that it can move forward as block occupancy is detected
 
 ATC
+ need dcc interface
 
 Auto routing
+
+Simulator
+  new commands for dispatcher in simulation mode:  placetrain, removetrain, set signal, get signal

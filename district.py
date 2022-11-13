@@ -453,94 +453,6 @@ class District:
 	def ReportTurnoutLocked(self, tonm):
 		self.frame.Popup("Turnout is locked")
 
-	def Audit(self):
-		passedAudit = True
-		logging.info("Performing audit for district: %s" % self.name)
-		logging.info("Auditing blocks:")
-		for blknm, blk in self.blocks.items():
-			if blk.GetName() != blknm:
-				logging.info("  Block name: %s does not agree with its key: %s" % (blk.GetName(), blknm))
-				passedAudit = False
-			for t in blk.turnouts:
-				tnm = t.GetName()
-				if tnm not in self.turnouts:
-					logging.info("  Block %s: turnout %s not defined" % (blk.GetName(), tnm))
-					passedAudit = False
-
-		logging.info("Auditing OS blocks:")
-		for osblknm, blknmlist in self.osBlocks.items():
-			if osblknm not in self.frame.blocks:
-				logging.info("  OS Block name: %s is not defined" % osblknm)
-				passedAudit = False
-			for blknm in blknmlist:
-				if blknm not in self.frame.blocks:
-					logging.info("  Block name %s inside of OSBlock %s is not defined" % (blknm, osblknm))
-					passedAudit = False
-
-		logging.info("Auditing Turnouts")
-		for tnm, t in self.turnouts.items():
-			if tnm != t.GetName():
-				logging.info("  Turnout %s, name does not agree with key %s" % (t.GetName(), tnm))
-				passedAudit = False
-			for blknm in t.blockList:
-				if blknm not in self.frame.blocks:
-					logging.info("  Block name %s in turnout %s is not defined" % (blknm, tnm))
-					passedAudit = False
-
-		logging.info("Auditing Signals")
-		for snm, sig in self.signals.items():
-			if snm != sig.GetName():
-				logging.info("  Signal %s, name does not agree with key %s" % (sig.GetName(), snm))
-				passedAudit = False
-			for blknm, rtnmlist in sig.possibleRoutes.items():
-				if blknm not in self.blocks:
-					logging.info("  Possible routes for block %s - block is not defined" % blknm)
-					passedAudit = False
-				for rtnm in rtnmlist:
-					if rtnm not in self.routes:
-						logging.info("Route %s for block %s is not defines" % (rtnm, blknm))
-						passedAudit = False
-
-		logging.info("Auditing OS Signals")
-		for blknm, signmlist in self.osSignals.items():
-			if blknm not in self.blocks:
-				logging.info("Block %s is not defined" % blknm)
-				passedAudit = False
-			
-			for signm in signmlist:
-				if signm not in self.signals:
-					logging.info("Block %s, signal %s is not defined" % (blknm, signm))
-					passedAudit = False
-
-		logging.info("Auditing Routes")
-		for rtnm, rt in self.routes.items():
-			if rtnm != rt.GetName():
-				logging.info("  Route %s, name does not agree with key %s" % (rt.GetName(), rtnm))
-				passedAudit = False
-			if rt.blkin not in self.frame.blocks:
-				logging.info("Route %s: entry block %s is not defined" % (rt.GetName(), rt.blkin))
-				passedAudit = False
-			if rt.blkout not in self.frame.blocks:
-				logging.info("Route %s: exit block %s is not defined" % (rt.GetName(), rt.blkout))
-				passedAudit = False
-			for tonm in rt.turnouts:
-				if tonm not in self.frame.turnouts:
-					logging.info("Route %s, turnout %s not defined" % (rt.GetName(), tonm))
-					passedAudit = False
-
-			validPos = [x[2] for x in rt.osblk.tiles]
-			toPos = [t.pos for t in self.turnouts.values()]
-			validPos.extend(toPos)
-			for p in rt.pos:
-				if p not in validPos:
-					logging.info("Route %s, posiition %d, %d is not in block %s" % (rt.GetName(), p[0], p[1], rt.osblk.GetName()))
-					passedAudit = False
-
-		
-
-
-		return passedAudit
-
 class Districts:
 	def __init__(self):
 		self.districts = {}
@@ -605,11 +517,3 @@ class Districts:
 			indicators.update(t.DefineIndicators())
 
 		return indicators
-
-	def Audit(self):
-		passedAudit = True
-		for d in self.districts.values():
-			if not d.Audit():
-				passedAudit = False
-
-		return passedAudit

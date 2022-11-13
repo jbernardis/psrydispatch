@@ -2,7 +2,7 @@ import configparser
 import os
 import logging
 
-INIFILE = "psrydisplay.ini"
+INIFILE = "psrydispatch.ini"
 
 
 def parseBoolean(val, defaultVal):
@@ -20,7 +20,7 @@ class Settings:
 	def __init__(self, folder):
 		self.cmdfolder = folder
 		self.inifile = os.path.join(folder, INIFILE)
-		self.section = "psrdisplay"	
+		self.section = "psrydispatch"	
 		
 		self.pages = 3
 		self.dispatch = True
