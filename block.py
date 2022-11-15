@@ -49,6 +49,9 @@ class Route:
 		else:
 			return self.blkout if reverse else self.blkin
 
+	def GetEndPoints(self):
+		return [self.blkin, self.blkout]
+
 	def rprint(self):
 		logging.debug("Block %s: set route to %s: %s => %s => %s %s" % (self.osblk.GetName(), self.name, self.blkin, str(self.pos), self.blkout, str(self.turnouts)))
 
@@ -519,11 +522,15 @@ class OverSwitch (Block):
 		if route is None:
 			self.rtName = "<None>"
 			logging.info("Block %s: route is None" % self.name)
-			return
-			
-		self.route.rprint()
+		else:
+			self.rtName = self.route.GetName()
+			self.route.rprint()
 
-		self.rtName = self.route.GetName()
+		self.SendRouteRequest()
+
+		if route is None:
+			return	
+
 		entryBlkName = self.route.GetEntryBlock()
 		entryBlk = self.frame.GetBlockByName(entryBlkName)
 		exitBlkName = self.route.GetExitBlock()
@@ -548,6 +555,17 @@ class OverSwitch (Block):
 				exitBlk.SetNextBlockEast(self)
 			self.SetNextBlockWest(exitBlk)
 		self.Draw()
+
+	def SendRouteRequest(self):
+		msg = {
+			"setroute": {
+				"block": self.GetName(),
+				"route": None if self.route is None else self.rtName
+			}
+		}
+		if self.route is not None:
+			msg["setroute"]["ends"] = self.route.GetEndPoints()
+		self.frame.Request(msg)
 
 	def GetExitBlock(self, reverse=False):
 		if self.route is None:

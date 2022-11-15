@@ -56,3 +56,10 @@ class Train:
 			return
 
 		del self.blocks[bn]
+
+	def IsInBlock(self, blk):
+		bn = blk.GetName()
+		return bn in self.blocks
+
+	def IsInNoBlocks(self):
+		return len(self.blocks) == 0

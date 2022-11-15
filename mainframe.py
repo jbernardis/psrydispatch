@@ -1,4 +1,3 @@
-from tkinter.tix import PopupMenu
 import wx
 import wx.lib.newevent
 
@@ -29,8 +28,9 @@ from districts.krulish import Krulish
 from districts.nassau import Nassau
 from districts.bank import Bank
 from districts.cliveden import Cliveden
+from districts.cliff import Cliff
 
-from constants import HyYdPt, LaKr, NaCl, screensList, EMPTY, OCCUPIED, NORMAL, REVERSE
+from constants import HyYdPt, LaKr, NaCl, screensList, EMPTY, OCCUPIED, NORMAL, REVERSE, OVERSWITCH
 from listener import Listener
 from rrserver import RRServer
 
@@ -191,6 +191,7 @@ class MainFrame(wx.Frame):
 		self.districts.AddDistrict(Nassau("Nassau", self, NaCl))
 		self.districts.AddDistrict(Bank("Bank", self, NaCl))
 		self.districts.AddDistrict(Cliveden("Cliveden", self, NaCl))
+		self.districts.AddDistrict(Cliff("Cliff", self, NaCl))
 		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
 
 		self.blocks, self.osBlocks = self.districts.DefineBlocks(self.tiles)
@@ -533,6 +534,7 @@ class MainFrame(wx.Frame):
 			self.bRefresh.Enable(True)
 			if self.settings.dispatch:
 				self.SendBlockDirRequests()
+				self.SendOSRoutes()
 				
 		self.breakerDisplay.UpdateDisplay()
 		self.ShowTitle()
@@ -654,18 +656,38 @@ class MainFrame(wx.Frame):
 					block = p["block"]
 					name = p["name"]
 					loco = p["loco"]
+					print("set train %s %s %s" % (str(block), str(name), str(loco)))
 
 					try:
 						blk = self.blocks[block]
 					except:
 						logging.warning("unable to identify block (%s)" % block)
+						print("unable to identify block (%s)" % block)
 						blk = None
 
 					if blk:
 						tr = blk.GetTrain()
 						if name is None:
+							print("train name is none, tr = %s" % str(tr))
 							if tr:
+								print("calling remove from block")
 								tr.RemoveFromBlock(blk)
+
+							print("remove block from all trains in the trainlist")
+							delList = []
+							for trid, tr in self.trains.items():
+								if tr.IsInBlock(blk):
+									tr.RemoveFromBlock(blk)
+									if tr.IsInNoBlocks():
+										delList.append(trid)
+
+							for trid in delList:
+								try:
+									del(self.trains[trid])
+								except:
+									logging.warning("can't delete train %s from train list" % trid)
+
+							print("returning")
 							return
 
 						if not blk.IsOccupied():
@@ -732,6 +754,11 @@ class MainFrame(wx.Frame):
 			for sb in [sbw, sbe]:
 				if sb:
 					self.Request({"blockdir": { "block": sb.GetName(), "dir": "E" if b.GetEast() else "W"}})
+
+	def SendOSRoutes(self):
+		for b in self.blocks.values():
+			if b.GetBlockType() == OVERSWITCH:
+				b.SendRouteRequest()
 
 	def onDisconnectEvent(self, _):
 		self.listener = None
