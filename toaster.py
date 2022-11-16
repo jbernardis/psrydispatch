@@ -15,8 +15,10 @@ locString = ["ul", "ur", "ll", "lr", "c", "uc", "lc", "cl", "cr"]
 TB_DEFAULT_STYLE = 0x2008002
 TB_CAPTION = 0x22009806
 
+ht = 36
+
 class Toaster(wx.Frame):
-	def __init__(self, title="", size=(500, 180), pos=(100,100), style=TB_DEFAULT_STYLE):
+	def __init__(self, title="", size=(500, ht), pos=(100,100), style=TB_DEFAULT_STYLE):
 		self.size = size
 		wx.Frame.__init__(self, None, -1, title, size=size, pos=pos, style=style | wx.CLIP_CHILDREN | wx.STAY_ON_TOP)
 
@@ -72,7 +74,18 @@ class Toaster(wx.Frame):
 		self.Timers.append(timer)
 		if len(self.Timers) >= 1:
 			self.Show()
-		
+		self.ReSize()
+
+	def ReSize(self):
+		n = self.lb.GetCount()
+		if n >5:
+			n = 5
+		if n < 1:
+			n = 1
+		self.SetSize((500, ht*n))
+		lbsize = self.GetClientSize()
+		self.lb.SetSize(lbsize)
+
 	def onTimer(self, evt):
 		delx = []
 		for tx in range(len(self.Timers)):
@@ -83,6 +96,7 @@ class Toaster(wx.Frame):
 			for dx in reversed(delx):
 				del self.Timers[dx]
 				self.lb.Delete(dx)
+			self.ReSize()
 
 		if len(self.Timers) == 0:
 			self.Hide()

@@ -766,6 +766,9 @@ class MainFrame(wx.Frame):
 		self.bSubscribe.SetLabel("Connect")
 		self.bRefresh.Enable(False)
 		logging.info("Server socket closed")
+		self.breakerDisplay.UpdateDisplay()
+		self.ShowTitle()
+
 
 	def SaveTrains(self):
 		trDict = {}
