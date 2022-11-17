@@ -14,10 +14,16 @@ class Cliff (District):
 
 	def PerformButtonAction(self, btn):
 		bname = btn.GetName()
-		if bname in self.osButtons["COSGMW"]:
-			osBlk = self.blocks["COSGMW"]
+		for osBlkNm in ["COSGMW", "COSGME"]:
+			if bname in self.osButtons[osBlkNm]:
+				break
+		else:
+			osBlkNm = None
+
+		if osBlkNm:
+			osBlk = self.blocks[osBlkNm]
 			if osBlk.IsBusy():
-				self.ReportBlockBusy("COSGMW")
+				self.ReportBlockBusy(osBlkNm)
 				return
 
 			btn.Press(refresh=True)
@@ -25,22 +31,35 @@ class Cliff (District):
 			self.frame.Request({"nxbutton": { "button": btn.GetName() }})
 
 	def DetermineRoute(self, blocks):
-		pass
-		s37 = 'N' if self.turnouts["CSw37"].IsNormal() else 'R'
-		s39 = 'N' if self.turnouts["CSw39"].IsNormal() else 'R'
-		s41 = 'N' if self.turnouts["CSw41"].IsNormal() else 'R'
-
 		for block in blocks:
 			bname = block.GetName()
 			if bname == "COSGMW":
+				s37 = 'N' if self.turnouts["CSw37"].IsNormal() else 'R'
+				s39 = 'N' if self.turnouts["CSw39"].IsNormal() else 'R'
+				s41 = 'N' if self.turnouts["CSw41"].IsNormal() else 'R'
 				if s41 == "R":
 					block.SetRoute(self.routes["CRtC11G21"])
 				elif s41+s39 == "NN":
 					block.SetRoute(self.routes["CRtC11C10"])
-				elif s41+s39+s37== "NRR":
+				elif s41+s39+s37 == "NRR":
 					block.SetRoute(self.routes["CRtC11C30"])
-				elif s41+s39+s37== "NRN":
+				elif s41+s39+s37 == "NRN":
 					block.SetRoute(self.routes["CRtC11C31"])
+				else:
+					block.SetRoute(None)
+
+			elif bname == "COSGME":
+				s31 = 'N' if self.turnouts["CSw31"].IsNormal() else 'R'
+				s33 = 'N' if self.turnouts["CSw33"].IsNormal() else 'R'
+				s35 = 'N' if self.turnouts["CSw35"].IsNormal() else 'R'
+				if s31+s35 == "RN":
+					block.SetRoute(self.routes["CRtG12C20"])
+				elif s31+s35 == "RR":
+					block.SetRoute(self.routes["CRtG10C20"])
+				elif s31+s33 == "NN":
+					block.SetRoute(self.routes["CRtC10C20"])
+				elif s31+s33 == "NR":
+					block.SetRoute(self.routes["CRtC30C20"])
 				else:
 					block.SetRoute(None)
 
@@ -137,6 +156,77 @@ class Cliff (District):
 
 		self.osBlocks["COSGMW"] = [ "C11", "G21", "C10", "C30", "C31" ]
 
+		self.blocks["G12"] = Block(self, self.frame, "G12",
+			[
+				(tiles["houtline"], self.screen,  (142, 26), False),
+				(tiles["houtline"], self.screen,  (143, 26), False),
+				(tiles["houtline"], self.screen,  (144, 26), False),
+			], True)
+
+		self.blocks["G10"] = Block(self, self.frame, "G10",
+			[
+				(tiles["houtline"], self.screen, (142, 28), False),
+				(tiles["houtline"], self.screen, (143, 28), False),
+				(tiles["houtline"], self.screen, (144, 28), False),
+			], True)
+
+		self.blocks["C20"] = Block(self, self.frame, "C20",
+			[
+				(tiles["eobleft"],  self.screen, (152, 30), False),
+				(tiles["horiznc"],  self.screen, (153, 30), False),
+				(tiles["horiz"],    self.screen, (154, 30), False),
+				(tiles["horiznc"],  self.screen, (155, 30), False),
+				(tiles["horiz"],    self.screen, (156, 30), False),
+				(tiles["turnleftright"], self.screen, (157, 30), False),
+				(tiles["turnrightdown"], self.screen, (158, 29), False),
+				(tiles["verticalnc"], self.screen, (158, 28), False),
+				(tiles["vertical"],   self.screen, (158, 27), False),
+				(tiles["verticalnc"], self.screen, (158, 26), False),
+				(tiles["vertical"],   self.screen, (158, 25), False),
+				(tiles["verticalnc"], self.screen, (158, 24), False),
+				(tiles["vertical"],   self.screen, (158, 23), False),
+				(tiles["verticalnc"], self.screen, (158, 22), False),
+				(tiles["vertical"],   self.screen, (158, 21), False),
+				(tiles["verticalnc"], self.screen, (158, 20), False),
+				(tiles["vertical"],   self.screen, (158, 19), False),
+				(tiles["verticalnc"], self.screen, (158, 18), False),
+				(tiles["vertical"],   self.screen, (158, 17), False),
+				(tiles["verticalnc"], self.screen, (158, 16), False),
+				(tiles["vertical"],   self.screen, (158, 15), False),
+				(tiles["verticalnc"], self.screen, (158, 14), False),
+				(tiles["vertical"],   self.screen, (158, 13), False),
+				(tiles["verticalnc"], self.screen, (158, 12), False),
+				(tiles["vertical"],   self.screen, (158, 11), False),
+				(tiles["verticalnc"], self.screen, (158, 10), False),
+				(tiles["vertical"],   self.screen, (158, 9), False),
+				(tiles["verticalnc"], self.screen, (158, 8), False),
+				(tiles["vertical"],   self.screen, (158, 7), False),
+				(tiles["verticalnc"], self.screen, (158, 6), False),
+				(tiles["vertical"],   self.screen, (158, 5), False),
+				(tiles["turnleftup"], self.screen, (158, 4), False),
+				(tiles["turnrightright"], self.screen, (157, 3), False),
+				(tiles["horiz"],      self.screen, (156, 3), True),
+				(tiles["eobleft"],    self.screen, (155, 3), False),
+			], True)
+
+		self.blocks["COSGME"] = OverSwitch(self, self.frame, "COSGME",
+			[
+				(tiles["turnrightright"], self.screen,  (146, 26), False),
+				(tiles["diagright"],      self.screen, (147, 27), False),
+				(tiles["diagright"],      self.screen, (149, 29), False),
+				(tiles["eobright"],       self.screen, (151, 30), False),
+				(tiles["horiznc"],        self.screen, (146, 28), False),
+				(tiles["horiz"],          self.screen, (147, 28), False),
+				(tiles["horiznc"],        self.screen, (146, 30), False),
+				(tiles["horiz"],          self.screen, (147, 30), False),
+				(tiles["horiznc"],        self.screen, (148, 30), False),
+				(tiles["horiznc"],        self.screen, (146, 32), False),
+				(tiles["turnleftright"],  self.screen, (147, 32), False),
+				(tiles["diagleft"],       self.screen, (148, 31), False),
+			], True)
+
+		self.osBlocks["COSGME"] = [ "C10", "C30", "G12", "G10", "C20" ]
+
 		return self.blocks, self.osBlocks
 
 	def DefineTurnouts(self, tiles, blocks):
@@ -144,6 +234,9 @@ class Cliff (District):
 
 		toList = [
 			[ "CSw3",   "toleftleft",   ["C30"], (142, 32) ],
+			[ "CSw31",  "torightleft",  ["COSGME"], (150, 30) ],
+			[ "CSw33",  "toleftleft",   ["COSGME"], (149, 30) ],
+			[ "CSw35",  "toleftup",     ["COSGME"], (148, 28) ],
 			[ "CSw37",  "toleftdown",   ["COSGMW"], (123, 32) ],
 			[ "CSw39",  "torightright", ["COSGMW"], (121, 30) ],
 			[ "CSw41",  "toleftright",  ["COSGMW"], (120, 30) ],
@@ -157,6 +250,9 @@ class Cliff (District):
 			self.turnouts[tonm] = trnout
 
 		self.turnouts["CSw3"].SetDisabled(True)
+		self.turnouts["CSw31"].SetRouteControl(True)
+		self.turnouts["CSw33"].SetRouteControl(True)
+		self.turnouts["CSw35"].SetRouteControl(True)
 		self.turnouts["CSw37"].SetRouteControl(True)
 		self.turnouts["CSw39"].SetRouteControl(True)
 		self.turnouts["CSw41"].SetRouteControl(True)
@@ -181,12 +277,33 @@ class Cliff (District):
 
 		self.osButtons["COSGMW"] = [ "CG21W", "CC10W", "CC30W", "CC31W" ]
 
+		b = Button(self, self.screen, self.frame, "CG12E", (145, 26), tiles)
+		self.buttons["CG12E"] = b
+
+		b = Button(self, self.screen, self.frame, "CG10E", (145, 28), tiles)
+		self.buttons["CG10E"] = b
+
+		b = Button(self, self.screen, self.frame, "CC10E", (145, 30), tiles)
+		self.buttons["CC10E"] = b
+
+		b = Button(self, self.screen, self.frame, "CC30E", (145, 32), tiles)
+		self.buttons["CC30E"] = b
+
+		self.osButtons["COSGME"] = [ "CG12E", "CG10E", "CC10E", "CC30E" ]
+
 		return self.buttons
 
 	def DefineSignals(self, tiles):
 		self.signals = {}
 
 		sigList = [
+			[ "C2RD", RegAspects,    True,  "right",     (145, 27) ],
+			[ "C2RC", RegAspects,    True,  "right",     (145, 29) ],
+			[ "C2RB", RegAspects,    True,  "rightlong", (145, 31) ],
+			[ "C2RA", SloAspects,    True,  "right",     (145, 33)],
+
+			[ "C2L",  RegSloAspects, False, "leftlong",  (151, 29)],
+
 			[ "C4R",  RegSloAspects, True,  "rightlong", (119, 31) ],
 
 			[ "C4LD", RegAspects,    False, "left",      (126, 27) ],
@@ -215,6 +332,21 @@ class Cliff (District):
 		self.signals["C4LA"].AddPossibleRoutes("COSGMW", [ "CRtC11C31" ])
 
 		self.osSignals["COSGMW"] = [ "C4R", "C4LA", "C4LB", "C4LC", "C4LD" ]
+
+		# Green Mountain East
+		block = self.blocks["COSGME"]
+		self.routes["CRtG12C20"] = Route(self.screen, block, "CRtG12C20", "G12", [ (146, 26), (147, 27), (148, 28), (149, 29), (150, 30), (151, 30) ], "C20", [RESTRICTING, RESTRICTING], ["CSw31", "CSw35"])
+		self.routes["CRtG10C20"] = Route(self.screen, block, "CRtG10C20", "G10", [ (146, 28), (147, 28), (148, 28), (149, 29), (150, 30), (151, 30) ], "C20", [RESTRICTING, RESTRICTING], ["CSw31", "CSw35"])
+		self.routes["CRtC10C20"] = Route(self.screen, block, "CRtC10C20", "C10", [ (146, 30), (147, 30), (148, 30), (149, 30), (150, 30), (151, 30) ], "C20", [SLOW, SLOW], ["CSw31", "CSw33"])
+		self.routes["CRtC30C20"] = Route(self.screen, block, "CRtC30C20", "C30", [ (146, 32), (147, 32), (148, 31), (149, 30), (150, 30), (151, 30) ], "C20", [SLOW, SLOW], ["CSw31", "CSw33"])
+
+		self.signals["C2RD"].AddPossibleRoutes("COSGME", [ "CRtG12C20" ])
+		self.signals["C2RC"].AddPossibleRoutes("COSGME", [ "CRtG10C20" ])
+		self.signals["C2RB"].AddPossibleRoutes("COSGME", [ "CRtC10C20" ])
+		self.signals["C2RA"].AddPossibleRoutes("COSGME", [ "CRtC30C20" ])
+		self.signals["C2L"].AddPossibleRoutes("COSGME", [ "CRtG12C20", "CRtG10C20", "CRtC10C20", "CRtC30C20" ])
+
+		self.osSignals["COSGME"] = [ "C2RA", "C2RB", "C2RC", "C2RD", "C2L" ]
 
 		return self.signals
 

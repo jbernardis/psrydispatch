@@ -56,7 +56,7 @@ class Toaster(wx.Frame):
 		else:
 			py = h-self.size[1]
 
-		self.SetPosition(wx.Point(px, py))
+		self.SetPosition(wx.Point(int(px), int(py)))
 			
 	def SetShowTime(self, t):
 		self.showTime = t
