@@ -4,7 +4,7 @@ from turnout import Turnout
 from constants import EMPTY, OCCUPIED, CLEARED, BLOCK, OVERSWITCH, STOPPINGBLOCK, MAIN, STOP
 
 class Route:
-	def __init__(self, screen, osblk, name, blkin, pos, blkout, rtype, tolist=[]):
+	def __init__(self, screen, osblk, name, blkin, pos, blkout, rtype, tolist, signals):
 		self.screen = screen
 		self.name = name
 		self.osblk = osblk
@@ -13,6 +13,7 @@ class Route:
 		self.blkout = blkout
 		self.rtype = [x for x in rtype]
 		self.turnouts = [x for x in tolist]
+		self.signals = [x for x in signals]
 
 	def GetName(self):
 		return self.name
@@ -51,6 +52,9 @@ class Route:
 
 	def GetEndPoints(self):
 		return [self.blkin, self.blkout]
+
+	def GetSignals(self):
+		return self.signals
 
 	def rprint(self):
 		logging.debug("Block %s: set route to %s: %s => %s => %s %s" % (self.osblk.GetName(), self.name, self.blkin, str(self.pos), self.blkout, str(self.turnouts)))
@@ -565,6 +569,7 @@ class OverSwitch (Block):
 		}
 		if self.route is not None:
 			msg["setroute"]["ends"] = self.route.GetEndPoints()
+			msg["setroute"]["signals"] = self.route.GetSignals()
 		self.frame.Request(msg)
 
 	def GetExitBlock(self, reverse=False):

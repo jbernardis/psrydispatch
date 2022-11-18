@@ -345,24 +345,24 @@ class Krulish (District):
 			self.blocks[blknm].SetSignals(siglist)
 
 		block = self.blocks["KOSW"]
-		self.routes["KRtN10K10"] = Route(self.screen, block, "KRtN10K10", "K10", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 11), (147, 10), (148, 9), (149, 9) ], "N10", [RESTRICTING, RESTRICTING], ["KSw3", "KSw5", "KSw7"])
-		self.routes["KRtN10N11"] = Route(self.screen, block, "KRtN10N11", "N11", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 11), (147, 11), (148, 11), (149, 11) ], "N10", [MAIN, MAIN], ["KSw3", "KSw5", "KSw7"])
-		self.routes["KRtN10N21"] = Route(self.screen, block, "KRtN10N21", "N21", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 12), (147, 13), (148, 13), (149, 13) ], "N10", [DIVERGING, DIVERGING], ["KSw3", "KSw5"])
+		self.routes["KRtN10K10"] = Route(self.screen, block, "KRtN10K10", "K10", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 11), (147, 10), (148, 9), (149, 9) ], "N10", [RESTRICTING, RESTRICTING], ["KSw3", "KSw5", "KSw7"], ["K8R", "K8LA"])
+		self.routes["KRtN10N11"] = Route(self.screen, block, "KRtN10N11", "N11", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 11), (147, 11), (148, 11), (149, 11) ], "N10", [MAIN, MAIN], ["KSw3", "KSw5", "KSw7"], ["K8R", "K8LB"])
+		self.routes["KRtN10N21"] = Route(self.screen, block, "KRtN10N21", "N21", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 12), (147, 13), (148, 13), (149, 13) ], "N10", [DIVERGING, DIVERGING], ["KSw3", "KSw5"], ["K8R", "K2L"])
 
 		block = self.blocks["KOSM"]
-		self.routes["KRtN25K10"] = Route(self.screen, block, "KRtN25K10", "K10", [ (141, 13), (142, 13), (143, 12), (144, 11), (145, 11), (146, 11), (147, 10), (148, 9), (149, 9) ], "N25", [RESTRICTING, RESTRICTING], ["KSw3", "KSw5", "KSw7"])
-		self.routes["KRtN25N11"] = Route(self.screen, block, "KRtN25N11", "N11", [ (141, 13), (142, 13), (143, 12), (144, 11), (145, 11), (146, 11), (147, 11), (148, 11), (149, 11) ], "N25", [DIVERGING, DIVERGING], ["KSw3", "KSw5", "KSw7"])
-		self.routes["KRtN25N21"] = Route(self.screen, block, "KRtN25N21", "N21", [ (141, 13), (142, 13), (143, 13), (144, 13), (145, 13), (146, 13), (147, 13), (148, 13), (149, 13) ], "N25", [MAIN, MAIN], ["KSw1", "KSw3", "KSw5"])
+		self.routes["KRtN25K10"] = Route(self.screen, block, "KRtN25K10", "K10", [ (141, 13), (142, 13), (143, 12), (144, 11), (145, 11), (146, 11), (147, 10), (148, 9), (149, 9) ], "N25", [RESTRICTING, RESTRICTING], ["KSw3", "KSw5", "KSw7"], ["K4R", "K8LA"])
+		self.routes["KRtN25N11"] = Route(self.screen, block, "KRtN25N11", "N11", [ (141, 13), (142, 13), (143, 12), (144, 11), (145, 11), (146, 11), (147, 11), (148, 11), (149, 11) ], "N25", [DIVERGING, DIVERGING], ["KSw3", "KSw5", "KSw7"], ["K4R", "K8LB"])
+		self.routes["KRtN25N21"] = Route(self.screen, block, "KRtN25N21", "N21", [ (141, 13), (142, 13), (143, 13), (144, 13), (145, 13), (146, 13), (147, 13), (148, 13), (149, 13) ], "N25", [MAIN, MAIN], ["KSw1", "KSw3", "KSw5"], ["K4R", "K2L"])
 
 		block = self.blocks["KOSE"]
-		self.routes["KRtN20N21"] = Route(self.screen, block, "KRtN20N21", "N20", [ (141, 15), (142, 15), (143, 15), (144, 14), (145, 13), (146, 13), (147, 13), (148, 13), (149, 13) ], "N21", [DIVERGING, DIVERGING], ["KSw1", "KSw5"])
+		self.routes["KRtN20N21"] = Route(self.screen, block, "KRtN20N21", "N20", [ (141, 15), (142, 15), (143, 15), (144, 14), (145, 13), (146, 13), (147, 13), (148, 13), (149, 13) ], "N21", [DIVERGING, DIVERGING], ["KSw1", "KSw5"], ["K2R", "K2L"])
 
 		block = self.blocks["KOSN10S11"]
-		self.routes["KRtN10S11"] = Route(self.screen, block, "KRtN10S11", "N10", [  ], "S11", [MAIN, MAIN], [])
+		self.routes["KRtN10S11"] = Route(self.screen, block, "KRtN10S11", "N10", [  ], "S11", [MAIN, MAIN], [], ["S11E", "N10W"])
 		block.SetRoute(self.routes["KRtN10S11"])
 
 		block = self.blocks["KOSN20S21"]
-		self.routes["KRtN20S21"] = Route(self.screen, block, "KRtN20S21", "S21", [  ], "N20", [MAIN, MAIN], [])
+		self.routes["KRtN20S21"] = Route(self.screen, block, "KRtN20S21", "S21", [  ], "N20", [MAIN, MAIN], [], ["S21E", "N20W"])
 		block.SetRoute(self.routes["KRtN20S21"])
 
 		self.signals["K8R"].AddPossibleRoutes("KOSW", [ "KRtN10K10", "KRtN10N11", "KRtN10N21" ])

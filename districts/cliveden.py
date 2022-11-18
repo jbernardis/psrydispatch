@@ -1,12 +1,12 @@
 from district import District
 
 from block import Block, OverSwitch, Route
-from turnout import Turnout, SlipSwitch
+from turnout import Turnout
 from signal import Signal
-from button import Button
 from handswitch import HandSwitch
 
-from constants import RESTRICTING, MAIN, DIVERGING, SLOW, NORMAL, REVERSE, EMPTY, SLIPSWITCH, RegAspects, AdvAspects
+from constants import MAIN, DIVERGING, RegAspects
+
 
 class Cliveden (District):
 	def __init__(self, name, frame, screen):
@@ -16,36 +16,25 @@ class Cliveden (District):
 		s13 = 'N' if self.turnouts["CSw13"].IsNormal() else 'R'
 		s9 = 'N' if self.turnouts["CSw9"].IsNormal() else 'R'
 
-		print("cliveden determine routes: %s %s" % (s9, s13))
-
 		for block in blocks:
 			bname = block.GetName()
-			print("Block %s" % bname)
 			if bname == "COSCLW":
 				if s13 == "N":
-					print("set route to 1323")
 					block.SetRoute(self.routes["CRtC13C23"])
 				else:
-					print("set route to 1312")
 					block.SetRoute(self.routes["CRtC13C12"])
 
 			elif bname == "COSCLEW":
 				if s9 == "N":
-					print("set route to 2322")
 					block.SetRoute(self.routes["CRtC23C22"])
 				else:
-					print("set route to None")
 					block.SetRoute(None)
 			
 			elif bname == "COSCLEE":
 				if s9 == "N":
-					print("set route to 1211")
 					block.SetRoute(self.routes["CRtC12C11"])
 				else:
-					print("set route to 2311")
 					block.SetRoute(self.routes["CRtC23C11"])
-			else:
-				print("didn;t recognoze block name")
 
 	def DefineBlocks(self, tiles):
 		self.blocks = {}
@@ -232,15 +221,15 @@ class Cliveden (District):
 		self.osSignals = {}
 
 		block = self.blocks["COSCLW"]
-		self.routes["CRtC13C23"] = Route(self.screen, block, "CRtC13C23", "C23", [ (82, 13), (83, 13), (84, 13), (85, 13), (86, 13) ], "C13", [MAIN, MAIN], ["CSw13"])
-		self.routes["CRtC13C12"] = Route(self.screen, block, "CRtC13C12", "C12", [ (82, 13), (83, 13), (84, 14), (85, 15), (86, 15) ], "C13", [DIVERGING, DIVERGING], ["CSw13"])
+		self.routes["CRtC13C23"] = Route(self.screen, block, "CRtC13C23", "C23", [ (82, 13), (83, 13), (84, 13), (85, 13), (86, 13) ], "C13", [MAIN, MAIN], ["CSw13"], ["C14R", "C14LB"])
+		self.routes["CRtC13C12"] = Route(self.screen, block, "CRtC13C12", "C12", [ (82, 13), (83, 13), (84, 14), (85, 15), (86, 15) ], "C13", [DIVERGING, DIVERGING], ["CSw13"], ["C14R", "C14LA"])
 
 		block=self.blocks["COSCLEW"]
-		self.routes["CRtC23C22"] = Route(self.screen, block, "CRtC23C22", "C22", [ (95, 13), (96, 13), (97, 13), (98, 13), (99, 13) ], "C23", [MAIN, MAIN], ["CSw9"])
+		self.routes["CRtC23C22"] = Route(self.screen, block, "CRtC23C22", "C22", [ (95, 13), (96, 13), (97, 13), (98, 13), (99, 13) ], "C23", [MAIN, MAIN], ["CSw9"], ["C10R", "C10L"])
 
 		block=self.blocks["COSCLEE"]
-		self.routes["CRtC12C11"] = Route(self.screen, block, "CRtC12C11", "C12", [ (95, 15), (96, 15), (97, 15), (98, 15), (99, 15) ], "C11", [MAIN, MAIN], ["CSw9"])
-		self.routes["CRtC23C11"] = Route(self.screen, block, "CRtC23C11", "C23", [ (95, 13), (96, 13), (97, 14), (98, 15), (99, 15) ], "C11", [DIVERGING, DIVERGING], ["CSw9"])
+		self.routes["CRtC12C11"] = Route(self.screen, block, "CRtC12C11", "C12", [ (95, 15), (96, 15), (97, 15), (98, 15), (99, 15) ], "C11", [MAIN, MAIN], ["CSw9"], ["C12R", "C12L"])
+		self.routes["CRtC23C11"] = Route(self.screen, block, "CRtC23C11", "C23", [ (95, 13), (96, 13), (97, 14), (98, 15), (99, 15) ], "C11", [DIVERGING, DIVERGING], ["CSw9"], ["C10R", "C12L"])
 
 		self.signals["C14R"].AddPossibleRoutes("COSCLW", [ "CRtC13C23", "CRtC13C12" ])
 		self.signals["C14LA"].AddPossibleRoutes("COSCLW", [ "CRtC13C12" ])

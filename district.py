@@ -2,12 +2,24 @@ import logging
 import json
 
 from constants import RegAspects, RegSloAspects, AdvAspects, SloAspects, \
-			MAIN, SLOW, DIVERGING, RESTRICTING, \
-			CLEARED, OCCUPIED, STOP, NORMAL, OVERSWITCH
+	MAIN, SLOW, DIVERGING, RESTRICTING, \
+	CLEARED, OCCUPIED, STOP, NORMAL, OVERSWITCH
 
 
 class District:
 	def __init__(self, name, frame, screen):
+		self.routes = None
+		self.osSignals = None
+		self.handswitches = None
+		self.buttons = None
+		self.osButtons = None
+		self.signals = None
+		self.indicators = None
+		self.turnouts = None
+		self.osBlocks = None
+		self.blocks = None
+		self.misctiles = None
+		self.sstiles = None
 		self.name = name
 		self.frame = frame
 		self.screen = screen
@@ -40,8 +52,10 @@ class District:
 	def DetermineRoute(self, blocks):
 		pass
 
-	#  Perform... routines handle the user clicking on track diagram components.  This includes, switches, signals, and buttons
-	# in most cases, this does not actually make any changed to the display, but instead sends requests to the dispatch server
+	#  Perform... routines handle the user clicking on track diagram components.  This includes, switches, signals,
+	#  and buttons
+	#  in most cases, this does not actually make any changed to the display, but instead sends
+	#  requests to the dispatch server
 	def PerformButtonAction(self, btn):
 		pass
 
@@ -58,9 +72,9 @@ class District:
 			return
 
 		if turnout.IsNormal():
-			self.frame.Request({"turnout": { "name": turnout.GetName(), "status": "R" }})
+			self.frame.Request({"turnout": {"name": turnout.GetName(), "status": "R"}})
 		else:
-			self.frame.Request({"turnout": { "name": turnout.GetName(), "status": "N" }})
+			self.frame.Request({"turnout": {"name": turnout.GetName(), "status": "N"}})
 
 	def FindRoute(self, sig):
 		signm = sig.GetName()
@@ -95,14 +109,13 @@ class District:
 			self.frame.Popup("No available route")
 			return
 
-		osblknm = osblk.GetName()
+		# osblknm = osblk.GetName()
 		if osblk.AreHandSwitchesSet():
 			self.frame.Popup("Block is locked")
 			return
 
-
 		# this is a valid signal for the current route	
-		if not currentMovement:	  # we are trying to change the signal to allow movement
+		if not currentMovement:  # we are trying to change the signal to allow movement
 			print("trying to move train")
 			if osblk.IsBusy():
 				self.frame.Popup("Block is busy")
@@ -128,7 +141,6 @@ class District:
 				self.frame.Popup("Block is busy")
 				return
 
-			
 			if exitBlk.IsCleared() and sigE != exitBlk.GetEast():
 				self.frame.Popup("Block is cleared in opposite direction")
 				return
@@ -144,11 +156,10 @@ class District:
 				nbRType = nb.GetRouteType()
 				# try to go one more block, skipping past an OS block
 
-
 				print("%s %s" % (sigE, nb.GetEast()))
 				if sigE != nb.GetEast():
-				# the block will need to be reversed, but it's premature
-				# to do so now - so force return values as if reversed
+					# the block will need to be reversed, but it's premature
+					# to do so now - so force return values as if reversed
 					print("reversing")
 					doReverseNext = True
 				else:
@@ -171,8 +182,8 @@ class District:
 				nbRType = None
 				nnbClear = False
 
-		else: # we are trying to change the signal to stop the train
-			esig = osblk.GetEntrySignal()	
+		else:  # we are trying to change the signal to stop the train
+			esig = osblk.GetEntrySignal()
 			if esig is not None and esig.GetName() != signm:
 				self.frame.Popup("Incorrect signal for current route")
 				return
@@ -188,12 +199,13 @@ class District:
 		if currentMovement:
 			aspect = 0
 		else:
-			print("calling get aspect %d %d %s %s %s" % (sig.GetAspectType(), rType, str(nbStatus), str(nbRType), str(nnbClear)))
+			print("calling get aspect %d %d %s %s %s" % (
+				sig.GetAspectType(), rType, str(nbStatus), str(nbRType), str(nnbClear)))
 			aspect = self.GetAspect(sig.GetAspectType(), rType, nbStatus, nbRType, nnbClear)
 
 		self.CheckBlockSignals(sig, aspect, exitBlk, doReverseExit, rType, nbStatus, nbRType, nnbClear)
 
-		self.frame.Request({"signal": { "name": signm, "aspect": aspect }})
+		self.frame.Request({"signal": {"name": signm, "aspect": aspect}})
 
 	def CheckBlockSignals(self, sig, aspect, blk, rev, rType, nbStatus, nbRType, nnbClear):
 		pass
@@ -201,10 +213,10 @@ class District:
 	def GetAspect(self, atype, rtype, nbstatus, nbrtype, nnbclear):
 		if atype == RegAspects:
 			if rtype == MAIN and nbstatus == CLEARED and nbrtype == MAIN:
-				return 0b011  #Clear
+				return 0b011  # Clear
 
 			elif rtype == MAIN and nbstatus == CLEARED and nbrtype == DIVERGING:
-				return 0b010  #Approach Medium
+				return 0b010  # Approach Medium
 
 			elif rtype == DIVERGING and nbstatus == CLEARED and nbrtype == MAIN:
 				return 0b111  # Medium Clear
@@ -212,10 +224,10 @@ class District:
 			elif rtype in [MAIN, DIVERGING] and nbstatus == CLEARED and nbrtype == SLOW:
 				return 0b110  # Approach Slow
 
-			elif rtype == MAIN and  (nbstatus != CLEARED or nbrtype == RESTRICTING):
+			elif rtype == MAIN and (nbstatus != CLEARED or nbrtype == RESTRICTING):
 				return 0b001  # Approach
 
-			elif rtype == DIVERGING and (nbstatus != CLEARED or nbrtype  != MAIN):
+			elif rtype == DIVERGING and (nbstatus != CLEARED or nbrtype != MAIN):
 				return 0b101  # Medium Approach
 
 			elif rtype in [RESTRICTING, SLOW]:
@@ -253,7 +265,7 @@ class District:
 			elif rtype == DIVERGING and nbstatus == CLEARED and nbrtype == MAIN:
 				return 0b111  # Clear
 
-			elif rtype == MAIN and nbstatus == CLEARED and nbrtype == MAIN and not nnbclear: 
+			elif rtype == MAIN and nbstatus == CLEARED and nbrtype == MAIN and not nnbclear:
 				return 0b110  # Advance Approach
 
 			elif rtype == MAIN and (nbstatus != CLEARED or nbrtype == RESTRICTING):
@@ -286,35 +298,35 @@ class District:
 
 	def GetBlockAspect(self, atype, rtype, nbstatus, nbrtype, nnbclear):
 		if atype == RegAspects:
-			if nbstatus == CLEARED and nbrtype == MAIN:	
-				return 0b011 # clear
+			if nbstatus == CLEARED and nbrtype == MAIN:
+				return 0b011  # clear
 			elif nbstatus == CLEARED and nbrtype == DIVERGING:
-				return 0b010 # approach medium
+				return 0b010  # approach medium
 			elif nbstatus == CLEARED and nbrtype == SLOW:
-				return 0b110 # appproach slow
+				return 0b110  # appproach slow
 			elif nbstatus != CLEARED:
-				return 0b001 # approach
+				return 0b001  # approach
 			else:
-				return 0b000 # stop
+				return 0b000  # stop
 
 		elif atype == AdvAspects:
 			if nbstatus == CLEARED and nbrtype == MAIN and nnbclear:
-				return 0b011 # clear
+				return 0b011  # clear
 			elif nbstatus == CLEARED and nbrtype == MAIN and nnbclear:
-				return 0b110 # advance approach
+				return 0b110  # advance approach
 			elif nbstatus == CLEARED and nbrtype == DIVERGING:
-				return 0b010 # approach medium
+				return 0b010  # approach medium
 			elif nbstatus != CLEARED:
-				return 0b001 # approach
+				return 0b001  # approach
 			else:
-				return 0b000 # stop
+				return 0b000  # stop
 
-		return 0b000 # stop as default
+		return 0b000  # stop as default
 
 	def PerformHandSwitchAction(self, hs):
 		if not hs.GetValue():
 			# currently unlocked - trying to lock
-	
+
 			if hs.IsBlockCleared():
 				self.frame.Popup("Block is cleared")
 				return
@@ -322,14 +334,14 @@ class District:
 			stat = 1
 		else:
 			stat = 0
-			
-		self.frame.Request({"handswitch": { "name": hs.GetName(), "status": stat }})
+
+		self.frame.Request({"handswitch": {"name": hs.GetName(), "status": stat}})
 
 	# The Do... routines handle requests that come in from the dispatch server.  The 3 objects of interest for
 	# these requests are blocks, signals, and turnouts
 	def DoBlockAction(self, blk, blockend, state):
 		bname = blk.GetName()
-		blk.SetOccupied(occupied = state == OCCUPIED, blockend=blockend, refresh=True)
+		blk.SetOccupied(occupied=state == OCCUPIED, blockend=blockend, refresh=True)
 
 		osList = self.frame.GetOSForBlock(bname)
 		for osblk in osList:
@@ -344,7 +356,7 @@ class District:
 	def DoSignalAction(self, sig, aspect):
 		signm = sig.GetName()
 		if sig.GetAspect() == aspect:
-			#no change necessary
+			# no change necessary
 			return
 
 		for blknm, siglist in self.osSignals.items():
@@ -353,7 +365,7 @@ class District:
 				rname = osblock.GetRouteName()
 				if osblock.route is None:
 					continue
-				rt = self.routes[rname]
+				# rt = self.routes[rname]
 				if sig.IsPossibleRoute(blknm, rname):
 					break
 		else:
@@ -372,8 +384,8 @@ class District:
 			return
 
 		exitBlk = self.frame.GetBlockByName(exitBlkNm)
-		if exitBlk.IsOccupied():
-			return
+		# if exitBlk.IsOccupied():
+		# 	return
 
 		if self.CrossingEastWestBoundary(osblock, exitBlk):
 			nd = not sig.GetEast()
@@ -383,15 +395,15 @@ class District:
 		if aspect != STOP:
 			exitBlk.SetEast(nd)
 
-		exitBlk.SetCleared(aspect!=STOP, refresh=True)
+		exitBlk.SetCleared(aspect != STOP, refresh=True)
 
-		self.LockTurnoutsForSignal(osblock.GetName(), sig, aspect!=STOP)
+		self.LockTurnoutsForSignal(osblock.GetName(), sig, aspect != STOP)
 
 		if exitBlk.GetBlockType() == OVERSWITCH:
 			rt = exitBlk.GetRoute()
 			if rt:
 				tolist = rt.GetTurnouts()
-				self.LockTurnouts(signm, tolist, aspect!=STOP)
+				self.LockTurnouts(signm, tolist, aspect != STOP)
 
 	def LockTurnoutsForSignal(self, osblknm, sig, flag):
 		signm = sig.GetName()
@@ -411,38 +423,38 @@ class District:
 				tp.SetLock(locker, flag, refresh=True)
 
 	def DoHandSwitchAction(self, hs, stat):
-		hs.SetValue(stat!=0, refresh=True)
+		hs.SetValue(stat != 0, refresh=True)
 
 	def DoIndicatorAction(self, ind, value):
 		pass
-	
+
 	def CrossingEastWestBoundary(self, blk1, blk2):
 		return False
-					
+
 	def DefineBlocks(self, tiles):
 		self.blocks = {}
 		self.osBlocks = {}
-		return({}, {})
+		return {}, {}
 
-	def DefineTurnouts(self, tiles):
+	def DefineTurnouts(self, tiles, blocks):
 		self.turnouts = {}
-		return({})
+		return {}
 
 	def DefineIndicators(self):
 		self.indicators = {}
-		return({})
+		return {}
 
 	def DefineSignals(self, tiles):
 		self.signals = {}
-		return({})
+		return {}
 
 	def DefineButtons(self, tiles):
 		self.buttons = {}
-		return({})
+		return {}
 
 	def DefineHandSwitches(self, tiles):
 		self.handswitches = {}
-		return({})
+		return {}
 
 	def ReportBlockBusy(self, blknm):
 		self.frame.Popup("Block is busy")
@@ -452,6 +464,7 @@ class District:
 
 	def ReportTurnoutLocked(self, tonm):
 		self.frame.Popup("Turnout is locked")
+
 
 class Districts:
 	def __init__(self):
@@ -509,7 +522,6 @@ class Districts:
 			handswitches.update(t.DefineHandSwitches(tiles))
 
 		return handswitches
-
 
 	def DefineIndicators(self):
 		indicators = {}

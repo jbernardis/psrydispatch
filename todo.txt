@@ -117,8 +117,9 @@ NASSAU:
 
 check all block indicator outputs to see if I need a combined occupancy value like I do for block N25 in hyde
 
+fix signal S21E in shore
 
-
+call determinesignal lever after initialization and with each new signal messages we receive rather than at each interval
 
 fleeting
             basic fleeting implemented, but some questions: 1) should it be limited or restricted from certain signals, 

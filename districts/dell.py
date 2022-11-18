@@ -300,23 +300,23 @@ class Dell (District):
 
 		# FOSS and Valley Junstion interlockings
 		block = self.blocks["DOSVJE"]
-		self.routes["DRtH13D21"] = Route(self.screen, block, "DRtH13D21", "H13", [ (46,  9), (47,  9), (48, 10), (49, 11), (50, 11), (51, 11), (52, 11), (53, 12), (54, 13), (55, 13) ], "D21", [RESTRICTING, DIVERGING], ["DSw1", "DSw5", "DSw7"])
-		self.routes["DRtD10D21"] = Route(self.screen, block, "DRtD10D21", "D10", [ (46, 11), (47, 11), (48, 11), (49, 11), (50, 11), (51, 11), (52, 11), (53, 12), (54, 13), (55, 13) ], "D21", [RESTRICTING, DIVERGING], ["DSw1", "DSw5", "DSw7"])
-		self.routes["DRtD20D21"] = Route(self.screen, block, "DRtD20D21", "D20", [ (46, 13), (47, 13), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13) ], "D21", [MAIN, RESTRICTING],      ["DSw3", "DSw5", "DSw7"])
-		self.routes["DRtH23D21"] = Route(self.screen, block, "DRtH23D21", "H23", [ (46, 15), (47, 15), (48, 14), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13) ], "D21", [DIVERGING, RESTRICTING], ["DSw3", "DSw5", "DSw7"])
+		self.routes["DRtH13D21"] = Route(self.screen, block, "DRtH13D21", "H13", [ (46,  9), (47,  9), (48, 10), (49, 11), (50, 11), (51, 11), (52, 11), (53, 12), (54, 13), (55, 13) ], "D21", [RESTRICTING, DIVERGING], ["DSw1", "DSw5", "DSw7"], ["D6RA", "D4L"])
+		self.routes["DRtD10D21"] = Route(self.screen, block, "DRtD10D21", "D10", [ (46, 11), (47, 11), (48, 11), (49, 11), (50, 11), (51, 11), (52, 11), (53, 12), (54, 13), (55, 13) ], "D21", [RESTRICTING, DIVERGING], ["DSw1", "DSw5", "DSw7"], ["D6RB", "D4L"])
+		self.routes["DRtD20D21"] = Route(self.screen, block, "DRtD20D21", "D20", [ (46, 13), (47, 13), (48, 13), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13) ], "D21", [MAIN, RESTRICTING],      ["DSw3", "DSw5", "DSw7"], ["D4RA", "D4L"])
+		self.routes["DRtH23D21"] = Route(self.screen, block, "DRtH23D21", "H23", [ (46, 15), (47, 15), (48, 14), (49, 13), (50, 13), (51, 13), (52, 13), (53, 13), (54, 13), (55, 13) ], "D21", [DIVERGING, RESTRICTING], ["DSw3", "DSw5", "DSw7"], ["D4RB", "D4L"])
 
 		block = self.blocks["DOSVJW"]
-		self.routes["DRtH13D11"] = Route(self.screen, block, "DRtH13D11", "D11", [ (46,  9), (47,  9), (48, 10), (49, 11), (50, 11), (51, 11), (52, 11), (53, 11), (54, 11), (55, 11) ], "H13", [RESTRICTING, DIVERGING], ["DSw1", "DSw5", "DSw7"])
-		self.routes["DRtD10D11"] = Route(self.screen, block, "DRtD10D11", "D11", [ (46, 11), (47, 11), (48, 11), (49, 11), (50, 11), (51, 11), (52, 11), (53, 11), (54, 11), (55, 11) ], "D10", [RESTRICTING, MAIN],      ["DSw1", "DSw5", "DSw7"])
-		self.routes["DRtD20D11"] = Route(self.screen, block, "DRtD20D11", "D11", [ (46, 13), (47, 13), (48, 13), (49, 13), (50, 12), (51, 11), (52, 11), (53, 11), (54, 11), (55, 11) ], "D20", [DIVERGING, RESTRICTING], ["DSw3", "DSw5", "DSw7"])
-		self.routes["DRtH23D11"] = Route(self.screen, block, "DRtH23D11", "D11", [ (46, 15), (47, 15), (48, 14), (49, 13), (50, 12), (51, 11), (52, 11), (53, 11), (54, 11), (55, 11) ], "H23", [DIVERGING, RESTRICTING], ["DSw3", "DSw5", "DSw7"])
+		self.routes["DRtH13D11"] = Route(self.screen, block, "DRtH13D11", "D11", [ (46,  9), (47,  9), (48, 10), (49, 11), (50, 11), (51, 11), (52, 11), (53, 11), (54, 11), (55, 11) ], "H13", [RESTRICTING, DIVERGING], ["DSw1", "DSw5", "DSw7"], ["D6RA", "D6L"])
+		self.routes["DRtD10D11"] = Route(self.screen, block, "DRtD10D11", "D11", [ (46, 11), (47, 11), (48, 11), (49, 11), (50, 11), (51, 11), (52, 11), (53, 11), (54, 11), (55, 11) ], "D10", [RESTRICTING, MAIN],      ["DSw1", "DSw5", "DSw7"], ["D6RB", "D6L"])
+		self.routes["DRtD20D11"] = Route(self.screen, block, "DRtD20D11", "D11", [ (46, 13), (47, 13), (48, 13), (49, 13), (50, 12), (51, 11), (52, 11), (53, 11), (54, 11), (55, 11) ], "D20", [DIVERGING, RESTRICTING], ["DSw3", "DSw5", "DSw7"], ["D4RA", "D6L"])
+		self.routes["DRtH23D11"] = Route(self.screen, block, "DRtH23D11", "D11", [ (46, 15), (47, 15), (48, 14), (49, 13), (50, 12), (51, 11), (52, 11), (53, 11), (54, 11), (55, 11) ], "H23", [DIVERGING, RESTRICTING], ["DSw3", "DSw5", "DSw7"], ["D4RB", "D6L"])
 
 		block = self.blocks["DOSFOE"]
-		self.routes["DRtD21S20"] = Route(self.screen, block, "DRtD21S20", "D21", [ (66, 13), (67, 13), (68, 13), (69, 13), (70, 13) ], "S20", [MAIN, MAIN],             ["DSw11"])
+		self.routes["DRtD21S20"] = Route(self.screen, block, "DRtD21S20", "D21", [ (66, 13), (67, 13), (68, 13), (69, 13), (70, 13) ], "S20", [MAIN, MAIN],             ["DSw11"], ["D10R", "D10L"])
 
 		block = self.blocks["DOSFOW"]
-		self.routes["DRtD11S10"] = Route(self.screen, block, "DRtD11S10", "S10", [ (66, 11), (67, 11), (68, 11), (69, 11), (70, 11) ], "D11", [MAIN, MAIN],             ["DSw11"])
-		self.routes["DRtD21S10"] = Route(self.screen, block, "DRtD21S10", "S10", [ (66, 13), (67, 13), (68, 12), (69, 11), (70, 11) ], "D21", [DIVERGING, DIVERGING],   ["DSw11"])
+		self.routes["DRtD11S10"] = Route(self.screen, block, "DRtD11S10", "S10", [ (66, 11), (67, 11), (68, 11), (69, 11), (70, 11) ], "D11", [MAIN, MAIN],             ["DSw11"], ["D12R", "D12R"])
+		self.routes["DRtD21S10"] = Route(self.screen, block, "DRtD21S10", "S10", [ (66, 13), (67, 13), (68, 12), (69, 11), (70, 11) ], "D21", [DIVERGING, DIVERGING],   ["DSw11"], ["D10R", "D12L"])
 
 		self.signals["D4RA"].AddPossibleRoutes("DOSVJE", [ "DRtD20D21" ])
 		self.signals["D4RA"].AddPossibleRoutes("DOSVJW", [ "DRtD20D11" ])
