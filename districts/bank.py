@@ -3,10 +3,10 @@ from district import District
 from block import Block, OverSwitch, Route
 from turnout import Turnout, SlipSwitch
 from signal import Signal
-from button import Button
 from handswitch import HandSwitch
 
 from constants import RESTRICTING, MAIN, DIVERGING, SLOW, NORMAL, REVERSE, EMPTY, SLIPSWITCH, RegAspects, AdvAspects
+
 
 class Bank (District):
 	def __init__(self, name, frame, screen):
@@ -166,6 +166,15 @@ class Bank (District):
 		]
 		for signm, atype, east, tileSet, pos in sigList:
 			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])  
+
+		self.sigLeverMap = {
+			"C18.lvr": [ "BOSE" ],
+			"C22.lvr": [ "BOSWW" ],
+			"C24.lvr": [ "BOSWW", "BOSWE" ],
+		}
+
+		for sl in self.sigLeverMap:
+			self.frame.AddSignalLever(sl, self)
 
 		blockSigs = {
 			# # which signals govern stopping sections, west and east

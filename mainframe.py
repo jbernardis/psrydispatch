@@ -50,24 +50,31 @@ class Node:
 class MainFrame(wx.Frame):
 	def __init__(self):
 		wx.Frame.__init__(self, None, size=(900, 800), style=wx.DEFAULT_FRAME_STYLE)
+		self.toaster = None
+		self.listener = None
 		self.sessionid = None
 		self.subscribed = False
 		logging.info("Display process starting")
 		self.settings = Settings(cmdFolder)
 
+		self.turnoutMap = {}
+		self.buttonMap = {}
+		self.signalMap = {}
+		self.handswitchMap = {}
+
 		self.title = "PSRY Dispatcher" if self.settings.dispatch else "PSRY Monitor"
 		self.ToasterSetup()
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
-		vsz = wx.BoxSizer(wx.VERTICAL)
-		hsz = wx.BoxSizer(wx.HORIZONTAL)
 		self.bitmaps = BitMaps(os.path.join(".", "bitmaps"))
 		singlePage = self.settings.pages == 1
+		self.bmpw, self.bmph = self.bitmaps.diagrams.HydeYardPort.GetSize()
 		self.diagrams = {
 			HyYdPt: Node(HyYdPt, self.bitmaps.diagrams.HydeYardPort, 0),
-			LaKr:   Node(LaKr,   self.bitmaps.diagrams.LathamKrulish, 2544 if singlePage else 0),
-			NaCl:   Node(NaCl,   self.bitmaps.diagrams.NassauCliff, 5088 if singlePage else 0)
+			LaKr:   Node(LaKr,   self.bitmaps.diagrams.LathamKrulish, self.bmpw if singlePage else 0),
+			NaCl:   Node(NaCl,   self.bitmaps.diagrams.NassauCliff, self.bmpw*2 if singlePage else 0)
 		}
 		topSpace = 120
+
 		if self.settings.pages == 1:  # set up a single ultra-wide display accross 3 monitors
 			dp = TrackDiagram(self, [self.diagrams[sn] for sn in screensList])
 			dp.SetPosition((16, 120))
@@ -79,13 +86,10 @@ class MainFrame(wx.Frame):
 			self.panels = {}
 			for d in [self.diagrams[sn] for sn in screensList]:
 				dp = TrackDiagram(self, [d])
+				diagramw, diagramh = dp.GetSize()
 				dp.Hide()
 				dp.SetPosition((8, 120))
 				self.panels[d.screen] = dp
-
-			self.currentScreen = LaKr
-			diagramw, diagramh = self.panels[self.currentScreen].GetSize()
-			self.panels[self.currentScreen].Show()
 
 			# add buttons to switch from screen to screen
 			voffset = topSpace+diagramh+20
@@ -99,6 +103,16 @@ class MainFrame(wx.Frame):
 
 		if self.settings.showcameras:
 			self.DrawCameras()
+
+		voffset = topSpace+diagramh+10
+		self.widgetMap = {HyYdPt: [], LaKr: [], NaCl: []}
+		self.DefineWidgets(voffset)
+
+		if self.settings.pages == 3:
+			self.currentScreen = None
+			self.SwapToScreen(LaKr)
+		else:
+			self.PlaceWidgets()
 
 		self.bSubscribe = wx.Button(self, wx.ID_ANY, "Connect", pos=(100, 10))
 		self.Bind(wx.EVT_BUTTON, self.OnSubscribe, self.bSubscribe)
@@ -119,10 +133,163 @@ class MainFrame(wx.Frame):
 		self.SetPosition((0, 0))
 
 		wx.CallAfter(self.Initialize)
-			
+
+	def DefineWidgets(self, voffset):
+		self.rbNassauControl = wx.RadioBox(self, wx.ID_ANY, "Nassau", (250, voffset), wx.DefaultSize,
+				["Nassau", "Dispatcher: Main", "Dispatcher: All"], 1, wx.RA_SPECIFY_COLS)
+		self.Bind(wx.EVT_RADIOBOX, self.OnRBNassau, self.rbNassauControl)
+		self.rbNassauControl.Hide()
+		self.widgetMap[NaCl].append(self.rbNassauControl)
+
+		self.rbCliffControl = wx.RadioBox(self, wx.ID_ANY, "Cliff", (1550, voffset), wx.DefaultSize,
+				["Cliff", "Dispatcher: Bank/Cliveden", "Dispatcher: All"], 1, wx.RA_SPECIFY_COLS)
+		self.Bind(wx.EVT_RADIOBOX, self.OnRBCliff, self.rbCliffControl)
+		self.rbCliffControl.Hide()
+		self.widgetMap[NaCl].append(self.rbCliffControl)
+
+		self.rbYardControl = wx.RadioBox(self, wx.ID_ANY, "Yard", (1450, voffset), wx.DefaultSize,
+				["Yard", "Dispatcher"], 1, wx.RA_SPECIFY_COLS)
+		self.Bind(wx.EVT_RADIOBOX, self.OnRBYard, self.rbYardControl)
+		self.rbYardControl.Hide()
+		self.widgetMap[HyYdPt].append(self.rbYardControl)
+
+		self.rbS4Control = wx.RadioBox(self, wx.ID_ANY, "Signal 4L/4R", (150, voffset), wx.DefaultSize,
+				["Port", "Dispatcher"], 1, wx.RA_SPECIFY_COLS)
+		self.Bind(wx.EVT_RADIOBOX, self.OnRBS4, self.rbS4Control)
+		self.rbS4Control.Hide()
+		self.widgetMap[LaKr].append(self.rbS4Control)
+
+		self.cbLathamFleet = wx.CheckBox(self, -1, "Latham Fleeting", (300, voffset+10))
+		self.Bind(wx.EVT_CHECKBOX, self.OnCBLathamFleet, self.cbLathamFleet)
+		self.cbLathamFleet.Hide()
+		self.widgetMap[LaKr].append(self.cbLathamFleet)
+		self.LathamFleetSignals =  ["L8R", "L8L", "L6RA", "L6RB", "L6L", "L4R", "L4L"]
+
+		self.cbCarltonFleet = wx.CheckBox(self, -1, "Carlton Fleeting", (300, voffset+30))
+		self.Bind(wx.EVT_CHECKBOX, self.OnCBCarltonFleet, self.cbCarltonFleet)
+		self.cbCarltonFleet.Hide()
+		self.widgetMap[LaKr].append(self.cbCarltonFleet)
+		self.CarltonFleetSignals = ["L18R", "L18L", "L16R", "L14R", "L14L"]
+
+		self.cbValleyJctFleet = wx.CheckBox(self, -1, "Valley Junction Fleeting", (900, voffset+10))
+		self.Bind(wx.EVT_CHECKBOX, self.OnCBValleyJctFleet, self.cbValleyJctFleet)
+		self.cbValleyJctFleet.Hide()
+		self.widgetMap[LaKr].append(self.cbValleyJctFleet)
+		self.ValleyJctFleetSignals = ["D6RA", "D6RB", "D6L", "D4RA", "D4RB", "D4L"]
+
+		self.cbFossFleet = wx.CheckBox(self, -1, "Foss Fleeting", (900, voffset+30))
+		self.Bind(wx.EVT_CHECKBOX, self.OnCBFossFleet, self.cbFossFleet)
+		self.cbFossFleet.Hide()
+		self.widgetMap[LaKr].append(self.cbFossFleet)
+		self.FossFleetSignals = ["D10R", "D10L", "D12R", "D12L"]
+
+		self.cbYardFleet = wx.CheckBox(self, -1, "Yard Fleeting", (1650, voffset+10))
+		self.Bind(wx.EVT_CHECKBOX, self.OnCBYardFleet, self.cbYardFleet)
+		self.cbYardFleet.Hide()
+		self.widgetMap[HyYdPt].append(self.cbYardFleet)
+
+		self.cbPortFleet = wx.CheckBox(self, -1, "Port Fleeting", (1650, voffset+30))
+		self.Bind(wx.EVT_CHECKBOX, self.OnCBPortFleet, self.cbPortFleet)
+		self.cbPortFleet.Hide()
+		self.widgetMap[HyYdPt].append(self.cbPortFleet)
+
+		self.cbCliffFleet = wx.CheckBox(self, -1, "Cliff Fleeting", (2100, voffset+10))
+		self.Bind(wx.EVT_CHECKBOX, self.OnCBCliffFleet, self.cbCliffFleet)
+		self.cbCliffFleet.Hide()
+		self.widgetMap[NaCl].append(self.cbCliffFleet)
+
+		self.cbHydeFleet = wx.CheckBox(self, -1, "Hyde Fleeting", (250, voffset+10))
+		self.Bind(wx.EVT_CHECKBOX, self.OnCBHydeFleet, self.cbHydeFleet)
+		self.cbHydeFleet.Hide()
+		self.widgetMap[HyYdPt].append(self.cbHydeFleet)
+
+		self.fleetMaps = [
+			[ self.LathamFleetSignals,    self.cbLathamFleet ],
+			[ self.CarltonFleetSignals,   self.cbCarltonFleet ],
+			[ self.ValleyJctFleetSignals, self.cbValleyJctFleet ],
+			[ self.FossFleetSignals,      self.cbFossFleet ],
+		]
+
+	def UpdateControlWidget(self, name, value):
+		if name == "nassau":
+			self.rbNassauControl.SetSelection(value)
+		elif name == "cliff":
+			self.rbCliffControl.SetSelection(value)
+		elif name == "yard":
+			self.rbYardControl.SetSelection(value)
+		elif name == "signal4":
+			self.rbS4Control.SetSelection(value)
+		elif name == "cliff.fleet":
+			self.cbCliffFleet.SetValue(value != 0)
+		elif name == "port.fleet":
+			self.cbPortFleet.SetValue(value != 0)
+		elif name == "hyde.fleet":
+			self.cbHydeFleet.SetValue(value != 0)
+		elif name == "yard.fleet":
+			self.cbYardFleet.SetValue(value != 0)
+
+	def OnRBNassau(self, evt):
+		self.Request({"control": { "name": "nassau", "value": evt.GetInt()}})
+
+	def OnRBCliff(self, evt):
+		self.Request({"control": { "name": "cliff", "value": evt.GetInt()}})
+
+	def OnRBYard(self, evt):
+		self.Request({"control": { "name": "yard", "value": evt.GetInt()}})
+
+	def OnRBS4(self, evt):
+		self.Request({"control": { "name": "signal4", "value": evt.GetInt()}})
+
+	def OnCBLathamFleet(self, _):
+		f = 1 if self.cbLathamFleet.IsChecked() else 0
+		for signm in self.LathamFleetSignals:
+			self.Request({"fleet": { "name": signm, "value": f}})
+
+	def OnCBCarltonFleet(self, _):
+		f = 1 if self.cbCarltonFleet.IsChecked() else 0
+		for signm in self.CarltonFleetSignals:
+			self.Request({"fleet": { "name": signm, "value": f}})
+
+	def OnCBValleyJctFleet(self, _):
+		f = 1 if self.cbValleyJctFleet.IsChecked() else 0
+		for signm in self.ValleyJctFleetSignals:
+			self.Request({"fleet": { "name": signm, "value": f}})
+
+	def OnCBFossFleet(self, _):
+		f = 1 if self.cbFossFleet.IsChecked() else 0
+		for signm in self.FossFleetSignals:
+			self.Request({"fleet": { "name": signm, "value": f}})
+
+	def OnCBCliffFleet(self, _):
+		f = 1 if self.cbCliffFleet.IsChecked() else 0
+		self.Request({"control": {"name": "cliff.fleet", "value": f}})
+
+	def OnCBYardFleet(self, _):
+		f = 1 if self.cbYardFleet.IsChecked() else 0
+		self.Request({"control": {"name": "yard.fleet", "value": f}})
+
+	def OnCBPortFleet(self, _):
+		f = 1 if self.cbPortFleet.IsChecked() else 0
+		self.Request({"control": {"name": "port.fleet", "value": f}})
+
+	def OnCBHydeFleet(self, _):
+		f = 1 if self.cbHydeFleet.IsChecked() else 0
+		self.Request({"control": {"name": "hyde.fleet", "value": f}})
+
+	def FleetCheckBoxes(self, signm):
+		for siglist, checkbox in self.fleetMaps:
+			if signm in siglist:
+				fltct = nfltct = 0
+				for sn in siglist:
+					sig = self.signals[sn]
+					if sig.IsFleeted():
+						fltct += 1
+					else:
+						nfltct += 1
+				checkbox.SetValue(nfltct == 0)
+
 	def DrawCameras(self):
-		cams = {}
-		cams[LaKr] = [
+		cams = {LaKr: [
 			[(242, 32), self.bitmaps.cameras.lakr.cam7],
 			[(464, 32), self.bitmaps.cameras.lakr.cam8],
 			[(768, 32), self.bitmaps.cameras.lakr.cam8],
@@ -136,8 +303,7 @@ class MainFrame(wx.Frame):
 			[(2198, 32), self.bitmaps.cameras.lakr.cam16],
 			[(2362, 32), self.bitmaps.cameras.lakr.cam9],
 			[(2416, 32), self.bitmaps.cameras.lakr.cam10],
-		]
-		cams[HyYdPt] = [
+		], HyYdPt: [
 			[(282, 72), self.bitmaps.cameras.hyydpt.cam15],
 			[(838, 72), self.bitmaps.cameras.hyydpt.cam16],
 			[(904, 576), self.bitmaps.cameras.hyydpt.cam1],
@@ -147,8 +313,7 @@ class MainFrame(wx.Frame):
 			[(2090, 10), self.bitmaps.cameras.hyydpt.cam4],
 			[(2272, 236), self.bitmaps.cameras.hyydpt.cam5],
 			[(2292, 444), self.bitmaps.cameras.hyydpt.cam6],
-		]
-		cams[NaCl] = [
+		], NaCl: [
 			[(364, 28), self.bitmaps.cameras.nacl.cam11],
 			[(670, 28), self.bitmaps.cameras.nacl.cam12],
 			[(918, 28), self.bitmaps.cameras.nacl.cam1],
@@ -157,7 +322,7 @@ class MainFrame(wx.Frame):
 			[(1248, 28), self.bitmaps.cameras.nacl.cam4],
 			[(1442, 28), self.bitmaps.cameras.nacl.cam7],
 			[(2492, 502), self.bitmaps.cameras.nacl.cam8],
-		]
+		]}
 
 		for screen in cams:
 			offset = self.diagrams[screen].offset
@@ -183,6 +348,7 @@ class MainFrame(wx.Frame):
 
 		self.tiles, self.totiles, self.sstiles, self.sigtiles, self.misctiles = loadTiles(self.bitmaps)
 		self.districts = Districts()
+		self.signalLeverMap = {}
 		self.districts.AddDistrict(Yard("Yard", self, HyYdPt))
 		self.districts.AddDistrict(Latham("Latham", self, LaKr))
 		self.districts.AddDistrict(Dell("Dell", self, LaKr))
@@ -221,12 +387,6 @@ class MainFrame(wx.Frame):
 			self.signalMap = { (s.GetScreen(), s.GetPos()): s for s in self.signals.values() }
 			self.handswitchMap = { (l.GetScreen(), l.GetPos()): l for l in self.handswitches.values() }
 
-		else:
-			self.turnoutMap = {}
-			self.buttonMap = {}
-			self.signalMap = {}
-			self.handswitchMap = {}
-
 		# set up hot spots for entering/modifying train/loco ID - displays can do this too
 		self.blockMap = self.BuildBlockMap(self.blocks)
 
@@ -239,6 +399,17 @@ class MainFrame(wx.Frame):
 		self.ticker.Start(1000)
 
 		print("finished initialize")
+
+	def AddSignalLever(self, slname, district):
+		print(str(slname))
+		self.signalLeverMap[slname] = district
+
+	def GetSignalLeverDistrict(self, slname):
+		if slname not in self.signalLeverMap:
+			return None
+
+		return self.signalLeverMap[slname]
+
 
 	def IsDispatcher(self):
 		return self.settings.dispatch
@@ -436,16 +607,6 @@ class MainFrame(wx.Frame):
 
 					self.Request({"renametrain": { "oldname": oldName, "newname": trainid, "oldloco": oldLoco, "newloco": locoid}})
 
-	def ProcessRightClick(self, screen, pos):
-		logging.debug("right click %s %d, %d" % (screen, pos[0], pos[1]))
-		try:
-			sig = self.signalMap[(screen, pos)]
-		except KeyError:
-			sig = None
-
-		if sig:
-			sig.EnableFleeting()
-
 	def DrawTile(self, screen, pos, bmp):
 		offset = self.diagrams[screen].offset
 		self.panels[screen].DrawTile(pos[0], pos[1], offset, bmp)
@@ -472,9 +633,36 @@ class MainFrame(wx.Frame):
 		if screen == self.currentScreen:
 			return True
 		self.panels[screen].Show()
-		self.panels[self.currentScreen].Hide()
+		if self.currentScreen:
+			self.panels[self.currentScreen].Hide()
 		self.currentScreen = screen
+
+		for scr in self.widgetMap:
+			for w in self.widgetMap[scr]:
+				if scr == self.currentScreen:
+					w.Show()
+				else:
+					w.Hide()
+
 		return True
+
+	def PlaceWidgets(self):
+		for scr in self.widgetMap:
+			if scr == HyYdPt:
+				offset = 0
+			elif scr == LaKr:
+				offset = self.bmpw
+			elif scr == NaCl:
+				offset = self.bmpw*2
+			else:
+				print("Unknown screen: %d in widgeMap" % scr)
+				offset = 0
+
+			for w in self.widgetMap[scr]:
+				pos = w.GetPosition()
+				pos[0] += offset
+				w.SetPosition(pos)
+				w.Show()
 
 	def GetBlockStatus(self, blknm):
 		try:
@@ -509,7 +697,7 @@ class MainFrame(wx.Frame):
 		self.toaster.SetBackgroundColour(wx.Colour(255, 179, 154))
 		self.toaster.SetTextColour(wx.Colour(0, 0, 0))
 
-	def Popup(self, message, background=None, text=None):
+	def Popup(self, message):
 		self.toaster.Append(message)
 
 	def OnSubscribe(self, _):
@@ -570,6 +758,18 @@ class MainFrame(wx.Frame):
 						st = REVERSE if state == "R" else NORMAL
 						district.DoTurnoutAction(to, st)
 
+			elif cmd == "fleet":
+				for p in parms:
+					signm = p["name"]
+					try:
+						value = int(p["value"])
+					except:
+						value = 0
+
+					sig = self.signals[signm]
+					sig.EnableFleeting(value == 1)
+					self.FleetCheckBoxes(signm)
+
 			elif cmd == "block":
 				for p in parms:
 					block = p["name"]
@@ -605,6 +805,16 @@ class MainFrame(wx.Frame):
 					if sig is not None and aspect != sig.GetAspect():
 						district = sig.GetDistrict()
 						district.DoSignalAction(sig, aspect)
+
+			elif cmd == "siglever":
+				if self.IsDispatcher():
+					for p in parms:
+						signame = p["name"]
+						state = p["state"]
+
+						print("apply signal lever %s to %s" % (state, signame))
+						district = self.GetSignalLeverDistrict(signame)
+						district.DoSwitchLeverAction(signame, state)
 						
 			elif cmd == "handswitch":
 				for p in parms:
@@ -728,13 +938,18 @@ class MainFrame(wx.Frame):
 						else:
 							blk.DrawTrain()
 
+			elif cmd == "control":
+				for p in parms:
+					name = p["name"]
+					value = int(p["value"])
+				self.UpdateControlWidget(name, value)
+
 			elif cmd == "sessionID":
 				self.sessionid = int(parms)
 				logging.info("connected to railroad server with session ID %d" % self.sessionid)
 				self.districts.OnConnect()
 				self.ShowTitle()
 
-		
 	def raiseDisconnectEvent(self): # thread context
 		evt = DisconnectEvent()
 		wx.PostEvent(self, evt)

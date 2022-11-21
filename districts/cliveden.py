@@ -207,6 +207,15 @@ class Cliveden (District):
 		for signm, atype, east, tileSet, pos in sigList:
 			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])  
 
+		self.sigLeverMap = {
+			"C10.lvr": [ "COSCLEW", "COSCLEE" ],
+			"C12.lvr": [ "COSCLEE" ],
+			"C14.lvr": [ "COSCLW" ],
+		}
+
+		for sl in self.sigLeverMap:
+			self.frame.AddSignalLever(sl, self)
+
 		blockSigs = {
 			# # which signals govern stopping sections, west and east
 			"C13": ("C18L",  "C14L"),

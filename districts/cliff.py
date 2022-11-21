@@ -31,6 +31,7 @@ class Cliff (District):
 			self.frame.ClearButtonAfter(2, btn)
 			self.frame.Request({"nxbutton": { "button": btn.GetName() }})
 
+
 	def DetermineRoute(self, blocks):
 		for block in blocks:
 			bname = block.GetName()
@@ -627,6 +628,8 @@ class Cliff (District):
 				(tiles["diagleft"],       self.screen, (134, 22), False),
 			], False)
 
+		self.osBlocks["COSSHE"] = ["C44", "C43", "C42", "C41", "C40", "C21", "C50", "C51", "C52", "C53", "C54", "C20"]
+
 		self.blocks["COSSHW"] = OverSwitch(self, self.frame, "COSSHW",
 			[
 				(tiles["eobleft"],        self.screen, (106, 13), False),
@@ -695,6 +698,8 @@ class Cliff (District):
 				(tiles["diagright"],      self.screen, (122, 22), False),
 				(tiles["turnrightleft"],  self.screen, (123, 23), False),
 			], False)
+
+		self.osBlocks["COSSHW"] = ["C22", "C44", "C43", "C42", "C41", "C40", "C21", "C50", "C51", "C52", "C53", "C54"]
 
 		return self.blocks, self.osBlocks
 
@@ -842,6 +847,16 @@ class Cliff (District):
 			[ "C8LK", RegAspects,    False, "left",      (124, 20) ],
 			[ "C8LL", RegAspects,    False, "left",      (124, 22) ],
 		]
+
+		self.sigLeverMap = {
+			"C2.lvr": [ "COSGME" ],
+			"C4.lvr": [ "COSGMW" ],
+			"C6.lvr": [ "COSSHE" ],
+			"C8.lvr": [ "COSSHW" ]
+		}
+
+		for sl in self.sigLeverMap:
+			self.frame.AddSignalLever(sl, self)
 		
 		for signm, atype, east, tileSet, pos in sigList:
 			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])  

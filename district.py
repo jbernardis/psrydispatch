@@ -8,6 +8,7 @@ from constants import RegAspects, RegSloAspects, AdvAspects, SloAspects, \
 
 class District:
 	def __init__(self, name, frame, screen):
+		self.sigLeverMap = None
 		self.routes = None
 		self.osSignals = None
 		self.handswitches = None
@@ -116,96 +117,93 @@ class District:
 
 		# this is a valid signal for the current route	
 		if not currentMovement:  # we are trying to change the signal to allow movement
-			print("trying to move train")
-			if osblk.IsBusy():
-				self.frame.Popup("Block is busy")
-				return
-
-			sigE = sig.GetEast()
-			print("OS Reverse check: %s %s" % (sigE, osblk.GetEast()))
-			if sigE != osblk.GetEast():
-				print("reversing OS")
-				# the block will need to be reversed, but it's premature
-				# to do so now - so force return values as if reversed
-				doReverseExit = True
-			else:
-				doReverseExit = False
-
-			exitBlkNm = rt.GetExitBlock(reverse=doReverseExit)
-			print("exit block = %s" % exitBlkNm)
-			rType = rt.GetRouteType(reverse=doReverseExit)
-			print("Route type: %d" % rType)
-
-			exitBlk = self.frame.blocks[exitBlkNm]
-			if exitBlk.IsOccupied():
-				self.frame.Popup("Block is busy")
-				return
-
-			if exitBlk.IsCleared() and sigE != exitBlk.GetEast():
-				self.frame.Popup("Block is cleared in opposite direction")
-				return
-
-			if exitBlk.AreHandSwitchesSet():
-				self.frame.Popup("Block is locked")
-				return
-
-			nb = exitBlk.NextBlock(reverse=doReverseExit)
-			if nb:
-				print("next block: %s" % nb.GetName())
-				nbStatus = nb.GetStatus()
-				nbRType = nb.GetRouteType()
-				# try to go one more block, skipping past an OS block
-
-				print("%s %s" % (sigE, nb.GetEast()))
-				if sigE != nb.GetEast():
-					# the block will need to be reversed, but it's premature
-					# to do so now - so force return values as if reversed
-					print("reversing")
-					doReverseNext = True
-				else:
-					doReverseNext = False
-
-				nxbNm = nb.GetExitBlock(reverse=doReverseNext)
-
-				nxb = self.frame.blocks[nxbNm]
-				if nxb:
-					nnb = nxb.NextBlock(reverse=doReverseNext)
-				else:
-					nnb = None
-
-				if nnb:
-					nnbClear = nnb.GetStatus() == CLEARED
-				else:
-					nnbClear = False
-			else:
-				nbStatus = None
-				nbRType = None
-				nnbClear = False
+			aspect = self.CalculateAspect(sig, osblk, rt)
 
 		else:  # we are trying to change the signal to stop the train
 			esig = osblk.GetEntrySignal()
 			if esig is not None and esig.GetName() != signm:
 				self.frame.Popup("Incorrect signal for current route")
 				return
-			rType = None
+			aspect = 0
+
+		self.frame.Request({"signal": {"name": signm, "aspect": aspect}})
+
+	def CalculateAspect(self, sig, osblk, rt):
+		print("trying to move train")
+		if osblk.IsBusy():
+			self.frame.Popup("Block is busy")
+			return None
+
+		sigE = sig.GetEast()
+		print("OS Reverse check: %s %s" % (sigE, osblk.GetEast()))
+		if sigE != osblk.GetEast():
+			print("reversing OS")
+			# the block will need to be reversed, but it's premature
+			# to do so now - so force return values as if reversed
+			doReverseExit = True
+		else:
+			doReverseExit = False
+
+		exitBlkNm = rt.GetExitBlock(reverse=doReverseExit)
+		print("exit block = %s" % exitBlkNm)
+		rType = rt.GetRouteType(reverse=doReverseExit)
+		print("Route type: %d" % rType)
+
+		exitBlk = self.frame.blocks[exitBlkNm]
+		if exitBlk.IsOccupied():
+			self.frame.Popup("Block is busy")
+			return None
+
+		if exitBlk.IsCleared() and sigE != exitBlk.GetEast():
+			self.frame.Popup("Block is cleared in opposite direction")
+			return None
+
+		if exitBlk.AreHandSwitchesSet():
+			self.frame.Popup("Block is locked")
+			return None
+
+		nb = exitBlk.NextBlock(reverse=doReverseExit)
+		if nb:
+			print("next block: %s" % nb.GetName())
+			nbStatus = nb.GetStatus()
+			nbRType = nb.GetRouteType()
+			# try to go one more block, skipping past an OS block
+
+			print("%s %s" % (sigE, nb.GetEast()))
+			if sigE != nb.GetEast():
+				# the block will need to be reversed, but it's premature
+				# to do so now - so force return values as if reversed
+				print("reversing")
+				doReverseNext = True
+			else:
+				doReverseNext = False
+
+			nxbNm = nb.GetExitBlock(reverse=doReverseNext)
+			if nxbNm is None:
+				nnb = None
+			else:
+				nxb = self.frame.blocks[nxbNm]
+				if nxb:
+					nnb = nxb.NextBlock(reverse=doReverseNext)
+				else:
+					nnb = None
+
+			if nnb:
+				nnbClear = nnb.GetStatus() == CLEARED
+			else:
+				nnbClear = False
+		else:
 			nbStatus = None
 			nbRType = None
 			nnbClear = False
-			doReverseExit = False
-			exitBlkNm = osblk.GetExitBlock()
-			print("Exit block is %s" % str(exitBlkNm))
-			exitBlk = self.frame.blocks[exitBlkNm]
 
-		if currentMovement:
-			aspect = 0
-		else:
-			print("calling get aspect %d %d %s %s %s" % (
-				sig.GetAspectType(), rType, str(nbStatus), str(nbRType), str(nnbClear)))
-			aspect = self.GetAspect(sig.GetAspectType(), rType, nbStatus, nbRType, nnbClear)
+		print("calling get aspect %d %d %s %s %s" % (
+			sig.GetAspectType(), rType, str(nbStatus), str(nbRType), str(nnbClear)))
+		aspect = self.GetAspect(sig.GetAspectType(), rType, nbStatus, nbRType, nnbClear)
 
 		self.CheckBlockSignals(sig, aspect, exitBlk, doReverseExit, rType, nbStatus, nbRType, nnbClear)
 
-		self.frame.Request({"signal": {"name": signm, "aspect": aspect}})
+		return aspect
 
 	def CheckBlockSignals(self, sig, aspect, blk, rev, rType, nbStatus, nbRType, nnbClear):
 		pass
@@ -404,6 +402,75 @@ class District:
 			if rt:
 				tolist = rt.GetTurnouts()
 				self.LockTurnouts(signm, tolist, aspect != STOP)
+
+	def DoSwitchLeverAction(self, signame, state):
+		print("in Common DSLA for signal %s state %s" % (signame, state))
+		sigPrefix = signame.split(".")[0]
+		print("signal prefix = (%s)" % sigPrefix)
+		osblknms = self.sigLeverMap[signame]
+		signm = None
+
+		for osblknm in osblknms:
+			print(osblknm)
+			osblk = self.frame.blocks[osblknm]
+			route = osblk.GetRoute()
+			if route:
+				sigs = route.GetSignals()
+				if state == "L":
+					if sigs[1].startswith(sigPrefix+state):
+						signm = sigs[1]
+						movement = True   # trying to set to non-stopping aspect
+						print("matching L signal %s" % signm)
+						break
+				elif state == 'R':
+					if sigs[0].startswith(sigPrefix+state):
+						signm = sigs[0]
+						movement = True   # trying to set to non-stopping aspect
+						print("matching R signal %s" % signm)
+						break
+				elif state == "N":
+					print("figure out which of %s and %s matches the lever name and is non zero aspect" % (sigs[0], sigs[1]))
+					if sigs[0].startswith(sigPrefix+"R"):
+						print("%s is a candidate" % sigs[0])
+						sig = self.frame.signals[sigs[0]]
+						if sig and sig.GetAspect() != 0:
+							print("This is the signal")
+							signm = sigs[0]
+							movement = False
+							break
+					if sigs[1].startswith(sigPrefix+"L"):
+						print("%s is a candidate" % sigs[0])
+						sig = self.frame.signals[sigs[1]]
+						if sig and sig.GetAspect() != 0:
+							print("This is the signal")
+							signm = sigs[1]
+							movement = False
+							break
+
+
+		if signm is None:
+			print("didn't find a matching signal")
+			return
+
+		print("found signal (%s)" % signm)
+		sig = self.frame.signals[signm]
+		if not sig:
+			print("could not interprest signal name")
+			return
+
+		if movement:
+			aspect = self.CalculateAspect(sig, osblk, route)
+			if aspect is None:
+				print("Unable to find appropriate signal")
+				return
+
+			print("aspect is %d" % aspect)
+		else:
+			aspect = 0
+			print("aspect is 0")
+
+		self.frame.Request({"signal": {"name": signm, "aspect": aspect}})
+
 
 	def LockTurnoutsForSignal(self, osblknm, sig, flag):
 		signm = sig.GetName()

@@ -1,8 +1,4 @@
-figure out how to handle signal aspects
-
 Districts:
-	CliffInOut.cpp  
-
 	PortInOut.cpp
 
 
@@ -114,16 +110,29 @@ NASSAU:
 #    	NEOut[2].bit.b5 = NESL3;
 
 
+CLIFF
+#
+# 		CRelease = CFIn[6].bit.b3;
+
+# 		if(RBCliff->Checked)
+# 		{
+# 			CSw3.UnlockReq = CFIn[6].bit.b4;
+# 			CSw11.UnlockReq = CFIn[6].bit.b5;
+# 			CSw15.UnlockReq = CFIn[6].bit.b6;
+# 			CSw19.UnlockReq = CFIn[6].bit.b7;
+# 			CSw21.UnlockReq = CFIn[7].bit.b0;
+#
+
+
+
+
+cliff and nassau fleeting as per levers and disgram
+do we really need a separate cliff fleet checkbox?  Na what is port fleeting if we have no control over port
+
+implement buttons for route selection in yard insead of direct turnout control
+
 
 check all block indicator outputs to see if I need a combined occupancy value like I do for block N25 in hyde
-
-fix signal S21E in shore
-
-call determinesignal lever after initialization and with each new signal messages we receive rather than at each interval
-
-fleeting
-            basic fleeting implemented, but some questions: 1) should it be limited or restricted from certain signals, 
-            2) should signals operate in fleeting "Groups" instead of individually
 
 deduction of train movement - reporting train location
   checking train for non-contiguous Blocks

@@ -16,10 +16,16 @@ class Signal:
 		self.fleetEnabled = False
 		self.lastAspect = 0
 
-	def EnableFleeting(self):
-		self.fleetEnabled = not self.fleetEnabled
-		self.frame.Popup("Fleet %s for signal %s" % ("enabled" if self.fleetEnabled else "disabled", self.name))
+	def EnableFleeting(self, flag=None):
+		if flag is None:
+			self.fleetEnabled = not self.fleetEnabled
+		else:
+			self.fleetEnabled = flag
+		# self.frame.Popup("Fleet %s for signal %s" % ("enabled" if self.fleetEnabled else "disabled", self.name))
 		self.Draw()
+
+	def IsFleeted(self):
+		return self.fleetEnabled
 
 	def AddPossibleRoutes(self, blk, rtList):
 		self.possibleRoutes[blk] = rtList
