@@ -125,7 +125,7 @@ class Latham (District):
 				(tiles["eobright"],self.screen, (7, 11), False),
 			], False)
 		self.blocks["L10"].AddStoppingBlock([
-				(tiles["eobleft"], HyYdPt,      (137, 11), False),
+				(tiles["horiz"],   HyYdPt,      (137, 11), False),
 				(tiles["horiznc"], HyYdPt,      (138, 11), False),
 				(tiles["horiz"],   HyYdPt,      (139, 11), False),
 			], False)
@@ -134,7 +134,7 @@ class Latham (District):
 
 		self.blocks["L20"] = Block(self, self.frame, "L20",
 			[
-				(tiles["eobleft"], HyYdPt,      (137, 13), False),
+				(tiles["horiz"],   HyYdPt,      (137, 13), False),
 				(tiles["horiznc"], HyYdPt,      (138, 13), False),
 				(tiles["horiz"],   HyYdPt,      (139, 13), False),
 				(tiles["horiznc"], HyYdPt,      (140, 13), False),

@@ -62,103 +62,12 @@ class Nassau (District):
 			trnout.UpdateStatus()
 			trnout.Draw()
 
-
 	def PerformButtonAction(self, btn):
 		District.PerformButtonAction(self, btn)
-		if self.buttonEntryWest and not self.buttonEntryWest.IsPressed():
-			self.buttonEntryWest = None
-		if self.buttonExitWest and not self.buttonExitWest.IsPressed():
-			self.buttonExitWest = None
-
-		if btn.GetName() in self.entryWest:
-			if self.buttonEntryWest:
-				self.frame.ClearButtonNow(self.buttonEntryWest)
-
-			btn.Press(refresh=True)
-			self.buttonEntryWest = btn
-			self.frame.ClearButtonAfter(5, btn)
-
-		if btn.GetName() in self.exitWest:
-			if self.buttonExitWest:
-				self.frame.ClearButtonNow(self.buttonExitWest)
-
-			btn.Press(refresh=True)
-			self.buttonExitWest = btn
-			self.frame.ClearButtonAfter(5, btn)
-
-		if self.buttonEntryWest and self.buttonExitWest:
-			self.frame.ResetButtonExpiry(2, self.buttonEntryWest)
-			self.frame.ResetButtonExpiry(2, self.buttonExitWest)
-			try:
-				toList = self.NXMap[self.buttonEntryWest.GetName()][self.buttonExitWest.GetName()]
-			except KeyError:
-				toList = None
-
-			if toList is None or self.anyTurnoutLocked(toList):
-				self.buttonEntryWest.Invalidate(refresh=True)
-				self.buttonExitWest.Invalidate(refresh=True)
-				self.frame.Popup("No available route")
-
-			else:
-				self.buttonEntryWest.Acknowledge(refresh=True)
-				self.buttonExitWest.Acknowledge(refresh=True)
-				self.frame.Request({"nxbutton": { "entry": self.buttonEntryWest.GetName(),  "exit": self.buttonExitWest.GetName()}})
-
-			self.buttonEntryWest = self.buttonExitWest = None
-
-
-		if self.buttonEntryEast and not self.buttonEntryEast.IsPressed():
-			self.buttonEntryEast = None
-		if self.buttonExitEast and not self.buttonExitEast.IsPressed():
-			self.buttonExitEast = None
-
-		if btn.GetName() in self.entryEast:
-			if self.buttonEntryEast:
-				self.frame.ClearButtonNow(self.buttonEntryEast)
-
-			btn.Press(refresh=True)
-			self.buttonEntryEast = btn
-			self.frame.ClearButtonAfter(5, btn)
-
-		if btn.GetName() in self.exitEast:
-			if self.buttonExitEast:
-				self.frame.ClearButtonNow(self.buttonExitEast)
-
-			btn.Press(refresh=True)
-			self.buttonExitEast = btn
-			self.frame.ClearButtonAfter(5, btn)
-
-		if self.buttonEntryEast and self.buttonExitEast:
-			self.frame.ResetButtonExpiry(2, self.buttonEntryEast)
-			self.frame.ResetButtonExpiry(2, self.buttonExitEast)
-			try:
-				toList = self.NXMap[self.buttonEntryEast.GetName()][self.buttonExitEast.GetName()]
-			except KeyError:
-				toList = None
-
-			if toList is None or self.anyTurnoutLocked(toList):
-				self.buttonEntryEast.Invalidate(refresh=True)
-				self.buttonExitEast.Invalidate(refresh=True)
-				self.frame.Popup("No available route")
-
-			else:
-				self.buttonEntryEast.Acknowledge(refresh=True)
-				self.buttonExitEast.Acknowledge(refresh=True)
-				self.frame.Request({"nxbutton": { "entry": self.buttonEntryEast.GetName(),  "exit": self.buttonExitEast.GetName()}})
-
-			self.buttonEntryEast = self.buttonExitEast = None
-
-	def anyTurnoutLocked(self, toList):
-		rv = False
-		for toname, stat in toList:
-			turnout = self.turnouts[toname]
-			tostat = "N" if turnout.IsNormal() else "R"
-			print("check turnout %s %s %s" % (toname, tostat, stat))
-			if turnout.IsLocked() and tostat != stat:
-				print("it;s OK")
-				rv = True
-
-		return rv
+		if btn.GetName() in self.eastGroup["NOSW"] + self.westGroup["NOSW"]:
+			self.DoEntryExitButtons(btn, "NOSW")
+		elif btn.GetName() in self.eastGroup["NOSE"] + self.westGroup["NOSE"]:
+			self.DoEntryExitButtons(btn, "NOSE")
 
 	def CheckBlockSignals(self, sig, aspect, blk, rev, rType, nbStatus, nbRType, nnbClear):
 		if blk is None:
@@ -933,14 +842,14 @@ class Nassau (District):
 		self.buttons = {}
 		self.osButtons = {}
 
-		self.buttonEntryWest = self.buttonExitWest = None
-		self.buttonEntryEast = self.buttonExitEast = None
-	
+		for n in ["NOSW", "NOSE"]:
+			self.westButton[n] = self.eastButton[n] = None
+
 		self.buttons["NNXBtnN60"] = Button(self, self.screen, self.frame, "NNXBtnN60", (9, 9), tiles)
 		self.buttons["NNXBtnN11"] = Button(self, self.screen, self.frame, "NNXBtnN11", (8, 11), tiles)
 		self.buttons["NNXBtnN21"] = Button(self, self.screen, self.frame, "NNXBtnN21", (8, 13), tiles)
 		self.buttons["NNXBtnT12"] = Button(self, self.screen, self.frame, "NNXBtnT12", (16, 5), tiles)
-		self.entryWest = {x:self.buttons[x] for x in ["NNXBtnN60", "NNXBtnN11", "NNXBtnN21", "NNXBtnT12"]}
+		self.westGroup["NOSW"] = ["NNXBtnN60", "NNXBtnN11", "NNXBtnN21", "NNXBtnT12"]
 
 		self.buttons["NNXBtnW10"] = Button(self, self.screen, self.frame, "NNXBtnW10", (20, 5), tiles)
 		self.buttons["NNXBtnN32W"] = Button(self, self.screen, self.frame, "NNXBtnN32W", (20, 7), tiles)
@@ -950,12 +859,12 @@ class Nassau (District):
 		self.buttons["NNXBtnN41W"] = Button(self, self.screen, self.frame, "NNXBtnN41W", (20, 15), tiles)
 		self.buttons["NNXBtnN42W"] = Button(self, self.screen, self.frame, "NNXBtnN42W", (20, 17), tiles)
 		self.buttons["NNXBtnW20W"] = Button(self, self.screen, self.frame, "NNXBtnW20W", (21, 19), tiles)
-		self.exitWest = {x:self.buttons[x] for x in ["NNXBtnW10", "NNXBtnN32W", "NNXBtnN31W", "NNXBtnN12W", "NNXBtnN22W", "NNXBtnN41W", "NNXBtnN42W", "NNXBtnW20W"]}
+		self.eastGroup["NOSW"] = ["NNXBtnW10", "NNXBtnN32W", "NNXBtnN31W", "NNXBtnN12W", "NNXBtnN22W", "NNXBtnN41W", "NNXBtnN42W", "NNXBtnW20W"]
 
 		self.buttons["NNXBtnR10"] = Button(self, self.screen, self.frame, "NNXBtnR10", (44, 9), tiles)
 		self.buttons["NNXBtnB10"] = Button(self, self.screen, self.frame, "NNXBtnB10", (44, 11), tiles)
 		self.buttons["NNXBtnB20"] = Button(self, self.screen, self.frame, "NNXBtnB20", (44, 13), tiles)
-		self.entryEast = {x:self.buttons[x] for x in ["NNXBtnR10", "NNXBtnB10", "NNXBtnB20"]}
+		self.eastGroup["NOSE"] = ["NNXBtnR10", "NNXBtnB10", "NNXBtnB20"]
 
 		self.buttons["NNXBtnW11"] = Button(self, self.screen, self.frame, "NNXBtnW11", (32, 5), tiles)
 		self.buttons["NNXBtnN32E"] = Button(self, self.screen, self.frame, "NNXBtnN32E", (29, 7), tiles)
@@ -965,7 +874,7 @@ class Nassau (District):
 		self.buttons["NNXBtnN41E"] = Button(self, self.screen, self.frame, "NNXBtnN41E", (29, 15), tiles)
 		self.buttons["NNXBtnN42E"] = Button(self, self.screen, self.frame, "NNXBtnN42E", (29, 17), tiles)
 		self.buttons["NNXBtnW20E"] = Button(self, self.screen, self.frame, "NNXBtnW20E", (31, 19), tiles)
-		self.exitEast = {x:self.buttons[x] for x in ["NNXBtnW11", "NNXBtnN32E", "NNXBtnN31E", "NNXBtnN12E", "NNXBtnN22E", "NNXBtnN41E", "NNXBtnN42E", "NNXBtnW20E"]}
+		self.westGroup["NOSE"] = ["NNXBtnW11", "NNXBtnN32E", "NNXBtnN31E", "NNXBtnN12E", "NNXBtnN22E", "NNXBtnN41E", "NNXBtnN42E", "NNXBtnW20E"]
 
 		self.NXMap = {
 			"NNXBtnT12": {
@@ -1005,38 +914,53 @@ class Nassau (District):
 				"NNXBtnW20W": [ ["NSw19", "N"], ["NSw29", "N"], ["NSw31", "R"], ["NSw33", "N"], ["NSw35", "N"] ],
 			},
 
-			"NNXBtnR10": {
-				"NNXBtnW11":  [ ["NSw47", "N"], ["NSw55", "N"] ],
-				"NNXBtnN32E": [ ["NSw51", "N"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "R"] ],
-				"NNXBtnN31E": [ ["NSw51", "R"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "R"] ],
-				"NNXBtnN12E": [ ["NSw53", "N"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "R"] ],
-				"NNXBtnN22E": [ ["NSw43", "N"], ["NSw45", "R"], ["NSw47", "R"] ],
-				"NNXBtnN41E": [ ["NSw41", "R"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "R"] ],
-				"NNXBtnN42E": [ ["NSw39", "R"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "R"] ],
-				"NNXBtnW20E": [ ["NSw39", "N"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "R"] ]
-			}, 
-			
-			"NNXBtnB10": {
-				"NNXBtnW11":  [ ["NSw55", "R"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "N"] ],
-				"NNXBtnN32E": [ ["NSw51", "N"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "N"] ],
-				"NNXBtnN31E": [ ["NSw51", "R"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "N"] ],
-				"NNXBtnN12E": [ ["NSw53", "N"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "N"] ],
-				"NNXBtnN22E": [ ["NSw43", "N"], ["NSw45", "R"], ["NSw47", "N"], ["NSw57", "N"] ],
-				"NNXBtnN41E": [ ["NSw41", "R"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "N"], ["NSw57", "N"]],
-				"NNXBtnN42E": [ ["NSw39", "R"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "N"], ["NSw57", "N"] ],
-				"NNXBtnW20E": [ ["NSw39", "N"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "N"], ["NSw57", "N"] ]
-			}, 
-			
-			"NNXBtnB20": {
-				"NNXBtnW11":  [ ["NSw55", "R"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "R"] ],
-				"NNXBtnN32E": [ ["NSw51", "N"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "R"]],
-				"NNXBtnN31E": [ ["NSw51", "R"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "R"]],
-				"NNXBtnN12E": [ ["NSw53", "N"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "R"] ],
-				"NNXBtnN22E": [ ["NSw43", "N"], ["NSw45", "N"], ["NSw57", "N"] ],
-				"NNXBtnN41E": [ ["NSw41", "R"], ["NSw43", "R"], ["NSw45", "N"], ["NSw57", "N"] ],
-				"NNXBtnN42E": [ ["NSw39", "R"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "N"], ["NSw57", "N"] ],
-				"NNXBtnW20E": [ ["NSw39", "N"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "N"], ["NSw57", "N"] ]
-			}
+			"NNXBtnW11": {
+				"NNXBtnR10": [ ["NSw47", "N"], ["NSw55", "N"] ],
+				"NNXBtnB10": [ ["NSw55", "R"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "N"] ],
+				"NNXBtnB20": [ ["NSw55", "R"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "R"] ],
+			},
+
+			"NNXBtnN32E": {
+				"NNXBtnR10": [ ["NSw51", "N"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "R"] ],
+				"NNXBtnB10": [ ["NSw51", "N"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "N"] ],
+				"NNXBtnB20": [ ["NSw51", "N"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "R"] ],
+			},
+
+			"NNXBtnN31E": {
+				"NNXBtnR10": [ ["NSw51", "R"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "R"] ],
+				"NNXBtnB10": [ ["NSw51", "R"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "N"] ],
+				"NNXBtnB20": [ ["NSw51", "R"], ["NSw53", "R"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "R"] ],
+			},
+
+			"NNXBtnN12E": {
+				"NNXBtnR10": [ ["NSw53", "N"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "R"] ],
+				"NNXBtnB10": [ ["NSw53", "N"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "N"] ],
+				"NNXBtnB20": [ ["NSw53", "N"], ["NSw55", "N"], ["NSw45", "N"], ["NSw47", "N"], ["NSw57", "R"] ],
+			},
+
+			"NNXBtnN22E": {
+				"NNXBtnR10": [ ["NSw43", "N"], ["NSw45", "R"], ["NSw47", "R"] ],
+				"NNXBtnB10": [ ["NSw43", "N"], ["NSw45", "R"], ["NSw47", "N"], ["NSw57", "N"] ],
+				"NNXBtnB20": [ ["NSw43", "N"], ["NSw45", "N"], ["NSw57", "N"] ],
+			},
+
+			"NNXBtnN41E": {
+				"NNXBtnR10": [ ["NSw41", "R"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "R"] ],
+				"NNXBtnB10": [ ["NSw41", "R"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "N"], ["NSw57", "N"] ],
+				"NNXBtnB20": [ ["NSw41", "R"], ["NSw43", "R"], ["NSw45", "N"], ["NSw57", "N"] ],
+			},
+
+			"NNXBtnN42E": {
+				"NNXBtnR10": [ ["NSw39", "R"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "R"] ],
+				"NNXBtnB10": [ ["NSw39", "R"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "N"], ["NSw57", "N"] ],
+				"NNXBtnB20": [ ["NSw39", "R"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "N"], ["NSw57", "N"] ],
+			},
+
+			"NNXBtnW20E": {
+				"NNXBtnR10": [ ["NSw39", "N"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "R"] ],
+				"NNXBtnB10": [ ["NSw39", "N"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "R"], ["NSw47", "N"], ["NSw57", "N"] ],
+				"NNXBtnB20": [ ["NSw39", "N"], ["NSw41", "N"], ["NSw43", "R"], ["NSw45", "N"], ["NSw57", "N"] ],
+			},
 		}
 
 		return self.buttons

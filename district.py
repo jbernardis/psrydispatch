@@ -24,6 +24,10 @@ class District:
 		self.name = name
 		self.frame = frame
 		self.screen = screen
+		self.eastGroup = {}
+		self.westGroup = {}
+		self.eastButton = {}
+		self.westButton = {}
 		logging.info("Creating district %s" % name)
 
 	def Initialize(self, sstiles, misctiles):
@@ -59,6 +63,54 @@ class District:
 	#  requests to the dispatch server
 	def PerformButtonAction(self, btn):
 		pass
+
+	def DoEntryExitButtons(self, btn, groupName):
+		bname = btn.GetName()
+		if self.westButton[groupName] and not self.westButton[groupName].IsPressed():
+			self.westButton[groupName] = None
+		if self.eastButton[groupName] and not self.eastButton[groupName].IsPressed():
+			self.eastButton[groupName] = None
+
+		if bname in self.westGroup[groupName]:
+			if self.westButton[groupName]:
+				self.frame.ClearButtonNow(self.westButton[groupName])
+
+			btn.Press(refresh=True)
+			self.westButton[groupName] = btn
+			self.frame.ClearButtonAfter(5, btn)
+
+		if bname in self.eastGroup[groupName]:
+			if self.eastButton[groupName]:
+				self.frame.ClearButtonNow(self.eastButton[groupName])
+
+			btn.Press(refresh=True)
+			self.eastButton[groupName] = btn
+			self.frame.ClearButtonAfter(5, btn)
+
+		wButton = self.westButton[groupName]
+		eButton = self.eastButton[groupName]
+		if wButton and eButton:
+			self.frame.ResetButtonExpiry(2, wButton)
+			self.frame.ResetButtonExpiry(2, eButton)
+			try:
+				toList = self.NXMap[wButton.GetName()][eButton.GetName()]
+			except KeyError:
+				toList = None
+
+			if toList is None or self.anyTurnoutLocked(toList):
+				wButton.Invalidate(refresh=True)
+				eButton.Invalidate(refresh=True)
+				self.frame.Popup("No available route")
+
+			else:
+				wButton.Acknowledge(refresh=True)
+				eButton.Acknowledge(refresh=True)
+				self.MatrixTurnoutRequest(toList)
+				# self.frame.Request({"nxbutton": { "entry": wButton.GetName(),  "exit": eButton.GetName()}})
+
+			self.westButton[groupName] = None
+			self.eastButton[groupName] = None
+
 
 	def MatrixTurnoutRequest(self, tolist):
 		for toname, state in tolist:
@@ -204,6 +256,18 @@ class District:
 		self.CheckBlockSignals(sig, aspect, exitBlk, doReverseExit, rType, nbStatus, nbRType, nnbClear)
 
 		return aspect
+
+	def anyTurnoutLocked(self, toList):
+		rv = False
+		for toname, stat in toList:
+			turnout = self.turnouts[toname]
+			tostat = "N" if turnout.IsNormal() else "R"
+			print("check turnout %s %s %s" % (toname, tostat, stat))
+			if turnout.IsLocked() and tostat != stat:
+				print("it;s OK")
+				rv = True
+
+		return rv
 
 	def CheckBlockSignals(self, sig, aspect, blk, rev, rType, nbStatus, nbRType, nnbClear):
 		pass
