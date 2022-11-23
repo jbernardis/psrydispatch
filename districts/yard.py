@@ -94,8 +94,6 @@ class Yard (District):
 		# self.turnouts["YSw21"].SetLock("YSw17", s17=='R', refresh=True)
 		# self.turnouts["YSw21b"].SetLock("YSw17", s17=='R', refresh=True)
 
-		print("S23 = %s" % s23)
-
 		for block in blocks:
 			bname = block.GetName()
 			if bname == "YOSCJW":
@@ -843,6 +841,20 @@ class Yard (District):
 		]
 		for signm, atype, east, tileSet, pos in sigList:
 			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])  
+
+		self.sigLeverMap = {
+			"Y2.lvr": [ "YOSCJW", "YOSCJE" ],
+			"Y4.lvr": [ "YOSCJW", "YOSCJE" ],
+			"Y8.lvr": [ "YOSEJW", "YOSEJE" ],
+			"Y10.lvr": [ "YOSEJW", "YOSEJE" ],
+			"Y22.lvr": [ "YOSKL1", "YOSKL2", "YOSKL3" ],
+			"Y24.lvr": [ "YOSKL1", "YOSKL2", "YOSKL3" ],
+			"Y26.lvr": [ "YOSKL1", "YOSKL2", "YOSKL3" ],
+			"Y34.lvr": [ "YOSKL4" ],
+		}
+
+		for sl in self.sigLeverMap:
+			self.frame.AddSignalLever(sl, self)
 
 		blockSigs = {
 			# which signals govern stopping sections, west and east

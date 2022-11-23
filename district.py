@@ -111,7 +111,6 @@ class District:
 			self.westButton[groupName] = None
 			self.eastButton[groupName] = None
 
-
 	def MatrixTurnoutRequest(self, tolist):
 		for toname, state in tolist:
 			if (state == "R" and self.turnouts[toname].IsNormal()) or \
@@ -131,41 +130,40 @@ class District:
 
 	def FindRoute(self, sig):
 		signm = sig.GetName()
-		print("find route for signal %s" % signm)
-		print("possible routes: %s" % json.dumps(sig.possibleRoutes))
+		# print("find route for signal %s" % signm)
+		# print("possible routes: %s" % json.dumps(sig.possibleRoutes))
 		for blknm, siglist in self.osSignals.items():
-			print("block, sigs = %s %s" % (blknm, str(siglist)))
+			# print("block, sigs = %s %s" % (blknm, str(siglist)))
 			if signm in siglist:
 				osblk = self.frame.blocks[blknm]
 				osblknm = blknm
 				rname = osblk.GetRouteName()
-				print("os: %s route: %s" % (osblknm, str(rname)))
+				# print("os: %s route: %s" % (osblknm, str(rname)))
 				if osblk.route is None:
 					continue
 
 				rt = self.routes[rname]
 				if sig.IsPossibleRoute(blknm, rname):
-					print("good route")
+					# print("good route")
 					return rt, osblk
-				print("not a possible route")
+				# print("not a possible route")
 
-		print("no route found")
+		# print("no route found")
 		return None, None
 
 	def PerformSignalAction(self, sig):
-		print("PSA %s %s" % (sig.GetName(), sig.GetAspect()))
 		currentMovement = sig.GetAspect() != 0  # does the CURRENT signal status allow movement
 		signm = sig.GetName()
 		rt, osblk = self.FindRoute(sig)
 
 		if rt is None:
 			self.frame.Popup("No available route")
-			return
+			return False
 
 		# osblknm = osblk.GetName()
 		if osblk.AreHandSwitchesSet():
 			self.frame.Popup("Block is locked")
-			return
+			return False
 
 		# this is a valid signal for the current route	
 		if not currentMovement:  # we are trying to change the signal to allow movement
@@ -175,21 +173,19 @@ class District:
 			esig = osblk.GetEntrySignal()
 			if esig is not None and esig.GetName() != signm:
 				self.frame.Popup("Incorrect signal for current route")
-				return
+				return False
 			aspect = 0
 
 		self.frame.Request({"signal": {"name": signm, "aspect": aspect}})
+		return True
 
 	def CalculateAspect(self, sig, osblk, rt):
-		print("trying to move train")
 		if osblk.IsBusy():
 			self.frame.Popup("Block is busy")
 			return None
 
 		sigE = sig.GetEast()
-		print("OS Reverse check: %s %s" % (sigE, osblk.GetEast()))
 		if sigE != osblk.GetEast():
-			print("reversing OS")
 			# the block will need to be reversed, but it's premature
 			# to do so now - so force return values as if reversed
 			doReverseExit = True
@@ -197,9 +193,7 @@ class District:
 			doReverseExit = False
 
 		exitBlkNm = rt.GetExitBlock(reverse=doReverseExit)
-		print("exit block = %s" % exitBlkNm)
 		rType = rt.GetRouteType(reverse=doReverseExit)
-		print("Route type: %d" % rType)
 
 		exitBlk = self.frame.blocks[exitBlkNm]
 		if exitBlk.IsOccupied():
@@ -216,16 +210,13 @@ class District:
 
 		nb = exitBlk.NextBlock(reverse=doReverseExit)
 		if nb:
-			print("next block: %s" % nb.GetName())
 			nbStatus = nb.GetStatus()
 			nbRType = nb.GetRouteType()
 			# try to go one more block, skipping past an OS block
 
-			print("%s %s" % (sigE, nb.GetEast()))
 			if sigE != nb.GetEast():
 				# the block will need to be reversed, but it's premature
 				# to do so now - so force return values as if reversed
-				print("reversing")
 				doReverseNext = True
 			else:
 				doReverseNext = False
@@ -249,8 +240,6 @@ class District:
 			nbRType = None
 			nnbClear = False
 
-		print("calling get aspect %d %d %s %s %s" % (
-			sig.GetAspectType(), rType, str(nbStatus), str(nbRType), str(nnbClear)))
 		aspect = self.GetAspect(sig.GetAspectType(), rType, nbStatus, nbRType, nnbClear)
 
 		self.CheckBlockSignals(sig, aspect, exitBlk, doReverseExit, rType, nbStatus, nbRType, nnbClear)
@@ -262,9 +251,7 @@ class District:
 		for toname, stat in toList:
 			turnout = self.turnouts[toname]
 			tostat = "N" if turnout.IsNormal() else "R"
-			print("check turnout %s %s %s" % (toname, tostat, stat))
 			if turnout.IsLocked() and tostat != stat:
-				print("it;s OK")
 				rv = True
 
 		return rv
@@ -385,7 +372,10 @@ class District:
 
 		return 0b000  # stop as default
 
-	def PerformHandSwitchAction(self, hs):
+	def PerformHandSwitchAction(self, hs, nv=None):
+		if nv and nv == hs.GetValue():
+			return
+
 		if not hs.GetValue():
 			# currently unlocked - trying to lock
 
@@ -468,73 +458,60 @@ class District:
 				self.LockTurnouts(signm, tolist, aspect != STOP)
 
 	def DoSwitchLeverAction(self, signame, state):
-		print("in Common DSLA for signal %s state %s" % (signame, state))
+		print("in dsla")
 		sigPrefix = signame.split(".")[0]
-		print("signal prefix = (%s)" % sigPrefix)
+		print("prefix: (%s)" % sigPrefix)
 		osblknms = self.sigLeverMap[signame]
 		signm = None
 
 		for osblknm in osblknms:
-			print(osblknm)
+			print("block %s" % osblknm)
 			osblk = self.frame.blocks[osblknm]
 			route = osblk.GetRoute()
 			if route:
+				print("have a route")
 				sigs = route.GetSignals()
 				if state == "L":
+					print("look for L: %s" % sigs[1])
 					if sigs[1].startswith(sigPrefix+state):
 						signm = sigs[1]
 						movement = True   # trying to set to non-stopping aspect
-						print("matching L signal %s" % signm)
 						break
 				elif state == 'R':
+					print("look for R: %s" % sigs[0])
 					if sigs[0].startswith(sigPrefix+state):
 						signm = sigs[0]
 						movement = True   # trying to set to non-stopping aspect
-						print("matching R signal %s" % signm)
 						break
 				elif state == "N":
-					print("figure out which of %s and %s matches the lever name and is non zero aspect" % (sigs[0], sigs[1]))
 					if sigs[0].startswith(sigPrefix+"R"):
-						print("%s is a candidate" % sigs[0])
 						sig = self.frame.signals[sigs[0]]
 						if sig and sig.GetAspect() != 0:
-							print("This is the signal")
 							signm = sigs[0]
 							movement = False
 							break
 					if sigs[1].startswith(sigPrefix+"L"):
-						print("%s is a candidate" % sigs[0])
 						sig = self.frame.signals[sigs[1]]
 						if sig and sig.GetAspect() != 0:
-							print("This is the signal")
 							signm = sigs[1]
 							movement = False
 							break
 
-
 		if signm is None:
-			print("didn't find a matching signal")
 			return
 
-		print("found signal (%s)" % signm)
 		sig = self.frame.signals[signm]
 		if not sig:
-			print("could not interprest signal name")
 			return
 
 		if movement:
 			aspect = self.CalculateAspect(sig, osblk, route)
 			if aspect is None:
-				print("Unable to find appropriate signal")
 				return
-
-			print("aspect is %d" % aspect)
 		else:
 			aspect = 0
-			print("aspect is 0")
 
 		self.frame.Request({"signal": {"name": signm, "aspect": aspect}})
-
 
 	def LockTurnoutsForSignal(self, osblknm, sig, flag):
 		signm = sig.GetName()

@@ -209,7 +209,7 @@ class MainFrame(wx.Frame):
 		self.cbNassauFleet.Hide()
 		self.widgetMap[NaCl].append(self.cbNassauFleet)
 		self.NassauFleetSignals = ["N18R", "N16R", "N14R",
-						"N20L", "N18LA", "N18LB", "N16L", "N14LA", "N14LB", "N14LC", "N14LD",
+						"N18LA", "N18LB", "N16L", "N14LA", "N14LB", "N14LC", "N14LD",
 						"N28R", "N26RA", "N26RB", "N26RC", "N24RA", "N24RB", "N24RC", "N24RD",
 						"N28L", "N26L", "N24L"]
 
@@ -250,6 +250,12 @@ class MainFrame(wx.Frame):
 			[ self.CarltonFleetSignals,   self.cbCarltonFleet ],
 			[ self.ValleyJctFleetSignals, self.cbValleyJctFleet ],
 			[ self.FossFleetSignals,      self.cbFossFleet ],
+			[ self.NassauFleetSignals,    self.cbNassauFleet ],
+			[ self.ShoreFleetSignals,     self.cbShoreFleet ],
+			[ self.HydeJctFleetSignals,   self.cbHydeJctFleet ],
+			[ self.KrulishFleetSignals,   self.cbKrulishFleet ],
+			[ self.BankFleetSignals,      self.cbBankFleet ],
+			[ self.ClivedenFleetSignals,  self.cbClivedenFleet ],
 		]
 
 	def UpdateControlWidget(self, name, value):
@@ -271,6 +277,28 @@ class MainFrame(wx.Frame):
 			self.cbHydeFleet.SetValue(value != 0)
 		elif name == "yard.fleet":
 			self.cbYardFleet.SetValue(value != 0)
+		elif name == "latham.fleet":
+			self.cbLathamFleet.SetValue(value != 0)
+		elif name == "shore.fleet":
+			self.cbShoreFleet.SetValue(value != 0)
+		elif name == "hydejct.fleet":
+			self.cbHydeJctFleet.SetValue(value != 0)
+		elif name == "krulish.fleet":
+			self.cbKrulishFleet.SetValue(value != 0)
+		elif name == "nassau.fleet":
+			self.cbNassauFleet.SetValue(value != 0)
+		elif name == "bank.fleet":
+			self.cbBankFleet.SetValue(value != 0)
+		elif name == "cliveden.fleet":
+			self.cbClivedenFleet.SetValue(value != 0)
+		elif name == "carlton.fleet":
+			self.cbCarltonFleet.SetValue(value != 0)
+		elif name == "foss.fleet":
+			self.cbFossFleet.SetValue(value != 0)
+		elif name == "valleyjct.fleet":
+			self.cbValleyJctFleet.SetValue(value != 0)
+		else:
+			print("Unknown widget name: %s" % name)
 
 	def OnRBNassau(self, evt):
 		self.Request({"control": { "name": "nassau", "value": evt.GetInt()}})
@@ -288,51 +316,61 @@ class MainFrame(wx.Frame):
 		f = 1 if self.cbLathamFleet.IsChecked() else 0
 		for signm in self.LathamFleetSignals:
 			self.Request({"fleet": { "name": signm, "value": f}})
+		self.Request({"control": {"name": "latham.fleet", "value": f}})
 
 	def OnCBShoreFleet(self, _):
 		f = 1 if self.cbShoreFleet.IsChecked() else 0
 		for signm in self.ShoreFleetSignals:
 			self.Request({"fleet": { "name": signm, "value": f}})
+		self.Request({"control": {"name": "shore.fleet", "value": f}})
 
 	def OnCBHydeJctFleet(self, _):
 		f = 1 if self.cbHydeJctFleet.IsChecked() else 0
 		for signm in self.HydeJctFleetSignals:
 			self.Request({"fleet": { "name": signm, "value": f}})
+		self.Request({"control": {"name": "hydejct.fleet", "value": f}})
 
 	def OnCBKrulishFleet(self, _):
 		f = 1 if self.cbKrulishFleet.IsChecked() else 0
 		for signm in self.KrulishFleetSignals:
 			self.Request({"fleet": { "name": signm, "value": f}})
+		self.Request({"control": {"name": "krulish.fleet", "value": f}})
 
 	def OnCBNassauFleet(self, _):
 		f = 1 if self.cbNassauFleet.IsChecked() else 0
 		for signm in self.NassauFleetSignals:
 			self.Request({"fleet": { "name": signm, "value": f}})
+		self.Request({"control": {"name": "nassau.fleet", "value": f}})
 
 	def OnCBBankFleet(self, _):
 		f = 1 if self.cbBankFleet.IsChecked() else 0
 		for signm in self.BankFleetSignals:
 			self.Request({"fleet": { "name": signm, "value": f}})
+		self.Request({"control": {"name": "bank.fleet", "value": f}})
 
 	def OnCBClivedenFleet(self, _):
 		f = 1 if self.cbClivedenFleet.IsChecked() else 0
 		for signm in self.ClivedenFleetSignals:
 			self.Request({"fleet": { "name": signm, "value": f}})
+		self.Request({"control": {"name": "cliveden.fleet", "value": f}})
 
 	def OnCBCarltonFleet(self, _):
 		f = 1 if self.cbCarltonFleet.IsChecked() else 0
 		for signm in self.CarltonFleetSignals:
 			self.Request({"fleet": { "name": signm, "value": f}})
+		self.Request({"control": {"name": "carlton.fleet", "value": f}})
 
 	def OnCBValleyJctFleet(self, _):
 		f = 1 if self.cbValleyJctFleet.IsChecked() else 0
 		for signm in self.ValleyJctFleetSignals:
 			self.Request({"fleet": { "name": signm, "value": f}})
+		self.Request({"control": {"name": "valleyjct.fleet", "value": f}})
 
 	def OnCBFossFleet(self, _):
 		f = 1 if self.cbFossFleet.IsChecked() else 0
 		for signm in self.FossFleetSignals:
 			self.Request({"fleet": { "name": signm, "value": f}})
+		self.Request({"control": {"name": "foss.fleet", "value": f}})
 
 	def OnCBCliffFleet(self, _):
 		f = 1 if self.cbCliffFleet.IsChecked() else 0
@@ -477,7 +515,6 @@ class MainFrame(wx.Frame):
 		print("finished initialize")
 
 	def AddSignalLever(self, slname, district):
-		print(str(slname))
 		self.signalLeverMap[slname] = district
 
 	def GetSignalLeverDistrict(self, slname):
@@ -485,7 +522,6 @@ class MainFrame(wx.Frame):
 			return None
 
 		return self.signalLeverMap[slname]
-
 
 	def IsDispatcher(self):
 		return self.settings.dispatch
@@ -888,7 +924,6 @@ class MainFrame(wx.Frame):
 						signame = p["name"]
 						state = p["state"]
 
-						print("apply signal lever %s to %s" % (state, signame))
 						district = self.GetSignalLeverDistrict(signame)
 						district.DoSwitchLeverAction(signame, state)
 						
@@ -916,7 +951,6 @@ class MainFrame(wx.Frame):
 					except:
 						ind = None
 
-					print("indicator %s %d %d" % (iName, value, ind.GetValue()))
 					if ind is not None:
 						district = ind.GetDistrict()
 						district.DoIndicatorAction(ind, value)
@@ -942,24 +976,19 @@ class MainFrame(wx.Frame):
 					block = p["block"]
 					name = p["name"]
 					loco = p["loco"]
-					print("set train %s %s %s" % (str(block), str(name), str(loco)))
 
 					try:
 						blk = self.blocks[block]
 					except:
 						logging.warning("unable to identify block (%s)" % block)
-						print("unable to identify block (%s)" % block)
 						blk = None
 
 					if blk:
 						tr = blk.GetTrain()
 						if name is None:
-							print("train name is none, tr = %s" % str(tr))
 							if tr:
-								print("calling remove from block")
 								tr.RemoveFromBlock(blk)
 
-							print("remove block from all trains in the trainlist")
 							delList = []
 							for trid, tr in self.trains.items():
 								if tr.IsInBlock(blk):
@@ -973,7 +1002,6 @@ class MainFrame(wx.Frame):
 								except:
 									logging.warning("can't delete train %s from train list" % trid)
 
-							print("returning")
 							return
 
 						if not blk.IsOccupied():

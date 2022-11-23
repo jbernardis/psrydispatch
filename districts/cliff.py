@@ -15,7 +15,7 @@ class Cliff (District):
 
 	def PerformButtonAction(self, btn):
 		bname = btn.GetName()
-		for osBlkNm in ["COSGMW", "COSGME", "COSSHE"]:
+		for osBlkNm in ["COSGMW", "COSGME", "COSSHE", "COSSHW"]:
 			if bname in self.osButtons[osBlkNm]:
 				break
 		else:
@@ -796,7 +796,8 @@ class Cliff (District):
 		self.osButtons["COSGMW"] = [ "CG21W", "CC10W", "CC30W", "CC31W" ]
 		self.osButtons["COSGME"] = [ "CG12E", "CG10E", "CC10E", "CC30E" ]
 		self.osButtons["COSSHE"] = [
-			"CC44E", "CC43E", "CC42E", "CC41E", "CC40E", "CC21E", "CC50E", "CC51E", "CC52E", "CC53E", "CC54E",
+			"CC44E", "CC43E", "CC42E", "CC41E", "CC40E", "CC21E", "CC50E", "CC51E", "CC52E", "CC53E", "CC54E"]
+		self.osButtons["COSSHW"] = [
 			"CC44W", "CC43W", "CC42W", "CC41W", "CC40W", "CC21W", "CC50W", "CC51W", "CC52W", "CC53W", "CC54W" ]
 
 		return self.buttons

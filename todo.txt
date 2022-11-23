@@ -4,133 +4,30 @@ Districts:
 
   check other districts use of indicators and if it's consistent with yard
 
+
+
 inputs/outputs unused or uncertain of
  
     LATHAM:
-		# outb[3] = setBit(outb[3], 5, self.rr.GetInput("P11").GetValue().GetStatus())   port
+		# outb[3] = setBit(outb[3], 5, self.rr.GetInput("P11").GetValue().GetStatus())   port(2)
 
-    YARD: 
-
+    YARD:
 		# outb[4] = setBit(outb[4], 2, self.rr.GetInput("P50").GetValue())  port
-    
-            # 		if(RBYard->Checked)
-          # 		{
-          # 			YSigL2.R = YDIn[0].bit.b2;      //Signals
-          # 			YSigL2.Callon = YDIn[0].bit.b3;
-          # 			YSigL2.L = YDIn[0].bit.b4;
-          # 			YSigL4.R = YDIn[0].bit.b5;
-          # 			YSigL4.Callon = YDIn[0].bit.b6;
-          # 			YSigL4.L = YDIn[0].bit.b7;
 
-          # 			YSigL8.R = YDIn[1].bit.b0;
-          # 			YSigL8.Callon = YDIn[1].bit.b1;
-          # 			YSigL8.L = YDIn[1].bit.b2;
-          # 			YSigL10.R = YDIn[1].bit.b3;
-          # 			YSigL10.Callon = YDIn[1].bit.b4;
-          # 			YSigL10.L = YDIn[1].bit.b5;
-          # 			YSigL22.R = YDIn[1].bit.b6;
-          # 			YSigL22.Callon = YDIn[1].bit.b7;
-
-          # 			YSigL22.L = YDIn[2].bit.b0;
-          # 			YSigL24.Callon = YDIn[2].bit.b1;
-          # 			YSigL24.L = YDIn[2].bit.b2;
-          # 			YSigL26.R = YDIn[2].bit.b3;
-          # 			YSigL26.Callon = YDIn[2].bit.b4;
-          # 			YSigL26.L = YDIn[2].bit.b5;
-          # 			YSigL34.R = YDIn[2].bit.b6;
-          # 			YSigL34.Callon = YDIn[2].bit.b7;
-
-          # 			YSigL34.L = YDIn[3].bit.b0;
-          # 		}
-
-          # 		YRelease = YDIn[3].bit.b1;
-          # 		WOS1Norm = YDIn[3].bit.b2;      //switches normal for WOS1 into Y70
-
-          # 	YSWOut[3].bit.b0 = SBY51W;
-          # 	YSWOut[3].bit.b1 = SBY50W;
-       
-          # 	YSWOut[4].bit.b0 = SBY81W;
-          # 	YSWOut[4].bit.b1 = SBY82W;
-          # 	YSWOut[4].bit.b2 = SBY83W;
-          # 	YSWOut[4].bit.b3 = SBY84W;
-          # 	YSWOut[4].bit.b4 = SBY81E;
-          # 	YSWOut[4].bit.b5 = SBY82E;
-          # 	YSWOut[4].bit.b6 = SBY83E;
-          # 	YSWOut[4].bit.b7 = SBY84E;
 SHORE
  outb[3] = setBit(outb[3], 5, self.rr.GetInput("P32").GetValue())  port
 # outb[2] = setBit(outb[2], 6, self.rr.GetOutput("P42.srel").GetStatus())	port
 
 
 
-NASSAU:
-# 	NWOut[3].bit.b2 = !NFltL12.R;		//Fleet indicator
-# 	NWOut[3].bit.b3 = NFltL12.R;
-
-# 	NWOut[6].bit.b6 = NWSL1;			//Switch locks
-# 	NWOut[6].bit.b7 = NWSL2;
-
-#     NWOut[7].bit.b0 = NWSL3;
-# 	NWOut[7].bit.b1 = NWSL4;
-
-# 		NRelease 		= NWIn[3].bit.b2; 	//Switch release
-# 		if(RBNassau->Checked)
-# 		{
-# 			NFltL12.R 		= NWIn[3].bit.b3;	//Fleet lever
-# 			NSigL14.R		= NWIn[3].bit.b4;	//Signal levers
-# 			NSigL14.Callon	= NWIn[3].bit.b5;
-# 			NSigL14.L		= NWIn[3].bit.b6;
-# 			NSigL16.R 		= NWIn[3].bit.b7;
-# 			NSigL16.Callon	= NWIn[4].bit.b0;
-# 			NSigL16.L		= NWIn[4].bit.b1;
-# 			NSigL18.R		= NWIn[4].bit.b2;
-# 			NSigL18.Callon	= NWIn[4].bit.b3;
-# 			NSigL18.L		= NWIn[4].bit.b4;
-# 			NSigL24.R		= NWIn[5].bit.b0;
-# 			NSigL24.Callon	= NWIn[5].bit.b1;
-# 			NSigL24.L	 	= NWIn[5].bit.b2;
-# 			NSigL26.R 		= NWIn[5].bit.b3;
-# 			NSigL26.Callon 	= NWIn[5].bit.b4;
-# 			NSigL26.L 		= NWIn[5].bit.b5;
-# 		}
-
-# 		if(!RBNDispatcherAll->Checked)
-# 		{
-# 			NSigL20.R		= NWIn[4].bit.b5;
-# 			NSigL20.Callon	= NWIn[4].bit.b6;
-# 			NSigL20.L		= NWIn[4].bit.b7;
-# 			NSigL28.R	 	= NWIn[5].bit.b6;
-# 			NSigL28.Callon	= NWIn[5].bit.b7;
-# 			NSigL28.L   	= NWIn[6].bit.b0;
-# 		}
 
 
-#    	NEOut[2].bit.b3 = NESL1;                //Switch locks
-#     NEOut[2].bit.b4 = NESL2;
-#    	NEOut[2].bit.b5 = NESL3;
+how to use release  yard and cliff
+how to use control rabio buttons to limit control
+call on signals - I think it refers to JUST lighting the signal with no route clearing etc
+how to use wos1norm in yard
 
-
-CLIFF
-#
-# 		CRelease = CFIn[6].bit.b3;
-
-# 		if(RBCliff->Checked)
-# 		{
-# 			CSw3.UnlockReq = CFIn[6].bit.b4;
-# 			CSw11.UnlockReq = CFIn[6].bit.b5;
-# 			CSw15.UnlockReq = CFIn[6].bit.b6;
-# 			CSw19.UnlockReq = CFIn[6].bit.b7;
-# 			CSw21.UnlockReq = CFIn[7].bit.b0;
-#
-
-
-
-
-cliff and nassau fleeting as per levers and disgram
 do we really need a separate cliff fleet checkbox?  Na what is port fleeting if we have no control over port
-
-implement buttons for route selection in yard insead of direct turnout control
-
 
 check all block indicator outputs to see if I need a combined occupancy value like I do for block N25 in hyde
 

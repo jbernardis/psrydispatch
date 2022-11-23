@@ -1,7 +1,7 @@
 import logging
 
-from turnout import Turnout
 from constants import EMPTY, OCCUPIED, CLEARED, BLOCK, OVERSWITCH, STOPPINGBLOCK, MAIN, STOP
+
 
 class Route:
 	def __init__(self, screen, osblk, name, blkin, pos, blkout, rtype, tolist, signals):
@@ -373,7 +373,6 @@ class Block:
 		self.cleared = cleared
 		self.determineStatus()
 		if self.status == EMPTY:
-			print("block %s resetting" % self.GetName())
 			self.Reset()
 			
 		if refresh:

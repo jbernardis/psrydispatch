@@ -62,6 +62,49 @@ class Nassau (District):
 			trnout.UpdateStatus()
 			trnout.Draw()
 
+	def PerformSignalAction(self, sig):
+		if not District.PerformSignalAction(self, sig):
+			return
+		currentMovement = sig.GetAspect() != 0  # does the CURRENT signal status allow movement
+		rt, osblk = self.FindRoute(sig)
+		osblknm = osblk.GetName()
+		sigs = rt.GetSignals()
+
+		if osblknm in ["NWOSCY", "NWOSTY", "NWOSW", "NWOSE"]:
+			lock = [False, False, False, False]
+			if not currentMovement:
+				for s in sigs:
+					if s.startswith("N20"):
+						lock[0] = True
+					elif s.startswith("N18"):
+						lock[1] = True
+					elif s.startswith("N16"):
+						lock[2] = True
+					elif s.startswith("N14"):
+						lock[3] = True
+			if lock[0] and lock[3]:
+				lock[1] = lock[2] = True
+			elif lock[0] and lock[2]:
+				lock[1] = True
+			elif lock[1] and lock[3]:
+				lock[2] = True
+			lv = [1 if x else 0 for x in lock]
+			self.frame.Request({"districtlock": { "name": "NWSL", "value": lv }})
+		elif osblknm in ["NEOSRH", "NEOSW", "NEOSE"]:
+			lock = [False, False, False]
+			if not currentMovement:
+				for s in sigs:
+					if s.startswith("N28"):
+						lock[0] = True
+					elif s.startswith("N26"):
+						lock[1] = True
+					elif s.startswith("N24"):
+						lock[2] = True
+			if lock[0] and lock[2]:
+				lock[1] = True
+			lv = [1 if x else 0 for x in lock]
+			self.frame.Request({"districtlock": { "name": "NESL", "value": lv }})
+
 	def PerformButtonAction(self, btn):
 		District.PerformButtonAction(self, btn)
 		if btn.GetName() in self.eastGroup["NOSW"] + self.westGroup["NOSW"]:
@@ -71,7 +114,6 @@ class Nassau (District):
 
 	def CheckBlockSignals(self, sig, aspect, blk, rev, rType, nbStatus, nbRType, nnbClear):
 		if blk is None:
-			print("blk is None")
 			return
 
 		blkNm = blk.GetName()

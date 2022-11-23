@@ -190,7 +190,6 @@ class Hyde (District):
 	def DoIndicatorAction(self, ind, val):
 		District.DoIndicatorAction(self, ind, val)
 
-		print("Hyde do indicator action for %s value %d" % (ind.GetName(), val))
 		iName = ind.GetName()
 		if iName in self.buttons:
 			btn = self.buttons[iName]
