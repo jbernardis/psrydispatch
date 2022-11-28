@@ -1,5 +1,6 @@
 from constants import NORMAL, REVERSE, EMPTY, TURNOUT, SLIPSWITCH
 
+
 class Turnout:
 	def __init__(self, district, frame, name, screen, tiles, pos):
 		self.district = district
@@ -23,6 +24,9 @@ class Turnout:
 
 	def IsLocked(self):
 		return self.locked
+
+	def IsDisabled(self):
+		return self.disabled
 
 	def SetLock(self, signame, flag=True, refresh=False):
 		if flag:
@@ -159,6 +163,7 @@ class Turnout:
 
 	def GetPos(self):
 		return self.pos
+
 
 class SlipSwitch(Turnout):
 	def __init__(self, district, frame, name, screen, tiles, pos):

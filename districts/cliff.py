@@ -13,7 +13,31 @@ class Cliff (District):
 	def __init__(self, name, frame, screen):
 		District.__init__(self, name, frame, screen)
 
+	def PerformSignalAction(self, sig):
+		controlOpt = self.frame.rbCliffControl.GetSelection()
+		if controlOpt != 2:  # cliff local control or limited to bank/cliveden (handled in those districts)
+			if controlOpt == 0:
+				msg = "Cliff control is local"
+			else:
+				msg = "Cliff control is Bank/Cliveden only"
+			self.frame.Popup(msg)
+			return
+
+		District.PerformSignalAction(self, sig)
+
 	def PerformButtonAction(self, btn):
+		controlOpt = self.frame.rbCliffControl.GetSelection()
+		if controlOpt != 2:  # cliff local control or limited to bank/cliveden (handled in those districts)
+			btn.Press(refresh=False)
+			btn.Invalidate(refresh=True)
+			self.frame.ClearButtonAfter(2, btn)
+			if controlOpt == 0:
+				msg = "Cliff control is local"
+			else:
+				msg = "Cliff control is Bank/Cliveden only"
+			self.frame.Popup(msg)
+			return
+
 		bname = btn.GetName()
 		for osBlkNm in ["COSGMW", "COSGME", "COSSHE", "COSSHW"]:
 			if bname in self.osButtons[osBlkNm]:

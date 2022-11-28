@@ -12,6 +12,22 @@ class Cliveden (District):
 	def __init__(self, name, frame, screen):
 		District.__init__(self, name, frame, screen)
 
+	def PerformTurnoutAction(self, turnout):
+		controlOpt = self.frame.rbCliffControl.GetSelection()
+		if controlOpt == 0:  # Cliveden local control
+			self.frame.Popup("Cliveden control is local")
+			return
+
+		District.PerformTurnoutAction(self, turnout)
+
+	def PerformSignalAction(self, sig):
+		controlOpt = self.frame.rbCliffControl.GetSelection()
+		if controlOpt == 0:  # Cliveden local control
+			self.frame.Popup("Cliveden control is local")
+			return
+
+		District.PerformSignalAction(self, sig)
+
 	def DetermineRoute(self, blocks):
 		s13 = 'N' if self.turnouts["CSw13"].IsNormal() else 'R'
 		s9 = 'N' if self.turnouts["CSw9"].IsNormal() else 'R'

@@ -12,6 +12,22 @@ class Bank (District):
 	def __init__(self, name, frame, screen):
 		District.__init__(self, name, frame, screen)
 
+	def PerformTurnoutAction(self, turnout):
+		controlOpt = self.frame.rbCliffControl.GetSelection()
+		if controlOpt == 0:  # bank local control
+			self.frame.Popup("Bank control is local")
+			return
+
+		District.PerformTurnoutAction(self, turnout)
+
+	def PerformSignalAction(self, sig):
+		controlOpt = self.frame.rbCliffControl.GetSelection()
+		if controlOpt == 0:  # bank local control
+			self.frame.Popup("Bank control is local")
+			return
+
+		District.PerformSignalAction(self, sig)
+
 	def DetermineRoute(self, blocks):
 		s17 = 'N' if self.turnouts["CSw17"].IsNormal() else 'R'
 		s23 = 'N' if self.turnouts["CSw23"].IsNormal() else 'R'

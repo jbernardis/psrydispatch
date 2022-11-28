@@ -5,6 +5,7 @@ class Signal:
 		self.district = district
 		self.screen = screen
 		self.frame = frame
+		self.disabled = False
 		self.name = name
 		self.tiles = tiles
 		self.pos = pos
@@ -15,6 +16,12 @@ class Signal:
 		self.guardBlock = None # block that the signal is guarding exit from
 		self.fleetEnabled = False
 		self.lastAspect = 0
+
+	def SetDisabled(self, flag=True):
+		self.disabled = flag
+
+	def IsDisabled(self):
+		return self.disabled
 
 	def EnableFleeting(self, flag=None):
 		if flag is None:

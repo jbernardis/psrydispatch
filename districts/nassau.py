@@ -12,6 +12,149 @@ class Nassau (District):
 	def __init__(self, name, frame, screen):
 		District.__init__(self, name, frame, screen)
 
+	def PerformSignalAction(self, sig):
+		controlOpt = self.frame.rbNassauControl.GetSelection()
+		if controlOpt == 0:  # nassau local control
+			self.frame.Popup("Nassau control is local")
+			return
+
+		signm = sig.GetName()
+		if controlOpt == 1:
+			mainOnly = False
+			if signm == "N28L":
+				if not self.CheckIfMainRoute("NEOSRH"):
+					mainOnly = True
+			elif signm == "N26L":
+				if not self.CheckIfMainRoute("NEOSW"):
+					mainOnly = True
+			elif signm == "N24L":
+				if not self.CheckIfMainRoute("NEOSE"):
+					mainOnly = True
+			elif signm == "N18R":
+				if not self.CheckIfMainRoute("NWOSCY"):
+					mainOnly = True
+			elif signm == "N16R":
+				if not self.CheckIfMainRoute("NWOSW"):
+					mainOnly = True
+			elif signm == "N14R":
+				if not self.CheckIfMainRoute("NWOSE"):
+					mainOnly = True
+			elif signm not in [ "N26RC", "N24RA", "N16L", "N14LA" ]:  # dispatcher: main only
+				mainOnly = True
+
+			if mainOnly:
+				self.frame.Popup("Nassau control is main only")
+				return
+
+		if not District.PerformSignalAction(self, sig):
+			return
+		currentMovement = sig.GetAspect() != 0  # does the CURRENT signal status allow movement
+		rt, osblk = self.FindRoute(sig)
+		osblknm = osblk.GetName()
+		sigs = rt.GetSignals()
+
+		if osblknm in ["NWOSCY", "NWOSTY", "NWOSW", "NWOSE"]:
+			lock = [False, False, False, False]
+			if not currentMovement:
+				for s in sigs:
+					if s.startswith("N20"):
+						lock[0] = True
+					elif s.startswith("N18"):
+						lock[1] = True
+					elif s.startswith("N16"):
+						lock[2] = True
+					elif s.startswith("N14"):
+						lock[3] = True
+			if lock[0] and lock[3]:
+				lock[1] = lock[2] = True
+			elif lock[0] and lock[2]:
+				lock[1] = True
+			elif lock[1] and lock[3]:
+				lock[2] = True
+			lv = [1 if x else 0 for x in lock]
+			self.frame.Request({"districtlock": { "name": "NWSL", "value": lv }})
+		elif osblknm in ["NEOSRH", "NEOSW", "NEOSE"]:
+			lock = [False, False, False]
+			if not currentMovement:
+				for s in sigs:
+					if s.startswith("N28"):
+						lock[0] = True
+					elif s.startswith("N26"):
+						lock[1] = True
+					elif s.startswith("N24"):
+						lock[2] = True
+			if lock[0] and lock[2]:
+				lock[1] = True
+			lv = [1 if x else 0 for x in lock]
+			self.frame.Request({"districtlock": { "name": "NESL", "value": lv }})
+
+	def CheckIfMainRoute(self, osblknm):
+		osblk = self.blocks[osblknm]
+		route = osblk.GetRoute()
+		if route is None:
+			print("route = None")
+			return False
+
+		print("route name: %s" % route.GetName())
+		blk1, blk2 = route.GetEndPoints()
+		for b in [ blk1, blk2 ]:
+			if not b:
+				continue
+
+			print("Block: %s" % b)
+			if b in [ "N12", "N22" ]:
+				return True
+
+		return False
+
+	def PerformButtonAction(self, btn):
+		controlOpt = self.frame.rbNassauControl.GetSelection()
+		if controlOpt == 0:  # nassau local control
+			btn.Press(refresh=False)
+			btn.Invalidate(refresh=True)
+			self.frame.ClearButtonAfter(2, btn)
+			self.frame.Popup("Nassau control is local")
+			return
+
+		bname = btn.GetName()
+		if controlOpt == 1 and bname not in [ "NNXBtnN12W", "NNXBtnN22W", "NNXBtnN12E", "NNXBtnN22E",
+												"NNXBtnR10", "NNXBtnB10", "NNXBtnB20",
+												"NNXBtnN60", "NNXBtnN11", "NNXBtnN21" ]:  # dispatcher: main only
+			btn.Press(refresh=False)
+			btn.Invalidate(refresh=True)
+			self.frame.ClearButtonAfter(2, btn)
+			self.frame.Popup("Nassau control is main only")
+			return
+
+		District.PerformButtonAction(self, btn)
+		if bname in self.eastGroup["NOSW"] + self.westGroup["NOSW"]:
+			self.DoEntryExitButtons(btn, "NOSW")
+		elif bname in self.eastGroup["NOSE"] + self.westGroup["NOSE"]:
+			self.DoEntryExitButtons(btn, "NOSE")
+
+	def CheckBlockSignals(self, sig, aspect, blk, rev, rType, nbStatus, nbRType, nnbClear):
+		if blk is None:
+			return
+
+		blkNm = blk.GetName()
+		east = blk.GetEast(reverse=rev)
+
+		if blkNm == "N21" and not east:
+			signm = "N21W"
+			atype = RegAspects
+
+		elif blkNm == "N11" and not east:
+			signm = "N11W"
+			atype = RegAspects
+
+		else:
+			return
+
+		if aspect != 0:
+			aspect = self.GetBlockAspect(atype, rType, nbStatus, nbRType, nnbClear)
+
+		self.frame.Request({"signal": { "name": signm, "aspect": aspect }})
+
 	def DoTurnoutAction(self, turnout, state):
 		tn = turnout.GetName()
 		if turnout.GetType() == SLIPSWITCH:
@@ -62,81 +205,7 @@ class Nassau (District):
 			trnout.UpdateStatus()
 			trnout.Draw()
 
-	def PerformSignalAction(self, sig):
-		if not District.PerformSignalAction(self, sig):
-			return
-		currentMovement = sig.GetAspect() != 0  # does the CURRENT signal status allow movement
-		rt, osblk = self.FindRoute(sig)
-		osblknm = osblk.GetName()
-		sigs = rt.GetSignals()
-
-		if osblknm in ["NWOSCY", "NWOSTY", "NWOSW", "NWOSE"]:
-			lock = [False, False, False, False]
-			if not currentMovement:
-				for s in sigs:
-					if s.startswith("N20"):
-						lock[0] = True
-					elif s.startswith("N18"):
-						lock[1] = True
-					elif s.startswith("N16"):
-						lock[2] = True
-					elif s.startswith("N14"):
-						lock[3] = True
-			if lock[0] and lock[3]:
-				lock[1] = lock[2] = True
-			elif lock[0] and lock[2]:
-				lock[1] = True
-			elif lock[1] and lock[3]:
-				lock[2] = True
-			lv = [1 if x else 0 for x in lock]
-			self.frame.Request({"districtlock": { "name": "NWSL", "value": lv }})
-		elif osblknm in ["NEOSRH", "NEOSW", "NEOSE"]:
-			lock = [False, False, False]
-			if not currentMovement:
-				for s in sigs:
-					if s.startswith("N28"):
-						lock[0] = True
-					elif s.startswith("N26"):
-						lock[1] = True
-					elif s.startswith("N24"):
-						lock[2] = True
-			if lock[0] and lock[2]:
-				lock[1] = True
-			lv = [1 if x else 0 for x in lock]
-			self.frame.Request({"districtlock": { "name": "NESL", "value": lv }})
-
-	def PerformButtonAction(self, btn):
-		District.PerformButtonAction(self, btn)
-		if btn.GetName() in self.eastGroup["NOSW"] + self.westGroup["NOSW"]:
-			self.DoEntryExitButtons(btn, "NOSW")
-		elif btn.GetName() in self.eastGroup["NOSE"] + self.westGroup["NOSE"]:
-			self.DoEntryExitButtons(btn, "NOSE")
-
-	def CheckBlockSignals(self, sig, aspect, blk, rev, rType, nbStatus, nbRType, nnbClear):
-		if blk is None:
-			return
-
-		blkNm = blk.GetName()
-		east = blk.GetEast(reverse=rev)
-
-		if blkNm == "N21" and not east:
-			signm = "N21W"
-			atype = RegAspects
-
-		elif blkNm == "N11" and not east:
-			signm = "N11W"
-			atype = RegAspects
-
-		else:
-			return
-
-		if aspect != 0:
-			aspect = self.GetBlockAspect(atype, rType, nbStatus, nbRType, nnbClear)
-
-		self.frame.Request({"signal": { "name": signm, "aspect": aspect }})
-
 	def DetermineRoute(self, blocks):
-
 		s19 = 'N' if self.turnouts["NSw19"].IsNormal() else 'R'
 		s21 = 'N' if self.turnouts["NSw21"].IsNormal() else 'R'
 		s23 = 'N' if self.turnouts["NSw23"].IsNormal() else 'R'

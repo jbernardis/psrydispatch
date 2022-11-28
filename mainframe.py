@@ -29,6 +29,7 @@ from districts.nassau import Nassau
 from districts.bank import Bank
 from districts.cliveden import Cliveden
 from districts.cliff import Cliff
+from districts.port import Port
 
 from constants import HyYdPt, LaKr, NaCl, screensList, EMPTY, OCCUPIED, NORMAL, REVERSE, OVERSWITCH
 from listener import Listener
@@ -84,6 +85,7 @@ class MainFrame(wx.Frame):
 
 		else:  # set up three separate screens for a single monitor
 			self.panels = {}
+			diagramh = 0
 			for d in [self.diagrams[sn] for sn in screensList]:
 				dp = TrackDiagram(self, [d])
 				diagramw, diagramh = dp.GetSize()
@@ -473,6 +475,7 @@ class MainFrame(wx.Frame):
 		self.districts.AddDistrict(Cliveden("Cliveden", self, NaCl))
 		self.districts.AddDistrict(Cliff("Cliff", self, NaCl))
 		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
+		self.districts.AddDistrict(Port("Port", self, HyYdPt))
 
 		self.blocks, self.osBlocks = self.districts.DefineBlocks(self.tiles)
 		self.turnouts = self.districts.DefineTurnouts(self.totiles, self.blocks)
@@ -600,14 +603,6 @@ class MainFrame(wx.Frame):
 			print("You can remove bogus entry for block P21")
 		else:
 			self.blocks["P21"] = Block(self, self, "P21",	[], False)
-		if "P32" in self.blocks:
-			print("You can remove bogus entry for block P32")
-		else:
-			self.blocks["P32"] = Block(self, self, "P32",	[], False)
-		if "P42" in self.blocks:
-			print("You can remove bogus entry for block P42")
-		else:
-			self.blocks["P42"] = Block(self, self, "P42",	[], False)
 		if "P50" in self.blocks:
 			print("You can remove bogus entry for block P50")
 		else:
@@ -665,6 +660,9 @@ class MainFrame(wx.Frame):
 			to = None
 
 		if to:
+			if to.IsDisabled():
+				return
+
 			to.GetDistrict().PerformTurnoutAction(to)
 			return
 
@@ -683,6 +681,9 @@ class MainFrame(wx.Frame):
 			sig = None
 
 		if sig:
+			if sig.IsDisabled():
+				return
+
 			sig.GetDistrict().PerformSignalAction(sig)
 
 		try:

@@ -8,6 +8,8 @@ class Node:
 
 class BitMaps:
 	def __init__(self, idir):
+		self.diagrams = None
+		self.cameras = None
 		self.loadDir(idir, self)
 
 	def loadDir(self, idir, parent):

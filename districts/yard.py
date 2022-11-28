@@ -212,7 +212,23 @@ class Yard (District):
 
 		return False
 
+	def PerformSignalAction(self, sig):
+		controlOpt = self.frame.rbYardControl.GetSelection()
+		if controlOpt == 0:  # Yard local control
+			self.frame.Popup("Yard control is local")
+			return
+
+		District.PerformSignalAction(self, sig)
+
 	def PerformButtonAction(self, btn):
+		controlOpt = self.frame.rbYardControl.GetSelection()
+		if controlOpt == 0:  # yard local control
+			btn.Press(refresh=False)
+			btn.Invalidate(refresh=True)
+			self.frame.ClearButtonAfter(2, btn)
+			self.frame.Popup("Yard control is local")
+			return
+
 		District.PerformButtonAction(self, btn)
 		bname = btn.GetName()
 		if bname in self.osButtons["YOSWYW"]:
