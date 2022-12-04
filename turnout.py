@@ -21,6 +21,8 @@ class Turnout:
 		self.blockList = []
 		self.locked = False
 		self.lockedBy = []
+		if pos is None:
+			self.disabled = True
 
 	def IsLocked(self):
 		return self.locked
@@ -68,9 +70,11 @@ class Turnout:
 		if blockstat is None:
 			blockstat = self.statusFromBlock
 
-		tostat = NORMAL if self.normal else REVERSE
-		bmp = self.tiles.getBmp(tostat, blockstat, east, self.routeControlled or self.disabled or self.locked)
-		self.frame.DrawTile(self.screen, self.pos, bmp)
+		if self.pos is not None:
+			tostat = NORMAL if self.normal else REVERSE
+			bmp = self.tiles.getBmp(tostat, blockstat, east, self.routeControlled or self.disabled or self.locked)
+			self.frame.DrawTile(self.screen, self.pos, bmp)
+
 		self.statusFromBlock = blockstat
 		self.eastFromBlock = east
 
@@ -142,7 +146,6 @@ class Turnout:
 				self.pairedTurnout.SetReverse(refresh)
 			else:
 				self.pairedTurnout.SetNormal(refresh)
-		
 
 		self.district.DetermineRoute(self.blockList)
 		if refresh:
@@ -234,6 +237,7 @@ class SlipSwitch(Turnout):
 			return False
 		
 		self.normal = True
+
 		self.status[self.controller] = NORMAL
 		if self.pairedTurnout is not None:
 			if self.opposite:
@@ -268,8 +272,3 @@ class SlipSwitch(Turnout):
 		bmp = self.tiles.getBmp(self.status, blkStat, self.routeControlled or self.disabled or self.locked)
 		self.frame.DrawTile(self.screen, self.pos, bmp)
 		self.statusFromBlock = blkStat
-
-
-
-
-

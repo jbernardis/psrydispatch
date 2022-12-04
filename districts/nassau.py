@@ -92,16 +92,13 @@ class Nassau (District):
 		osblk = self.blocks[osblknm]
 		route = osblk.GetRoute()
 		if route is None:
-			print("route = None")
 			return False
 
-		print("route name: %s" % route.GetName())
 		blk1, blk2 = route.GetEndPoints()
 		for b in [ blk1, blk2 ]:
 			if not b:
 				continue
 
-			print("Block: %s" % b)
 			if b in [ "N12", "N22" ]:
 				return True
 

@@ -488,8 +488,6 @@ class MainFrame(wx.Frame):
 
 		self.resolveObjects()
 
-		self.AddBogusStuff()
-
 		self.rrServer = RRServer()
 		self.rrServer.SetServerAddress(self.settings.ipaddr, self.settings.serverport)
 
@@ -591,31 +589,7 @@ class MainFrame(wx.Frame):
 				blkMap[lkey].append((pos[0], b))
 
 		return blkMap
-###################################################### TO BE REMOVED 
-	def AddBogusStuff(self):
-		#this is to add bogus entries for block that we need before we get to their district
 
-		if "P11" in self.blocks:
-			print("You can remove bogus entry for block P11")
-		else:
-			self.blocks["P11"] = Block(self, self, "P11",	[], False)
-		if "P21" in self.blocks:
-			print("You can remove bogus entry for block P21")
-		else:
-			self.blocks["P21"] = Block(self, self, "P21",	[], False)
-		if "P50" in self.blocks:
-			print("You can remove bogus entry for block P50")
-		else:
-			self.blocks["P50"] = Block(self, self, "P50",	[], False)
-
-	def DrawOthers(self, block):
-		print("Remove this bogus drawothers method from mainframe")
-
-	def DoBlockAction(self, blk, blockend, state):
-		print("Remove this bogus doblockaction method from mainframe")
-
-####################################################### END OF TO BE REMOVED
-		
 	def onTicker(self, _):
 		self.ClearExpiredButtons()
 		self.breakerDisplay.ticker()

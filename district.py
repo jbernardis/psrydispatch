@@ -200,9 +200,12 @@ class District:
 			self.frame.Popup("Block is busy")
 			return None
 
-		if exitBlk.IsCleared() and sigE != exitBlk.GetEast():
-			self.frame.Popup("Block is cleared in opposite direction")
-			return None
+		crossEW = self.CrossingEastWestBoundary(osblk, exitBlk)
+
+		if exitBlk.IsCleared():
+			if (sigE != exitBlk.GetEast() and not crossEW) or (sigE == exitBlk.GetEast() and crossEW):
+				self.frame.Popup("Block is cleared in opposite direction")
+				return None
 
 		if exitBlk.AreHandSwitchesSet():
 			self.frame.Popup("Block is locked")
@@ -458,27 +461,21 @@ class District:
 				self.LockTurnouts(signm, tolist, aspect != STOP)
 
 	def DoSwitchLeverAction(self, signame, state):
-		print("in dsla")
 		sigPrefix = signame.split(".")[0]
-		print("prefix: (%s)" % sigPrefix)
 		osblknms = self.sigLeverMap[signame]
 		signm = None
 
 		for osblknm in osblknms:
-			print("block %s" % osblknm)
 			osblk = self.frame.blocks[osblknm]
 			route = osblk.GetRoute()
 			if route:
-				print("have a route")
 				sigs = route.GetSignals()
 				if state == "L":
-					print("look for L: %s" % sigs[1])
 					if sigs[1].startswith(sigPrefix+state):
 						signm = sigs[1]
 						movement = True   # trying to set to non-stopping aspect
 						break
 				elif state == 'R':
-					print("look for R: %s" % sigs[0])
 					if sigs[0].startswith(sigPrefix+state):
 						signm = sigs[0]
 						movement = True   # trying to set to non-stopping aspect
