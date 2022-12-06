@@ -5,7 +5,7 @@ from turnout import Turnout, SlipSwitch
 from signal import Signal
 from handswitch import HandSwitch
 
-from constants import LaKr, SLIPSWITCH, NORMAL, REVERSE, RESTRICTING, SLOW, , MAIN, DIVERGING, RegAspects, AdvAspects
+from constants import LaKr, SLIPSWITCH, NORMAL, REVERSE, RESTRICTING, SLOW, MAIN, DIVERGING, RegAspects, AdvAspects
 
 
 class Port (District):
@@ -969,10 +969,11 @@ class Port (District):
 			[ "PASw11",  "torightright", ["POSSP4"], (107, 28) ],
 			[ "PASw13",  "toleftdown",   ["POSSP4"], (109, 30) ],
 			[ "PASw15",  "toleftright",  ["POSSP1", "POSSP2", "POSSP3"], (99, 20) ],
-			[ "PASw17",  "torightright", ["POSSP1"], (108, 18) ],
+			[ "PASw17",  "torightright", ["POSSP1"], (104, 18) ],
 			[ "PASw19",  "torightright", ["POSSP1", "POSSP2", "POSSP3"], (100, 20) ],
-			[ "PASw19b", "torightleft",  ["POSSP1", "POSSP2", "POSSP3"], (102, 22) ],
+			[ "PASw19b", "toleftupinv",  ["POSSP1", "POSSP2", "POSSP3"], (102, 22) ],
 			[ "PASw21",  "toleftup",     ["POSSP2", "POSSP3"], None ],
+			[ "PASw23",  "torightleft",  ["POSSP2", "POSSP3"], (106, 26) ],
 		]
 
 		for tonm, tileSet, blks, pos in toList:
@@ -1049,6 +1050,27 @@ class Port (District):
 	def DefineSignals(self, tiles):
 		self.signals = {}
 		sigList = [
+			[ "PA12R",  RegAspects, True,    "right",     (98, 21) ],
+			[ "PA12LA", RegAspects, False,   "left",      (107, 17) ],
+			[ "PA12LB", RegAspects, False,   "left",      (107, 19) ],
+			[ "PA12LC", RegAspects, False,   "left",      (106, 21) ],
+
+			[ "PA10RA", RegAspects, True,    "right",     (100, 23) ],
+			[ "PA10RB", RegAspects, True,    "right",     (102, 25) ],
+			[ "PA10L",  RegAspects, False,   "left",      (110, 23) ],
+
+			[ "PA8R",   RegAspects, True,    "right",     (102, 27) ],
+			[ "PA8L",   RegAspects, False,   "left",      (110, 25) ],
+
+			[ "PA6R",   RegAspects, True,    "right",     (101, 29) ],
+			[ "PA6LA",  RegAspects, False,   "left",      (109, 27) ],
+			[ "PA6LB",  RegAspects, False,   "left",      (111, 29) ],
+			[ "PA6LC",  RegAspects, False,   "left",      (112, 31) ],
+
+			[ "PA4RA",  RegAspects, True,    "right",     (100, 31) ],
+			[ "PA4RB",  RegAspects, True,    "right",     (100, 33) ],
+			[ "PA4L",   RegAspects, False,   "left",      (111, 34) ],
+
 			[ "PA32RA", RegAspects, True,    "rightlong", (119, 27) ],
 			[ "PA32RB", RegAspects, True,    "rightlong", (119, 29) ],
 			[ "PA32L",  RegAspects, False,   "left",      (127, 25) ],
