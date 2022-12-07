@@ -5,12 +5,13 @@ from turnout import Turnout, SlipSwitch
 from signal import Signal
 from handswitch import HandSwitch
 
-from constants import LaKr, SLIPSWITCH, NORMAL, REVERSE, RESTRICTING, SLOW, MAIN, DIVERGING, RegAspects, AdvAspects
+from constants import LaKr, EMPTY, NORMAL, REVERSE, RESTRICTING, SLOW, MAIN, DIVERGING, RegAspects, AdvAspects
 
 
 class Port (District):
 	def __init__(self, name, frame, screen):
 		District.__init__(self, name, frame, screen)
+		self.sw9 = self.sw3 = None
 
 	def CrossingEastWestBoundary(self, osblk, blk):
 		blkNm = blk.GetName()
@@ -21,11 +22,15 @@ class Port (District):
 		elif blkNm == "P30":
 			if osNm == "POSPJ2":
 				return True
+		elif blkNm == "P32":
+			if osNm in [ "POSCJ1", "POSCJ2" ]:
+				return True
 
 		return False
 
 	def DoTurnoutAction(self, turnout, state):
 		tn = turnout.GetName()
+		print("local DTA for %s" % tn)
 		if tn == "PASw35":
 			bstat = NORMAL if self.turnouts["PASw37"].IsNormal() else REVERSE
 			turnout.SetStatus([state, bstat])
@@ -47,6 +52,50 @@ class Port (District):
 			to.SetStatus([sstat[0], state])
 			to.Draw()
 
+		elif tn == "PASw23":
+			District.DoTurnoutAction(self, turnout, state)
+			to = self.turnouts["PASw21"]
+			sstat = to.GetStatus()
+			to.SetStatus([sstat[0], state])
+			to.Draw()
+
+		elif tn == "PASw21":
+			bstat = NORMAL if self.turnouts["PASw23"].IsNormal() else REVERSE
+			turnout.SetStatus([state, bstat])
+			turnout.Draw()
+
+		elif tn == "PASw7":
+			District.DoTurnoutAction(self, turnout, state)
+			to = self.turnouts["PASw5"]
+			sstat = to.GetStatus()
+			to.SetStatus([sstat[0], state])
+			to.Draw()
+
+		elif tn == "PASw5":
+			bstat = NORMAL if self.turnouts["PASw7"].IsNormal() else REVERSE
+			turnout.SetStatus([state, bstat])
+			turnout.Draw()
+
+			to = self.turnouts["PASw3"]
+			sstat = to.GetStatus()
+			to.SetStatus([sstat[0], state])
+			to.Draw()
+
+		elif tn == "PASw3":
+			bstat = NORMAL if self.turnouts["PASw5"].IsNormal() else REVERSE
+			turnout.SetStatus([state, bstat])
+			turnout.Draw()
+
+			to = self.turnouts["PASw1"]
+			sstat = to.GetStatus()
+			to.SetStatus([sstat[0], state])
+			to.Draw()
+
+		elif tn == "PASw1":
+			bstat = NORMAL if self.turnouts["PASw3"].IsNormal() else REVERSE
+			turnout.SetStatus([state, bstat])
+			turnout.Draw()
+
 		else:
 			District.DoTurnoutAction(self, turnout, state)
 
@@ -54,6 +103,26 @@ class Port (District):
 			trnout = self.turnouts["PASw35"]
 			trnout.UpdateStatus()
 			trnout.Draw()
+
+	def DrawOthers(self, block):
+		if block.GetName() in ["POSSP2", "POSSP3", "POSSP4", "POSSP5"]:
+			self.drawCrossover()
+
+	def drawCrossover(self):
+		s9 = NORMAL if self.sw9.IsNormal() else REVERSE
+		s3 = NORMAL if self.sw3.IsNormal() else REVERSE
+
+		if s9 == REVERSE:
+			blkstat = self.sw9.GetBlockStatus()
+		elif s3 == REVERSE:
+			blkstat = self.sw3.GetBlockStatus()
+		else:
+			blkstat = EMPTY
+
+		bmp = "diagright" if s9 == REVERSE else "diagleft" if s3 == REVERSE else "cross"
+		bmp = self.misctiles["crossover"].getBmp(blkstat, bmp)
+		self.frame.DrawTile(self.screen, (104, 29), bmp)
+
 
 	def DetermineRoute(self, blocks):
 		for block in blocks:
@@ -528,34 +597,34 @@ class Port (District):
 
 		self.blocks["P32"] = Block(self, self.frame, "P32",
 			[
-				(tiles["diagleft"], self.screen, (146, 31), False),
-				(tiles["diagleft"], self.screen, (147, 30), False),
-				(tiles["turnleftleft"], self.screen, (148, 29), False),
-				(tiles["horiznc"],  self.screen, (149, 29), False),
-				(tiles["horiz"],    self.screen, (150, 29), False),
-				(tiles["horiznc"],  self.screen, (151, 29), False),
-				(tiles["horiz"],    self.screen, (152, 29), False),
-				(tiles["horiznc"],  self.screen, (153, 29), False),
+				(tiles["diagleft"], self.screen, (146, 31), True),
+				(tiles["diagleft"], self.screen, (147, 30), True),
+				(tiles["turnleftleft"], self.screen, (148, 29), True),
+				(tiles["horiznc"],  self.screen, (149, 29), True),
+				(tiles["horiz"],    self.screen, (150, 29), True),
+				(tiles["horiznc"],  self.screen, (151, 29), True),
+				(tiles["horiz"],    self.screen, (152, 29), True),
+				(tiles["horiznc"],  self.screen, (153, 29), True),
 
-				(tiles["horiznc"],  LaKr,        (113, 21), True),
-				(tiles["horiz"],    LaKr,        (114, 21), True),
-				(tiles["horiznc"],  LaKr,        (115, 21), True),
-				(tiles["horiz"],    LaKr,        (116, 21), True),
-				(tiles["horiznc"],  LaKr,        (117, 21), True),
-				(tiles["horiz"],    LaKr,        (118, 21), True),
-				(tiles["horiznc"],  LaKr,        (119, 21), True),
-			], False)
+				(tiles["horiznc"],  LaKr,        (113, 21), False),
+				(tiles["horiz"],    LaKr,        (114, 21), False),
+				(tiles["horiznc"],  LaKr,        (115, 21), False),
+				(tiles["horiz"],    LaKr,        (116, 21), False),
+				(tiles["horiznc"],  LaKr,        (117, 21), False),
+				(tiles["horiz"],    LaKr,        (118, 21), False),
+				(tiles["horiznc"],  LaKr,        (119, 21), False),
+			], True)
 		self.blocks["P32"].AddTrainLoc(self.screen, (149, 29))
 		self.blocks["P32"].AddTrainLoc(LaKr, (113, 21))
 		self.blocks["P32"].AddStoppingBlock([
-				(tiles["eobleft"],  self.screen, (143, 33), False),
-				(tiles["turnleftright"], self.screen, (144, 33), False),
-				(tiles["diagleft"], self.screen, (145, 32), False),
+				(tiles["eobleft"],  self.screen, (143, 33), True),
+				(tiles["turnleftright"], self.screen, (144, 33), True),
+				(tiles["diagleft"], self.screen, (145, 32), True),
 			], False)
 		self.blocks["P32"].AddStoppingBlock([
-				(tiles["eobleft"],  LaKr,        (110, 21), False),
-				(tiles["horiznc"],  LaKr,        (111, 21), True),
-				(tiles["horiz"],    LaKr,        (112, 21), True),
+				(tiles["eobleft"],  LaKr,        (110, 21), True),
+				(tiles["horiznc"],  LaKr,        (111, 21), False),
+				(tiles["horiz"],    LaKr,        (112, 21), False),
 			], True)
 
 		self.blocks["P40"] = Block(self, self.frame, "P40",
@@ -963,16 +1032,15 @@ class Port (District):
 			[ "PASw31",  "torightleft",  ["POSPJ1"], (122, 24) ],
 			[ "PASw37",  "toleftright",  ["POSPJ1", "POSPJ2"], None ],
 
-			[ "PASw3",   "torightright", ["POSSP2", "POSSP3", "POSSP4", "POSSP5"], (103, 28) ],
-			[ "PASw7b",  "toleftleft",   ["POSSP2", "POSSP3"], (109, 24) ],
-			[ "PASw9",   "toleftup",     ["POSSP2", "POSSP3", "POSSP4", "POSSP5"], (105, 30) ],
+			[ "PASw7",   "toleftleft",   ["POSSP2", "POSSP3"], (109, 24) ],
+			[ "PASw9",   "torightright", ["POSSP2", "POSSP3", "POSSP4", "POSSP5"], (103, 28) ],
+			[ "PASw9b",  "toleftupinv",  ["POSSP2", "POSSP3", "POSSP4", "POSSP5"], (105, 30) ],
 			[ "PASw11",  "torightright", ["POSSP4"], (107, 28) ],
 			[ "PASw13",  "toleftdown",   ["POSSP4"], (109, 30) ],
 			[ "PASw15",  "toleftright",  ["POSSP1", "POSSP2", "POSSP3"], (99, 20) ],
 			[ "PASw17",  "torightright", ["POSSP1"], (104, 18) ],
 			[ "PASw19",  "torightright", ["POSSP1", "POSSP2", "POSSP3"], (100, 20) ],
 			[ "PASw19b", "toleftupinv",  ["POSSP1", "POSSP2", "POSSP3"], (102, 22) ],
-			[ "PASw21",  "toleftup",     ["POSSP2", "POSSP3"], None ],
 			[ "PASw23",  "torightleft",  ["POSSP2", "POSSP3"], (106, 26) ],
 		]
 
@@ -981,8 +1049,7 @@ class Port (District):
 			for blknm in blks:
 				blocks[blknm].AddTurnout(trnout)
 				trnout.AddBlock(blknm)
-			#  TODO
-			# trnout.SetDisabled(True)
+			trnout.SetDisabled(True)
 			self.turnouts[tonm] = trnout
 
 		trnout = SlipSwitch(self, self.frame, "PASw35", self.screen, tiles["ssright"], (124, 24))
@@ -991,16 +1058,14 @@ class Port (District):
 		trnout.AddBlock("POSPJ1")
 		trnout.AddBlock("POSPJ2")
 		trnout.SetControllers(None, self.turnouts["PASw37"])
-		#  TODO
-		# trnout.SetDisabled(True)
+		trnout.SetDisabled(True)
 		self.turnouts["PASw35"] = trnout
 
 		trnout = SlipSwitch(self, self.frame, "PASw33", self.screen, tiles["ssright"], (122, 26))
 		blocks["POSPJ2"].AddTurnout(trnout)
 		trnout.AddBlock("POSPJ2")
 		trnout.SetControllers(None, self.turnouts["PASw35"])
-		#  TODO
-		# trnout.SetDisabled(True)
+		trnout.SetDisabled(True)
 		self.turnouts["PASw33"] = trnout
 
 		self.turnouts["PBSw1"].SetPairedTurnout(self.turnouts["PBSw1b"])
@@ -1008,42 +1073,42 @@ class Port (District):
 		self.turnouts["PBSw11"].SetPairedTurnout(self.turnouts["PBSw11b"])
 		self.turnouts["PBSw13"].SetPairedTurnout(self.turnouts["PBSw13b"])
 		self.turnouts["PASw19"].SetPairedTurnout(self.turnouts["PASw19b"])
+		self.turnouts["PASw9"].SetPairedTurnout(self.turnouts["PASw9b"])
 
-		trnout = SlipSwitch(self, self.frame, "PASw23", self.screen, tiles["ssleft"], (104, 24))
+		trnout = SlipSwitch(self, self.frame, "PASw21", self.screen, tiles["ssleft"], (104, 24))
 		for b in ["POSSP2", "POSSP3"]:
 			blocks[b].AddTurnout(trnout)
 			trnout.AddBlock(b)
-		trnout.SetControllers(None, self.turnouts["PASw21"])
-		#  TODO
-		# trnout.SetDisabled(True)
-		self.turnouts["PASw23"] = trnout
+		trnout.SetControllers(None, self.turnouts["PASw23"])
+		trnout.SetDisabled(True)
+		self.turnouts["PASw21"] = trnout
 
-		trnout = SlipSwitch(self, self.frame, "PASw7", self.screen, tiles["ssright"], (107, 26))
-		for b in ["POSSP2", "POSSP3"]:
-			blocks[b].AddTurnout(trnout)
-			trnout.AddBlock(b)
-		trnout.SetControllers(None, self.turnouts["PASw7b"])
-		#  TODO
-		# trnout.SetDisabled(True)
-		self.turnouts["PASw7"] = trnout
-
-		trnout = SlipSwitch(self, self.frame, "PASw5", self.screen, tiles["ssright"], (105, 28))
+		trnout = SlipSwitch(self, self.frame, "PASw5", self.screen, tiles["ssright"], (107, 26))
 		for b in ["POSSP2", "POSSP3", "POSSP4"]:
 			blocks[b].AddTurnout(trnout)
 			trnout.AddBlock(b)
 		trnout.SetControllers(None, self.turnouts["PASw7"])
-		#  TODO
-		# trnout.SetDisabled(True)
+		trnout.SetDisabled(True)
 		self.turnouts["PASw5"] = trnout
+
+		trnout = SlipSwitch(self, self.frame, "PASw3", self.screen, tiles["ssright"], (105, 28))
+		for b in ["POSSP2", "POSSP3", "POSSP4"]:
+			blocks[b].AddTurnout(trnout)
+			trnout.AddBlock(b)
+		trnout.SetControllers(None, self.turnouts["PASw5"])
+		trnout.SetDisabled(True)
+		self.turnouts["PASw3"] = trnout
 
 		trnout = SlipSwitch(self, self.frame, "PASw1", self.screen, tiles["ssright"], (103, 30))
 		for b in ["POSSP2", "POSSP3", "POSSP4", "POSSP5"]:
 			blocks[b].AddTurnout(trnout)
 			trnout.AddBlock(b)
-		trnout.SetControllers(None, self.turnouts["PASw5"])
-		#  TODO
-		# trnout.SetDisabled(True)
+		trnout.SetControllers(None, self.turnouts["PASw3"])
+		trnout.SetDisabled(True)
 		self.turnouts["PASw1"] = trnout
+
+		self.sw3 = self.turnouts["PASw3"]
+		self.sw9 = self.turnouts["PASw9"]
 
 		return self.turnouts
 
@@ -1096,9 +1161,26 @@ class Port (District):
 		]
 		for signm, atype, east, tileSet, pos in sigList:
 			sig  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])
-			#  TODO
-			# sig.SetDisabled(True)
+			sig.SetDisabled(True)
 			self.signals[signm]  = sig
+
+		self.sigLeverMap = {
+			"PA4.lvr":  [ "POSSP2", "POSSP3", "POSSP4", "POSSP5" ],
+			"PA6.lvr":  [ "POSSP2", "POSSP3", "POSSP4", "POSSP5" ],
+			"PA8.lvr":  [ "POSSP2", "POSSP3" ],
+			"PA10.lvr": [ "POSSP2", "POSSP3" ],
+			"PA12.lvr": [ "POSSP1", "POSSP2", "POSSP3" ],
+
+			"PA32.lvr": [ "POSPJ1", "POSPJ2" ],
+			"PA34.lvr": [ "POSPJ1", "POSPJ2" ],
+			"PB2.lvr":  [ "POSSJ1", "POSSJ2" ],
+			"PB4.lvr":  [ "POSSJ1", "POSSJ2" ],
+			"PB12.lvr": [ "POSCJ1", "POSCJ2" ],
+			"PB14.lvr": [ "POSCJ1", "POSCJ2" ],
+		}
+
+		for sl in self.sigLeverMap:
+			self.frame.AddSignalLever(sl, self)
 
 		blockSigs = {
 			# which signals govern stopping sections, west and east
@@ -1265,7 +1347,7 @@ class Port (District):
 					[ (100, 22), (101, 22), (102, 22), (103, 23), (104, 24), (105, 25), (106, 26), (107, 26), (108, 26), (109, 26), (110, 26) ],
 					"P20", [SLOW, RESTRICTING], ["PASw5", "PASw7", "PASw19", "PASw21", "PASw23"], ["PA10RA", "PA8L"])
 		self.routes["PRtP5P20"] = Route(self.screen, block, "PRtP5P20", "P5",
-					[ (102, 24), (103, 24), (104, 24), (105, 24), (106, 25), (107, 26), (108, 26), (109, 26), (110, 26) ],
+					[ (102, 24), (103, 24), (104, 24), (105, 25), (106, 26), (107, 26), (108, 26), (109, 26), (110, 26) ],
 					"P20", [SLOW, RESTRICTING], ["PASw5", "PASw7", "PASw21", "PASw23"], ["PA10RB", "PA8L"])
 		self.routes["PRtP4P20"] = Route(self.screen, block, "PRtP4P20", "P4",
 					[ (102, 26), (103, 26), (104, 26), (105, 26), (106, 26), (107, 26), (108, 26), (109, 26), (110, 26) ],
@@ -1335,6 +1417,7 @@ class Port (District):
 		self.signals["PA10RB"].AddPossibleRoutes("POSSP3", [ "PRtP5P20" ])
 
 		self.signals["PA8R"].AddPossibleRoutes("POSSP2", [ "PRtP4P10" ])
+		self.signals["PA8R"].AddPossibleRoutes("POSSP3", [ "PRtP4P20" ])
 		self.signals["PA8L"].AddPossibleRoutes("POSSP3", [ "PRtP7P20", "PRtP6P20", "PRtP5P20", "PRtP4P20", "PRtP3P20", "PRtP2P20", "PRtP1P20" ])
 
 		self.signals["PA6R"].AddPossibleRoutes("POSSP2", [ "PRtP3P10" ])
@@ -1355,7 +1438,7 @@ class Port (District):
 		self.signals["PA4RB"].AddPossibleRoutes("POSSP5", [ "PRtP3P40" ])
 		self.signals["PA4L"].AddPossibleRoutes("POSSP5", [ "PRtP3P40", "PRtP2P40", "PRtP1P40" ])
 
-		self.osSignals["POSSP1"] = [ "PA12R", "PS12LA", "PA12LB", "PA12LC" ]
+		self.osSignals["POSSP1"] = [ "PA12R", "PA12LA", "PA12LB", "PA12LC" ]
 		self.osSignals["POSSP2"] = [ "PA12R", "PA10RA", "PA10RB", "PA8R", "PA6R", "PA4RA", "PA4RB", "PA10L" ]
 		self.osSignals["POSSP3"] = [ "PA12R", "PA10RA", "PA10RB", "PA8R", "PA6R", "PA4RA", "PA4RB", "PA8L" ]
 		self.osSignals["POSSP4"] = [ "PA6R", "PA4RA", "PA4RB", "PA6LA", "PA6LB", "PA6LC" ]

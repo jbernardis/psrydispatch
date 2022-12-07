@@ -1,31 +1,15 @@
 Districts:
-	PortInOut.cpp
+	PortInOut.cpp - add inout routine
 
 
   check other districts use of indicators and if it's consistent with yard
 
 
 
-inputs/outputs unused or uncertain of
- 
-    LATHAM:
-		# outb[3] = setBit(outb[3], 5, self.rr.GetInput("P11").GetValue().GetStatus())   port(2)
-
-    YARD:
-		# outb[4] = setBit(outb[4], 2, self.rr.GetInput("P50").GetValue())  port
-
-SHORE
- outb[3] = setBit(outb[3], 5, self.rr.GetInput("P32").GetValue())  port
-# outb[2] = setBit(outb[2], 6, self.rr.GetOutput("P42.srel").GetStatus())	port
-
-
-
-
-
-how to use release  yard and cliff
-how to use control rabio buttons to limit control
+how to use release  yard nassau and cliff
 call on signals - I think it refers to JUST lighting the signal with no route clearing etc
 how to use wos1norm in yard
+why do we need the switch buttons in yard  outin method
 
 do we really need a separate cliff fleet checkbox?  Na what is port fleeting if we have no control over port
 

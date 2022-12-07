@@ -460,7 +460,7 @@ class District:
 				tolist = rt.GetTurnouts()
 				self.LockTurnouts(signm, tolist, aspect != STOP)
 
-	def DoSwitchLeverAction(self, signame, state):
+	def DoSignalLeverAction(self, signame, state):
 		sigPrefix = signame.split(".")[0]
 		osblknms = self.sigLeverMap[signame]
 		signm = None

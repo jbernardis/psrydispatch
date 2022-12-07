@@ -1114,6 +1114,19 @@ class Nassau (District):
 		for signm, atype, east, tileSet, pos in sigList:
 			self.signals[signm]  = Signal(self, self.screen, self.frame, signm, atype, east, pos, tiles[tileSet])  
 
+		self.sigLeverMap = {
+			"N14.lvr": [ "NWOSE" ],
+			"N16.lvr": [ "NWOSW" ],
+			"N18.lvr": [ "NWOSCY" ],
+			"N20.lvr": [ "NWOSTY" ],
+			"N24.lvr": [ "NEOSE" ],
+			"N26.lvr": [ "NEOSW" ],
+			"N28.lvr": [ "NEOSRH" ]
+		}
+
+		for sl in self.sigLeverMap:
+			self.frame.AddSignalLever(sl, self)
+
 		blockSigs = {
 			# # which signals govern stopping sections, west and east
 			"B10": ("N26L",  None),

@@ -241,6 +241,10 @@ class MainFrame(wx.Frame):
 		self.Bind(wx.EVT_CHECKBOX, self.OnCBCliffFleet, self.cbCliffFleet)
 		self.cbCliffFleet.Hide()
 		self.widgetMap[NaCl].append(self.cbCliffFleet)
+		self.CliffFleetSignals = [ "C2RA", "C2RB", "C2RC", "C2RD", "C2L",
+					"C4R", "C4LA", "C4LB", "C4LC", "C4LD",
+					"C6RA", "C6RB", "C6RC", "C6RD", "C6RE", "C6RF", "C6RG", "C6RH", "C6RJ", "C6RK", "C6RL", "C6L",
+					"C8R", "C8LA", "C8LB", "C8LC", "C8LD", "C8LE", "C8LF", "C8LG", "C8LH", "C8LJ", "C8LK", "C8LL" ]
 
 		self.cbHydeFleet = wx.CheckBox(self, -1, "Hyde Fleeting", (250, voffset+10))
 		self.Bind(wx.EVT_CHECKBOX, self.OnCBHydeFleet, self.cbHydeFleet)
@@ -376,6 +380,8 @@ class MainFrame(wx.Frame):
 
 	def OnCBCliffFleet(self, _):
 		f = 1 if self.cbCliffFleet.IsChecked() else 0
+		for signm in self.CliffFleetSignals:
+			self.Request({"fleet": { "name": signm, "value": f}})
 		self.Request({"control": {"name": "cliff.fleet", "value": f}})
 
 	def OnCBYardFleet(self, _):
@@ -900,7 +906,9 @@ class MainFrame(wx.Frame):
 						state = p["state"]
 
 						district = self.GetSignalLeverDistrict(signame)
-						district.DoSwitchLeverAction(signame, state)
+						if district is None:
+							print("unable to find district for signal lever %s" % signame)
+						district.DoSignalLeverAction(signame, state)
 						
 			elif cmd == "handswitch":
 				for p in parms:

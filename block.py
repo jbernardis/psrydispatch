@@ -62,6 +62,7 @@ class Route:
 
 class Block:
 	def __init__(self, district, frame, name, tiles, east=True):
+		self.status = None
 		self.district = district
 		self.frame = frame
 		self.name = name
@@ -294,6 +295,7 @@ class Block:
 		self.occupied = occupied
 		if self.occupied:
 			self.cleared = False
+			self.frame.Request({"blockclear": { "block": self.GetName(), "clear": 0}})
 
 			if self.train is None:   # and self.frame.IsDispatcher():
 				tr = self.IdentifyTrain()
@@ -370,6 +372,7 @@ class Block:
 			# already in the desired state
 			return
 
+		self.frame.Request({"blockclear": { "block": self.GetName(), "clear": 1 if cleared else 0}})
 		self.cleared = cleared
 		self.determineStatus()
 		if self.status == EMPTY:
@@ -381,6 +384,7 @@ class Block:
 		for b in [self.sbEast, self.sbWest]:
 			if b is not None:
 				b.SetCleared(cleared, refresh)
+
 
 class StoppingBlock (Block):
 	def __init__(self, block, tiles, eastend):
@@ -485,6 +489,7 @@ class StoppingBlock (Block):
 			# already in the desired state
 			return
 
+		self.frame.Request({"blockclear": { "block": self.GetName(), "clear": 1 if cleared else 0}})
 		self.cleared = cleared
 		self.determineStatus()
 		if refresh:
@@ -497,6 +502,7 @@ class StoppingBlock (Block):
 
 		self.occupied = occupied
 		if self.occupied:
+			self.frame.Request({"blockclear": { "block": self.GetName(), "clear": 0}})
 			self.cleared = False
 			self.EvaluateStoppingSection()
 
@@ -504,13 +510,13 @@ class StoppingBlock (Block):
 			self.EvaluateStoppingSection()
 			self.block.CheckAllUnoccupied()
 
-
 		self.determineStatus()
 		if self.status == EMPTY:
 			self.Reset()
 
 		if refresh:
 			self.Draw()
+
 
 class OverSwitch (Block):
 	def __init__(self, district, frame, name, tiles, east=True):
@@ -623,7 +629,6 @@ class OverSwitch (Block):
 		if self.route:
 			tolist = self.route.GetTurnouts()
 			self.district.LockTurnouts(self.name, tolist, occupied)
-
 
 	def GetTileInRoute(self, screen, pos):
 		if self.route is None:

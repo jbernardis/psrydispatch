@@ -38,9 +38,9 @@ class Signal:
 		self.possibleRoutes[blk] = rtList
 
 	def IsPossibleRoute(self, blknm, rname):
-		if not blknm in self.possibleRoutes:
+		if blknm not in self.possibleRoutes:
 			return False
-		
+
 		return rname in self.possibleRoutes[blknm]
 		
 	def GetDistrict(self):

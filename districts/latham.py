@@ -20,7 +20,6 @@ class Latham (District):
 				self.frame.Popup("Signal 4 control is with Port")
 				return
 
-		print(sig.GetName())
 		District.PerformSignalAction(self, sig)
 
 	def DetermineRoute(self, blocks):
