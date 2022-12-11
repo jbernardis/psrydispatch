@@ -30,7 +30,6 @@ class Port (District):
 
 	def DoTurnoutAction(self, turnout, state):
 		tn = turnout.GetName()
-		print("local DTA for %s" % tn)
 		if tn == "PASw35":
 			bstat = NORMAL if self.turnouts["PASw37"].IsNormal() else REVERSE
 			turnout.SetStatus([state, bstat])

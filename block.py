@@ -83,9 +83,16 @@ class Block:
 		self.sigWest = None
 		self.sigEast = None
 		self.determineStatus()
+		self.entrySignal = None
 
 	def SetTrain(self, train):
 		self.train = train
+
+	def SetEntrySignal(self, esig):
+		self.entrySignal = esig
+
+	def GetEntrySignal(self):
+		return self.entrySignal
 
 	def AddStoppingBlock(self, tiles, eastend=False):
 		if eastend:
@@ -332,6 +339,11 @@ class Block:
 			self.frame.Request({"settrain": { "block": self.GetName(), "name": None, "loco": None}})
 		self.train = None
 		self.EvaluateStoppingSections()
+		if self.entrySignal is not None:
+			signm = self.entrySignal.GetName()
+			self.frame.Request({"signal": { "name": signm, "aspect": STOP}})
+			self.entrySignal.SetLock(self.GetName(), 0)
+
 		self.frame.DoFleetPending(self)
 
 	def GetStoppingSections(self):
@@ -618,11 +630,14 @@ class OverSwitch (Block):
 				if self.route:
 					exitBlkName = self.route.GetExitBlock()
 					exitBlk = self.frame.GetBlockByName(exitBlkName)
+					exitBlk.SetEntrySignal(self.entrySignal)
+					# lock the entry signal by the exitblock name
+					self.entrySignal.SetLock(exitBlkName, 1)
 					self.entrySignal.SetFleetPending(self.entrySignal.GetAspect() != 0, exitBlk)
 				else:
 					self.entrySignal.SetFleetPending(False, None)
-				self.frame.Request({"signal": { "name": signm, "aspect": STOP }})
-				# replace signal locks on turnouts with block locks
+				# turn the signal we just passed red, but hold onto the lock to be cleared when we exit the block
+				self.frame.Request({"signal": { "name": signm, "aspect": STOP}})
 				self.district.LockTurnoutsForSignal(self.GetName(), self.entrySignal, False)
 				self.entrySignal = None
 		

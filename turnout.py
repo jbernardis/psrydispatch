@@ -18,6 +18,7 @@ class Turnout:
 		self.controllingTurnout = None
 		self.opposite = False
 		self.ttype = TURNOUT
+		self.block = None
 		self.blockList = []
 		self.locked = False
 		self.lockedBy = []

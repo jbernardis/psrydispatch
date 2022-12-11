@@ -42,11 +42,19 @@ from edittraindlg import EditTrainDlg
 
 allowedCommands = [ "settrain", "renametrain" ]
 
+wildcardTrain = "train files (*.trn)|*.trn|"	 \
+			"All files (*.*)|*.*"
+wildcardLoco = "locomotive files (*.loco)|*.loco|"	 \
+			"All files (*.*)|*.*"
+import pprint
+
+
 class Node:
 	def __init__(self, screen, bitmapName, offset):
 		self.screen = screen
 		self.bitmap = bitmapName
 		self.offset = offset
+
 
 class MainFrame(wx.Frame):
 	def __init__(self):
@@ -116,16 +124,23 @@ class MainFrame(wx.Frame):
 		else:
 			self.PlaceWidgets()
 
-		self.bSubscribe = wx.Button(self, wx.ID_ANY, "Connect", pos=(100, 10))
+		self.bSubscribe = wx.Button(self, wx.ID_ANY, "Connect", pos=(100, 25))
 		self.Bind(wx.EVT_BUTTON, self.OnSubscribe, self.bSubscribe)
 
-		self.bRefresh = wx.Button(self, wx.ID_ANY, "Refresh", pos=(400, 10))
+		self.bRefresh = wx.Button(self, wx.ID_ANY, "Refresh", pos=(100, 65))
 		self.Bind(wx.EVT_BUTTON, self.OnRefresh, self.bRefresh)
 		self.bRefresh.Enable(False)
 
-		self.scrn = wx.TextCtrl(self, wx.ID_ANY, "", size=(80, -1), pos=(100, 50), style=wx.TE_READONLY)
-		self.xpos = wx.TextCtrl(self, wx.ID_ANY, "", size=(40, -1), pos=(200, 50), style=wx.TE_READONLY)
-		self.ypos = wx.TextCtrl(self, wx.ID_ANY, "", size=(40, -1), pos=(260, 50), style=wx.TE_READONLY)
+		self.bLoadTrains = wx.Button(self, wx.ID_ANY, "Load Trains", pos=(250, 25))
+		self.bLoadTrains.Enable(False)
+		self.Bind(wx.EVT_BUTTON, self.OnBLoadTrains, self.bLoadTrains)
+		self.bLoadLocos = wx.Button(self, wx.ID_ANY, "Load Locos", pos=(250, 65))
+		self.Bind(wx.EVT_BUTTON, self.OnBLoadLocos, self.bLoadLocos)
+		self.bLoadLocos.Enable(False)
+
+		self.scrn = wx.TextCtrl(self, wx.ID_ANY, "", size=(80, -1), pos=(400, 25), style=wx.TE_READONLY)
+		self.xpos = wx.TextCtrl(self, wx.ID_ANY, "", size=(40, -1), pos=(500, 25), style=wx.TE_READONLY)
+		self.ypos = wx.TextCtrl(self, wx.ID_ANY, "", size=(40, -1), pos=(560, 25), style=wx.TE_READONLY)
 
 		h = 1080
 		self.breakerDisplay = BreakerDisplay(self, pos=(int(totalw/2-400/2), 50), size=(400, 40))
@@ -303,8 +318,6 @@ class MainFrame(wx.Frame):
 			self.cbFossFleet.SetValue(value != 0)
 		elif name == "valleyjct.fleet":
 			self.cbValleyJctFleet.SetValue(value != 0)
-		else:
-			print("Unknown widget name: %s" % name)
 
 	def OnRBNassau(self, evt):
 		self.Request({"control": { "name": "nassau", "value": evt.GetInt()}})
@@ -802,6 +815,8 @@ class MainFrame(wx.Frame):
 			self.sessionid = None
 			self.bSubscribe.SetLabel("Connect")
 			self.bRefresh.Enable(False)
+			self.bLoadTrains.Enable(False)
+			self.bLoadLocos.Enable(False)
 		else:
 			self.listener = Listener(self, self.settings.ipaddr, self.settings.socketport)
 			if not self.listener.connect():
@@ -813,6 +828,8 @@ class MainFrame(wx.Frame):
 			self.subscribed = True
 			self.bSubscribe.SetLabel("Disconnect")
 			self.bRefresh.Enable(True)
+			self.bLoadTrains.Enable(True)
+			self.bLoadLocos.Enable(True)
 			if self.settings.dispatch:
 				self.SendBlockDirRequests()
 				self.SendOSRoutes()
@@ -889,7 +906,6 @@ class MainFrame(wx.Frame):
 				for p in parms:
 					sigName = p["name"]
 					aspect = p["aspect"]
-					
 					try:
 						sig = self.signals[sigName]
 					except:
@@ -1067,32 +1083,117 @@ class MainFrame(wx.Frame):
 		self.subscribed = False
 		self.bSubscribe.SetLabel("Connect")
 		self.bRefresh.Enable(False)
+		self.bLoadTrains.Enable(False)
+		self.bLoadLocos.Enable(False)
 		logging.info("Server socket closed")
 		self.breakerDisplay.UpdateDisplay()
 		self.ShowTitle()
 
-
 	def SaveTrains(self):
+		dlg = wx.FileDialog(self, message="Save Trains", defaultDir=self.settings.traindir,
+			defaultFile="", wildcard=wildcardTrain, style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+		if dlg.ShowModal() != wx.ID_OK:
+			dlg.Destroy()
+			return False
+
+		path = dlg.GetPath()
+		dlg.Destroy()
+
 		trDict = {}
 		for trid, tr in self.trains.items():
-			trDict[trid] = tr.GetBlockNameList()
+			if not trid.startswith("??"):
+				trDict[trid] = tr.GetBlockNameList()
 
-		print(json.dumps(trDict))
+		with open(path, "w") as fp:
+			json.dump(trDict, fp, indent=4, sort_keys=True)
+
+		self.settings.SetTrainDir(os.path.split(path)[0])
+		self.settings.save()
+
+	def OnBLoadTrains(self, _):
+		dlg = wx.FileDialog(self, message="Load Trains", defaultDir=self.settings.traindir,
+			defaultFile="", wildcard=wildcardTrain, style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST | wx.FD_NO_FOLLOW)
+		if dlg.ShowModal() != wx.ID_OK:
+			dlg.Destroy()
+			return False
+
+		path = dlg.GetPath()
+		dlg.Destroy()
+
+		with open(path, "r") as fp:
+			trDict = json.load(fp)
+
+		self.settings.SetTrainDir(os.path.split(path)[0])
+		self.settings.save()
+
+		for tid, blist in trDict.items():
+			for bname in blist:
+				blk = self.blocks[bname]
+				if blk:
+					if blk.IsOccupied():
+						tr = blk.GetTrain()
+						oldName, oldLoco = tr.GetNameAndLoco()
+						self.Request({"renametrain": { "oldname": oldName, "newname": tid}})
+					else:
+						print("block %s not occupied or not known - ignoring" % bname)
 
 	def SaveLocos(self):
+		dlg = wx.FileDialog(self, message="Save Locomotives", defaultDir=self.settings.locodir,
+			defaultFile="", wildcard=wildcardLoco, style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+		if dlg.ShowModal() != wx.ID_OK:
+			dlg.Destroy()
+			return False
+
+		path = dlg.GetPath()
+		dlg.Destroy()
+
 		locoDict = {}
 		for trid, tr in self.trains.items():
 			loco = tr.GetLoco()
-			if loco is not None:
+			if loco is not None and not loco.startswith("??"):
 				locoDict[loco] = tr.GetBlockNameList()
 
-		print(json.dumps(locoDict))
+		with open(path, "w") as fp:
+			json.dump(locoDict, fp, indent=4, sort_keys=True)
 
+		self.settings.SetLocoDir(os.path.split(path)[0])
+		self.settings.save()
 
-	def OnClose(self, evt):
+	def OnBLoadLocos(self, _):
+		dlg = wx.FileDialog(self, message="Load Locomotives", defaultDir=self.settings.locodir,
+			defaultFile="", wildcard=wildcardLoco, style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST | wx.FD_NO_FOLLOW)
+		if dlg.ShowModal() != wx.ID_OK:
+			dlg.Destroy()
+			return False
+
+		path = dlg.GetPath()
+		dlg.Destroy()
+
+		with open(path, "r") as fp:
+			locoDict = json.load(fp)
+
+		self.settings.SetLocoDir(os.path.split(path)[0])
+		self.settings.save()
+
+		for lid, blist in locoDict.items():
+			for bname in blist:
+				blk = self.blocks[bname]
+				if blk:
+					if blk.IsOccupied():
+						tr = blk.GetTrain()
+						oldName, oldLoco = tr.GetNameAndLoco()
+						self.Request({"renametrain": { "oldname": oldName, "newname": oldName, "oldloco": oldLoco, "newloco": lid}})
+					else:
+						print("block %s not occupied or not known - ignoring" % bname)
+
+	def OnClose(self, _):
+		dlg = ExitDlg(self)
+		rc = dlg.ShowModal()
+		dlg.Destroy()
+		if rc != wx.ID_OK:
+			return
+
 		self.toaster.Close()
-		self.SaveTrains()
-		self.SaveLocos()
 		try:
 			self.listener.kill()
 			self.listener.join()
@@ -1100,4 +1201,68 @@ class MainFrame(wx.Frame):
 			pass
 		self.Destroy()
 		logging.info("Display process ending")
+
+
+class ExitDlg (wx.Dialog):
+	def __init__(self, parent):
+		wx.Dialog.__init__(self, parent, wx.ID_ANY, "Save Trains/Locomotives")
+		self.parent = parent
+		self.Bind(wx.EVT_CLOSE, self.onCancel)
+
+		dw, dh = wx.GetDisplaySize()
+		sw, sh = self.GetSize()
+		px = (dw-sw)/2
+		py = (dh-sh)/2
+		self.SetPosition(wx.Point(int(px), int(py)))
+
+		vsz = wx.BoxSizer(wx.VERTICAL)
+		vsz.AddSpacer(20)
+
+		self.bTrains = wx.Button(self, wx.ID_ANY, "Save Trains")
+		self.bLocos  = wx.Button(self, wx.ID_ANY, "Save Locos")
+
+		vsz.Add(self.bTrains, 0, wx.ALIGN_CENTER)
+		vsz.AddSpacer(10)
+		vsz.Add(self.bLocos, 0, wx.ALIGN_CENTER)
+		vsz.AddSpacer(20)
+
+		bsz = wx.BoxSizer(wx.HORIZONTAL)
+
+		self.bOK = wx.Button(self, wx.ID_ANY, "OK")
+		self.bCancel = wx.Button(self, wx.ID_ANY, "Cancel")
+
+		bsz.Add(self.bOK)
+		bsz.AddSpacer(10)
+		bsz.Add(self.bCancel)
+
+		self.Bind(wx.EVT_BUTTON, self.onSaveTrains, self.bTrains)
+		self.Bind(wx.EVT_BUTTON, self.onSaveLocos, self.bLocos)
+		self.Bind(wx.EVT_BUTTON, self.onOK, self.bOK)
+		self.Bind(wx.EVT_BUTTON, self.onCancel, self.bCancel)
+
+		vsz.Add(bsz, 0, wx.ALIGN_CENTER)
+
+		vsz.AddSpacer(20)
+
+		hsz = wx.BoxSizer(wx.HORIZONTAL)
+		hsz.AddSpacer(10)
+		hsz.Add(vsz)
+		hsz.AddSpacer(10)
+
+		self.SetSizer(hsz)
+		self.Layout()
+		self.Fit()
+
+	def onSaveTrains(self, _):
+		self.parent.SaveTrains()
+
+	def onSaveLocos(self, _):
+		self.parent.SaveLocos()
+
+	def onCancel(self, _):
+		self.EndModal(wx.ID_CANCEL)
+
+	def onOK(self, _):
+		self.EndModal(wx.ID_OK)
+
 

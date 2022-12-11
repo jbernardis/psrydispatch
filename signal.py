@@ -1,5 +1,6 @@
 from constants import STOP
 
+
 class Signal:
 	def __init__(self, district, screen, frame, name, aspecttype, east, pos, tiles):
 		self.district = district
@@ -16,12 +17,17 @@ class Signal:
 		self.guardBlock = None # block that the signal is guarding exit from
 		self.fleetEnabled = False
 		self.lastAspect = 0
+		self.locked = False
+		self.lockedBy = []
 
 	def SetDisabled(self, flag=True):
 		self.disabled = flag
 
 	def IsDisabled(self):
 		return self.disabled
+
+	def IsLocked(self):
+		return self.locked
 
 	def EnableFleeting(self, flag=None):
 		if flag is None:
@@ -68,13 +74,32 @@ class Signal:
 	def GetAspect(self):
 		return self.aspect
 
-	def SetAspect(self, aspect, refresh=False):
+	def SetLock(self, lockedby, flag=True):
+		if flag:
+			self.locked = True
+			if lockedby in self.lockedBy:
+				# already locked by this signal
+				return
+			self.lockedBy.append(lockedby)
+			if len(self.lockedBy) == 1:
+				self.frame.Request({"signallock": { "name": self.name, "status": 1}})
+		else:
+			if lockedby not in self.lockedBy:
+				# this signal hasn't locked by this locker, so it can't unlock it
+				return
+			self.lockedBy.remove(lockedby)
+			if len(self.lockedBy) == 0:
+				self.locked = False
+				self.frame.Request({"signallock": { "name": self.name, "status": 0}})
+
+	def SetAspect(self, aspect, refresh = False):
 		if self.aspect == aspect:
 			return False
 		
 		self.aspect = aspect
 		if aspect != 0:
 			self.lastAspect = aspect
+
 		if refresh:
 			self.Draw()
 

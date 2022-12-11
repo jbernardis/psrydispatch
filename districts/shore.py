@@ -31,7 +31,7 @@ class Shore (District):
 				self.ReportOSBusy()
 				return
 			aspect = RESTRICTING
-		else: # stopping
+		else:  # stopping
 			esig = osblk.GetEntrySignal()	
 			if esig is not None and esig.GetName() != signm:
 				self.frame.Popup("Incorrect signal")
@@ -39,6 +39,7 @@ class Shore (District):
 			aspect = STOP
 
 		self.frame.Request({"signal": { "name": signm, "aspect": aspect }})
+		sig.SetLock(osblk.GetName(), 0 if aspect == 0 else 1)
 
 	def DoSignalAction(self, sig, aspect):
 		signm = sig.GetName()
