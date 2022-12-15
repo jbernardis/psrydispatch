@@ -1,5 +1,5 @@
 import logging
-import json
+import pprint
 
 from constants import RegAspects, RegSloAspects, AdvAspects, SloAspects, \
 	MAIN, SLOW, DIVERGING, RESTRICTING, \
@@ -64,7 +64,7 @@ class District:
 	def PerformButtonAction(self, btn):
 		pass
 
-	def DoEntryExitButtons(self, btn, groupName):
+	def DoEntryExitButtons(self, btn, groupName, sendButtons=False):
 		bname = btn.GetName()
 		if self.westButton[groupName] and not self.westButton[groupName].IsPressed():
 			self.westButton[groupName] = None
@@ -105,8 +105,10 @@ class District:
 			else:
 				wButton.Acknowledge(refresh=True)
 				eButton.Acknowledge(refresh=True)
-				self.MatrixTurnoutRequest(toList)
-				# self.frame.Request({"nxbutton": { "entry": wButton.GetName(),  "exit": eButton.GetName()}})
+				if sendButtons:
+					self.frame.Request({"nxbutton": { "entry": wButton.GetName(),  "exit": eButton.GetName()}})
+				else:
+					self.MatrixTurnoutRequest(toList)
 
 			self.westButton[groupName] = None
 			self.eastButton[groupName] = None
@@ -249,6 +251,10 @@ class District:
 		self.CheckBlockSignals(sig, aspect, exitBlk, doReverseExit, rType, nbStatus, nbRType, nnbClear)
 
 		return aspect
+	#
+	# def SendRouteDefinitions(self):
+	# 	for r in self.routes.values():
+	# 		self.frame.Request({"routedef": r.GetDefinition()})
 
 	def anyTurnoutLocked(self, toList):
 		rv = False
@@ -636,3 +642,7 @@ class Districts:
 			indicators.update(t.DefineIndicators())
 
 		return indicators
+	#
+	# def SendRouteDefinitions(self):
+	# 	for t in self.districts.values():
+	# 		t.SendRouteDefinitions()

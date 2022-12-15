@@ -34,9 +34,9 @@ class Dell (District):
 		s5 = 'N' if self.turnouts["DSw5"].IsNormal() else 'R'
 		s7 = 'N' if self.turnouts["DSw7"].IsNormal() else 'R'
 		s11 = 'N' if self.turnouts["DSw11"].IsNormal() else 'R'
-		self.turnouts["DSw5"].SetLock("DSw7", s7=='R', refresh=True)
-		self.turnouts["DSw7"].SetLock("DSw5", s5=='R', refresh=True)
-		self.turnouts["DSw7b"].SetLock("DSw5", s5=='R', refresh=True)
+		self.turnouts["DSw5"].SetLock("DSw7", s7 == 'R', refresh=True)
+		self.turnouts["DSw7"].SetLock("DSw5", s5 == 'R', refresh=True)
+		self.turnouts["DSw7b"].SetLock("DSw5", s5 == 'R', refresh=True)
 
 		for block in blocks:
 			bname = block.GetName()

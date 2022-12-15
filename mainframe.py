@@ -1077,6 +1077,7 @@ class MainFrame(wx.Frame):
 		for b in self.blocks.values():
 			if b.GetBlockType() == OVERSWITCH:
 				b.SendRouteRequest()
+		# self.districts.SendRouteDefinitions()
 
 	def onDisconnectEvent(self, _):
 		self.listener = None

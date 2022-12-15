@@ -15,6 +15,9 @@ class Route:
 		self.turnouts = [x for x in tolist]
 		self.signals = [x for x in signals]
 
+	# def GetDefinition(self):
+	# 	return {"name": self.name, "os": self.osblk.GetName(), "endpoints": [self.blkin, self.blkout]}
+	#
 	def GetName(self):
 		return self.name
 
@@ -56,6 +59,13 @@ class Route:
 	def GetSignals(self):
 		return self.signals
 
+	def ReleaseSignalLocks(self):
+		print("release %s signals********************************************" % self.name)
+		frame = self.osblk.frame
+		for s in self.signals:
+			print("(%s)" % str(s))
+			frame.signals[s].ClearLocks()
+
 	def rprint(self):
 		logging.debug("Block %s: set route to %s: %s => %s => %s %s" % (self.osblk.GetName(), self.name, self.blkin, str(self.pos), self.blkout, str(self.turnouts)))
 
@@ -67,7 +77,7 @@ class Block:
 		self.frame = frame
 		self.name = name
 		self.type = BLOCK
-		self.tiles = tiles # [Tile, screen, coordinates, reverseindication]
+		self.tiles = tiles  # [Tile, screen, coordinates, reverseindication]
 		self.east = east
 		self.defaultEast = east
 		self.occupied = False
@@ -539,18 +549,33 @@ class OverSwitch (Block):
 		self.entrySignal = None
 
 	def SetRoute(self, route):
-		self.route = route
+		if self.route is None:
+			oldName = "<None>"
+		else:
+			oldName = self.rtName
+
 		if route is None:
-			self.rtName = "<None>"
+			newName = "<None>"
 			logging.info("Block %s: route is None" % self.name)
 		else:
-			self.rtName = self.route.GetName()
-			self.route.rprint()
+			newName = route.GetName()
+
+		if oldName == newName:
+			print("noi change for block %s(%s)" % (self.name, oldName))
+			return  # no change
+
+		if self.route is not None:
+			self.route.ReleaseSignalLocks()  # release locks along the old route
+
+		self.route = route
+		self.rtName = newName
 
 		self.SendRouteRequest()
 
 		if route is None:
-			return	
+			return
+
+		self.route.rprint()
 
 		entryBlkName = self.route.GetEntryBlock()
 		entryBlk = self.frame.GetBlockByName(entryBlkName)

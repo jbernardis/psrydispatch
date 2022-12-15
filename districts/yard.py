@@ -247,6 +247,7 @@ class Yard (District):
 				self.MatrixTurnoutRequest([["YSw113", "N"], ["YSw115", "R"], ["YSw116", "N"]])
 			elif bname == "YWWB4":   # Y84
 				self.MatrixTurnoutRequest([["YSw113", "R"]])
+			self.frame.Request({"nxbutton": { "button": bname}})
 
 		elif bname in self.osButtons["YOSWYE"]:
 			osBlk = self.blocks["YOSWYE"]
@@ -264,6 +265,7 @@ class Yard (District):
 				self.MatrixTurnoutRequest([["YSw134", "N"], ["YSw132", "R"], ["YSw131", "N"]])
 			elif bname == "YWEB4":   # Y84
 				self.MatrixTurnoutRequest([["YSw134", "R"]])
+			self.frame.Request({"nxbutton": { "button": bname}})
 
 		elif bname in self.osButtons["YOSKL4"]:
 			osBlk = self.blocks["YOSKL4"]
@@ -276,8 +278,11 @@ class Yard (District):
 
 			if bname == "YY50W":
 				self.MatrixTurnoutRequest([["YSw33", "R"]])
+				self.frame.Request({"nxbutton": { "button": bname}})
+
 			elif bname == "YY51W":
 				self.MatrixTurnoutRequest([["YSw33", "N"]])
+				self.frame.Request({"nxbutton": { "button": bname}})
 
 		elif bname in self.osButtons["YOSCJW"]:
 			self.DoEntryExitButtons(btn, "YOSCJ")

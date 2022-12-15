@@ -92,6 +92,12 @@ class Signal:
 				self.locked = False
 				self.frame.Request({"signallock": { "name": self.name, "status": 0}})
 
+	def ClearLocks(self):
+		print("clearing locks for signal %s" % self.name)
+		self.lockedBy = []
+		self.locked = False
+		self.frame.Request({"signallock": { "name": self.name, "status": 0}})
+
 	def SetAspect(self, aspect, refresh = False):
 		if self.aspect == aspect:
 			return False

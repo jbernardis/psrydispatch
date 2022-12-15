@@ -125,9 +125,9 @@ class Nassau (District):
 
 		District.PerformButtonAction(self, btn)
 		if bname in self.eastGroup["NOSW"] + self.westGroup["NOSW"]:
-			self.DoEntryExitButtons(btn, "NOSW")
+			self.DoEntryExitButtons(btn, "NOSW", sendButtons=True)
 		elif bname in self.eastGroup["NOSE"] + self.westGroup["NOSE"]:
-			self.DoEntryExitButtons(btn, "NOSE")
+			self.DoEntryExitButtons(btn, "NOSE", sendButtons=True)
 
 	def CheckBlockSignals(self, sig, aspect, blk, rev, rType, nbStatus, nbRType, nnbClear):
 		if blk is None:
