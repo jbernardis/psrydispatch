@@ -106,87 +106,18 @@ class Shore (District):
 		self.frame.DrawTile(self.screen, (92, 13), bmp)
 
 	def DetermineRoute(self, blocks):
-		pass
 		s3 = 'N' if self.turnouts["SSw3"].IsNormal() else 'R'
 		s5 = 'N' if self.turnouts["SSw5"].IsNormal() else 'R'
-		s7 = 'N' if self.turnouts["SSw7"].IsNormal() else 'R'
-		s9 = 'N' if self.turnouts["SSw9"].IsNormal() else 'R'
-		s11 = 'N' if self.turnouts["SSw11"].IsNormal() else 'R'
-		s13 = 'N' if self.turnouts["SSw13"].IsNormal() else 'R'
-		s15 = 'N' if self.turnouts["SSw15"].IsNormal() else 'R'
-		s17 = 'N' if self.turnouts["SSw17"].IsNormal() else 'R'
-		s19 = 'N' if self.turnouts["SSw19"].IsNormal() else 'R'
-		self.turnouts["SSw3"].SetLock("SSw5", s5=='R', refresh=True)
-		self.turnouts["SSw3b"].SetLock("SSw5", s5=='R', refresh=True)
-		self.turnouts["SSw5"].SetLock("SSw3", s3=='R', refresh=True)
-		self.turnouts["SSw5b"].SetLock("SSw3", s3=='R', refresh=True)
-		for block in blocks:
-			bname = block.GetName()
-			if bname == "SOSW":
-				if s3+s5+s11 == "NNR":
-					block.SetRoute(self.routes["SRtS10S11"])
-				elif s3+s5+s11+s13 == "NNNR":
-					block.SetRoute(self.routes["SRtS10H30"])
-				elif s3+s5+s11+s13 == "NNNN":
-					block.SetRoute(self.routes["SRtS10H10"])
-				elif s3+s5+s7+s9 == "RNNN":
-					block.SetRoute(self.routes["SRtS10H20"])
-				elif s3+s5+s7+s9 == "RNNR":
-					block.SetRoute(self.routes["SRtS10S21"])
-				elif s3+s5+s7 == "RNR":
-					block.SetRoute(self.routes["SRtS10P32"])
-				else:
-					block.SetRoute(None)
+		self.turnouts["SSw3"].SetLock("SSw5", s5 == 'R', refresh=True)
+		self.turnouts["SSw3b"].SetLock("SSw5", s5 == 'R', refresh=True)
+		self.turnouts["SSw5"].SetLock("SSw3", s3 == 'R', refresh=True)
+		self.turnouts["SSw5b"].SetLock("SSw3", s3 == 'R', refresh=True)
 
-			elif bname == "SOSE":
-				if s3+s5+s11 == "NRR":
-					block.SetRoute(self.routes["SRtS20S11"])
-				elif s3+s5+s11+s13 == "NRNR":
-					block.SetRoute(self.routes["SRtS20H30"])
-				elif s3+s5+s11+s13 == "NRNN":
-					block.SetRoute(self.routes["SRtS20H10"])
-				elif s3+s5+s7+s9 == "NNNN":
-					block.SetRoute(self.routes["SRtS20H20"])
-				elif s3+s5+s7+s9 == "NNNR":
-					block.SetRoute(self.routes["SRtS20S21"])
-				elif s3+s5+s7 == "NNR":
-					block.SetRoute(self.routes["SRtS20P32"])
-				else:
-					block.SetRoute(None)
-
-			elif bname == "SOSHF":
-				s8r = self.signals["S8R"].GetAspect()
-				s8l = self.signals["S8L"].GetAspect()
-				block.SetRoute(self.routes["SRtF10F11"])
-
-			elif bname == "SOSHJW":
-				if s19 == "N":
-					block.SetRoute(self.routes["SRtH10H11"])
-				else:
-					block.SetRoute(None)
-
-			elif bname == "SOSHJM":
-				if s15+s17+s19 == "NNR":
-					block.SetRoute(self.routes["SRtH20H11"])
-				elif s15+s17+s19 == "NNN":
-					block.SetRoute(self.routes["SRtH20H21"])
-				elif s15+s17 == "NR":
-					block.SetRoute(self.routes["SRtH20H40"])
-				else:
-					block.SetRoute(None)
-
-			elif bname == "SOSHJE":
-				if s15+s17+s19 == "RNR":
-					block.SetRoute(self.routes["SRtP42H11"])
-				elif s15+s17+s19 == "RNN":
-					block.SetRoute(self.routes["SRtP42H21"])
-				elif s15+s17 == "RR":
-					block.SetRoute(self.routes["SRtP42H40"])
-				elif s15 == "N":
-					block.SetRoute(self.routes["SRtP42N25"])
-				else:
-					block.SetRoute(None)
-
+		# if bname == "SOSHF":
+		# 	s8r = self.signals["S8R"].GetAspect()
+		# 	s8l = self.signals["S8L"].GetAspect()
+		# 	block.SetRoute(self.routes["SRtF10F11"])
+		self.FindTurnoutCombinations(blocks, ["SSw3", "SSw5", "SSw7", "SSw9", "SSw11", "SSw13", "SSw15", "SSw17", "SSw19"])
 
 	def DefineBlocks(self, tiles):
 		self.blocks = {}
@@ -590,42 +521,42 @@ class Shore (District):
 		block = self.blocks["SOSW"]
 		self.routes["SRtS10S11"] = Route(self.screen, block, "SRtS10S11", "S11", [ (83, 11), (84, 11), (85, 11), (86, 11), (87, 11), (88, 11), (89, 11),
 																				(90, 11), (91, 11), (92, 11), (93, 11), (94, 11), (95, 11), (96, 11), (97, 11), (98, 11), (99, 11),
-																				(100, 10), (101, 9), (102, 8), (103, 7), (104, 7), (105, 7)  ], "S10", [MAIN, MAIN], ["SSw3", "SSw5", "SSw11"], ["S12R", "S12LA"])
+																				(100, 10), (101, 9), (102, 8), (103, 7), (104, 7), (105, 7)  ], "S10", [MAIN, MAIN], ["SSw3:N", "SSw5:N", "SSw11:R"], ["S12R", "S12LA"])
 		self.routes["SRtS10H30"] = Route(self.screen, block, "SRtS10H30", "H30", [ (83, 11), (84, 11), (85, 11), (86, 11), (87, 11), (88, 11), (89, 11),
 																				(90, 11), (91, 11), (92, 11), (93, 11), (94, 11), (95, 11), (96, 11), (97, 11), (98, 11), (99, 11),
-																				(100, 11), (101, 11), (102, 11), (103, 10), (104, 9), (105, 9)  ], "S10", [RESTRICTING, RESTRICTING], ["SSw3", "SSw5", "SSw11", "SSw13"], ["S12R", "S12LB"])
+																				(100, 11), (101, 11), (102, 11), (103, 10), (104, 9), (105, 9)  ], "S10", [RESTRICTING, RESTRICTING], ["SSw3:N", "SSw5:N", "SSw11:N", "SSw13:R"], ["S12R", "S12LB"])
 		self.routes["SRtS10H10"] = Route(self.screen, block, "SRtS10H10", "H10", [ (83, 11), (84, 11), (85, 11), (86, 11), (87, 11), (88, 11), (89, 11),
 																				(90, 11), (91, 11), (92, 11), (93, 11), (94, 11), (95, 11), (96, 11), (97, 11), (98, 11), (99, 11),
-																				(100, 11), (101, 11), (102, 11), (103, 11), (104, 11), (105, 11)  ], "S10", [RESTRICTING, DIVERGING], ["SSw3", "SSw5", "SSw11", "SSw13"], ["S12R", "S12LC"])
+																				(100, 11), (101, 11), (102, 11), (103, 11), (104, 11), (105, 11)  ], "S10", [RESTRICTING, DIVERGING], ["SSw3:N", "SSw5:N", "SSw11:N", "SSw13:N"], ["S12R", "S12LC"])
 		self.routes["SRtS10H20"] = Route(self.screen, block, "SRtS10H20", "H20", [ (83, 11), (84, 11), (85, 12), (86, 13), (87, 13), (88, 13), (89, 13),
 																				(90, 13), (91, 13), (92, 13), (93, 13), (94, 13), (95, 13), (96, 13), (97, 13), (98, 13), (99, 13),
-																				(100, 13), (101, 13), (102, 13), (103, 13), (104, 13), (105, 13)  ], "S10", [DIVERGING, RESTRICTING], ["SSw3", "SSw5", "SSw7", "SSw9"], ["S12R", "S4LA"])
+																				(100, 13), (101, 13), (102, 13), (103, 13), (104, 13), (105, 13)  ], "S10", [DIVERGING, RESTRICTING], ["SSw3:R", "SSw5:N", "SSw7:N", "SSw9:N"], ["S12R", "S4LA"])
 		self.routes["SRtS10S21"] = Route(self.screen, block, "SRtS10S21", "S21", [ (83, 11), (84, 11), (85, 12), (86, 13), (87, 13), (88, 13), (89, 13),
 																				(90, 13), (91, 13), (92, 13), (93, 13), (94, 13), (95, 13), (96, 13), (97, 13), (98, 13), (99, 13),
-																				(100, 13), (101, 13), (102, 13), (103, 14), (104, 15), (105, 16), (106, 17), (107, 18), (108, 19), (109, 19)  ], "S10", [DIVERGING, RESTRICTING], ["SSw3", "SSw5", "SSw7", "SSw9"], ["S12R", "S4LB"])
+																				(100, 13), (101, 13), (102, 13), (103, 14), (104, 15), (105, 16), (106, 17), (107, 18), (108, 19), (109, 19)  ], "S10", [DIVERGING, RESTRICTING], ["SSw3:R", "SSw5:N", "SSw7:N", "SSw9:R"], ["S12R", "S4LB"])
 		self.routes["SRtS10P32"] = Route(self.screen, block, "SRtS10P32", "P32", [ (83, 11), (84, 11), (85, 12), (86, 13), (87, 13), (88, 13), (89, 13),
 																				(90, 13), (91, 13), (92, 13), (93, 13), (94, 13), (95, 13), (96, 13), (97, 13), (98, 13), (99, 13),
-																				(100, 14), (101, 15), (102, 16), (103, 17), (104, 18), (105, 19), (106, 20), (107, 21), (108, 21), (109, 21)  ], "S10", [DIVERGING, DIVERGING], ["SSw3", "SSw5", "SSw7"], ["S12R", "S4LC"])
+																				(100, 14), (101, 15), (102, 16), (103, 17), (104, 18), (105, 19), (106, 20), (107, 21), (108, 21), (109, 21)  ], "S10", [DIVERGING, DIVERGING], ["SSw3:R", "SSw5:N", "SSw7:R"], ["S12R", "S4LC"])
 		
 		block = self.blocks["SOSE"]
 		self.routes["SRtS20S21"] = Route(self.screen, block, "SRtS20S21", "S20", [ (83, 13), (84, 13), (85, 13), (86, 13), (87, 13), (88, 13), (89, 13),
 																				(90, 13), (91, 13), (92, 13), (93, 13), (94, 13), (95, 13), (96, 13), (97, 13), (98, 13), (99, 13),
-																				(100, 13), (101, 13), (102, 13), (103, 14), (104, 15), (105, 16), (106, 17), (107, 18), (108, 19), (109, 19)  ], "S21", [MAIN, MAIN], ["SSw3", "SSw5", "SSw7", "SSw9"], ["S4R", "S4LB"])
+																				(100, 13), (101, 13), (102, 13), (103, 14), (104, 15), (105, 16), (106, 17), (107, 18), (108, 19), (109, 19)  ], "S21", [MAIN, MAIN], ["SSw3:N", "SSw5:N", "SSw7:N", "SSw9:R"], ["S4R", "S4LB"])
 		self.routes["SRtS20S11"] = Route(self.screen, block, "SRtS20S11", "S20", [ (83, 13), (84, 13), (85, 13), (86, 13), (87, 13), (88, 12), (89, 11),
 																				(90, 11), (91, 11), (92, 11), (93, 11), (94, 11), (95, 11), (96, 11), (97, 11), (98, 11), (99, 11),
-																				(100, 10), (101, 9), (102, 8), (103, 7), (104, 7), (105, 7)  ], "S11", [DIVERGING, DIVERGING], ["SSw3", "SSw5", "SSw11"], ["S4R", "S12LA"])
+																				(100, 10), (101, 9), (102, 8), (103, 7), (104, 7), (105, 7)  ], "S11", [DIVERGING, DIVERGING], ["SSw3:N", "SSw5:R", "SSw11:R"], ["S4R", "S12LA"])
 		self.routes["SRtS20H30"] = Route(self.screen, block, "SRtS20H30", "S20", [ (83, 13), (84, 13), (85, 13), (86, 13), (87, 13), (88, 12), (89, 11),
 																				(90, 11), (91, 11), (92, 11), (93, 11), (94, 11), (95, 11), (96, 11), (97, 11), (98, 11), (99, 11),
-																				(100, 11), (101, 11), (102, 11), (103, 10), (104, 9), (105, 9)  ], "H30", [RESTRICTING, RESTRICTING], ["SSw3", "SSw5", "SSw11", "SSw13"], ["S4R", "S12LB"])
+																				(100, 11), (101, 11), (102, 11), (103, 10), (104, 9), (105, 9)  ], "H30", [RESTRICTING, RESTRICTING], ["SSw3:N", "SSw5:R", "SSw11:N", "SSw13:R"], ["S4R", "S12LB"])
 		self.routes["SRtS20H10"] = Route(self.screen, block, "SRtS20H10", "S20", [ (83, 13), (84, 13), (85, 13), (86, 13), (87, 13), (88, 12), (89, 11),
 																				(90, 11), (91, 11), (92, 11), (93, 11), (94, 11), (95, 11), (96, 11), (97, 11), (98, 11), (99, 11),
-																				(100, 11), (101, 11), (102, 11), (103, 11), (104, 11), (105, 11)  ], "H10", [RESTRICTING, DIVERGING], ["SSw3", "SSw5", "SSw11", "SSw13"], ["S4R", "S12LC"])
+																				(100, 11), (101, 11), (102, 11), (103, 11), (104, 11), (105, 11)  ], "H10", [RESTRICTING, DIVERGING], ["SSw3:N", "SSw5:R", "SSw11:N", "SSw13:N"], ["S4R", "S12LC"])
 		self.routes["SRtS20H20"] = Route(self.screen, block, "SRtS20H20", "S20", [ (83, 13), (84, 13), (85, 13), (86, 13), (87, 13), (88, 13), (89, 13),
 																				(90, 13), (91, 13), (92, 13), (93, 13), (94, 13), (95, 13), (96, 13), (97, 13), (98, 13), (99, 13),
-																				(100, 13), (101, 13), (102, 13), (103, 13), (104, 13), (105, 13)  ], "H20", [DIVERGING, RESTRICTING], ["SSw3", "SSw5", "SSw7", "SSw9"], ["S4R", "S4LA"])
+																				(100, 13), (101, 13), (102, 13), (103, 13), (104, 13), (105, 13)  ], "H20", [DIVERGING, RESTRICTING], ["SSw3:N", "SSw5:N", "SSw7:N", "SSw9:N"], ["S4R", "S4LA"])
 		self.routes["SRtS20P32"] = Route(self.screen, block, "SRtS20P32", "S20", [ (83, 13), (84, 13), (85, 13), (86, 13), (87, 13), (88, 13), (89, 13),
 																				(90, 13), (91, 13), (92, 13), (93, 13), (94, 13), (95, 13), (96, 13), (97, 13), (98, 13), (99, 13),
-																				(100, 14), (101, 15), (102, 16), (103, 17), (104, 18), (105, 19), (106, 20), (107, 21), (108, 21), (109, 21)  ], "P32", [DIVERGING, DIVERGING], ["SSw3", "SSw5", "SSw7"], ["S4R", "S4LC"])
+																				(100, 14), (101, 15), (102, 16), (103, 17), (104, 18), (105, 19), (106, 20), (107, 21), (108, 21), (109, 21)  ], "P32", [DIVERGING, DIVERGING], ["SSw3:N", "SSw5:N", "SSw7:R"], ["S4R", "S4LC"])
 
 		block = self.blocks["SOSHF"]
 		self.routes["SRtF10F11"] = Route(self.screen, block, "SRtF10F11", "F10", [ (87, 9), (88, 9), (89, 10), (90, 11), (91, 12), (92, 13), (93, 14), (94, 15), (95, 15) ], "F11", [RESTRICTING, RESTRICTING], [], ["S8R", "S8L"])
@@ -652,18 +583,18 @@ class Shore (District):
 		self.osSignals["SOSHF"] = [ "S12LA", "S12LB", "S12LC", "S12R", "S4LA", "S4LB", "S4LC", "S4R", "S8L", "S8R" ]
 
 		block = self.blocks["SOSHJW"]
-		self.routes["SRtH10H11"] = Route(self.screen, block, "SRtH10H11", "H11", [  (114, 11), (115, 11), (116, 11), (117, 11), (118, 11), (119, 11), (120, 11), (121, 11), (122, 11)   ], "H10", [RESTRICTING, MAIN], ["SSw19"], ["S20R", "S20L"])
+		self.routes["SRtH10H11"] = Route(self.screen, block, "SRtH10H11", "H11", [  (114, 11), (115, 11), (116, 11), (117, 11), (118, 11), (119, 11), (120, 11), (121, 11), (122, 11)   ], "H10", [RESTRICTING, MAIN], ["SSw19:N"], ["S20R", "S20L"])
 
 		block = self.blocks["SOSHJM"]
-		self.routes["SRtH20H11"] = Route(self.screen, block, "SRtH20H11", "H20", [  (114, 13), (115, 13), (116, 13), (117, 13), (118, 13), (119, 13), (120, 12), (121, 11), (122, 11)   ], "H11", [RESTRICTING, RESTRICTING], ["SSw15", "SSw17", "SSw19"], ["S18R", "S20L"])
-		self.routes["SRtH20H21"] = Route(self.screen, block, "SRtH20H21", "H20", [  (114, 13), (115, 13), (116, 13), (117, 13), (118, 13), (119, 13), (120, 13), (121, 13), (122, 13)   ], "H21", [MAIN, RESTRICTING], ["SSw15", "SSw17", "SSw19"], ["S18R", "S18LA"])
-		self.routes["SRtH20H40"] = Route(self.screen, block, "SRtH20H40", "H20", [  (114, 13), (115, 13), (116, 13), (117, 13), (118, 13), (119, 14), (120, 15), (121, 15), (122, 15)   ], "H40", [DIVERGING, RESTRICTING], ["SSw15", "SSw17"], ["S18R", "S18LB"])
+		self.routes["SRtH20H11"] = Route(self.screen, block, "SRtH20H11", "H20", [  (114, 13), (115, 13), (116, 13), (117, 13), (118, 13), (119, 13), (120, 12), (121, 11), (122, 11)   ], "H11", [RESTRICTING, RESTRICTING], ["SSw15:N", "SSw17:N", "SSw19:R"], ["S18R", "S20L"])
+		self.routes["SRtH20H21"] = Route(self.screen, block, "SRtH20H21", "H20", [  (114, 13), (115, 13), (116, 13), (117, 13), (118, 13), (119, 13), (120, 13), (121, 13), (122, 13)   ], "H21", [MAIN, RESTRICTING], ["SSw15:N", "SSw17:N", "SSw19:N"], ["S18R", "S18LA"])
+		self.routes["SRtH20H40"] = Route(self.screen, block, "SRtH20H40", "H20", [  (114, 13), (115, 13), (116, 13), (117, 13), (118, 13), (119, 14), (120, 15), (121, 15), (122, 15)   ], "H40", [DIVERGING, RESTRICTING], ["SSw15:N", "SSw17:R"], ["S18R", "S18LB"])
 
 		block = self.blocks["SOSHJE"]
-		self.routes["SRtP42H11"] = Route(self.screen, block, "SRtP42H11", "P42", [  (114, 15), (115, 15), (116, 14), (117, 13), (118, 13), (119, 13), (120, 12), (121, 11), (122, 11)   ], "H11", [RESTRICTING, DIVERGING], ["SSw15", "SSw17", "SSw19"], ["S16R", "S20L"])
-		self.routes["SRtP42H21"] = Route(self.screen, block, "SRtP42H21", "P42", [  (114, 15), (115, 15), (116, 14), (117, 13), (118, 13), (119, 13), (120, 13), (121, 13), (122, 13)   ], "H21", [RESTRICTING, DIVERGING], ["SSw15", "SSw17", "SSw19"], ["S16R", "S18LA"])
-		self.routes["SRtP42H40"] = Route(self.screen, block, "SRtP42H40", "P42", [  (114, 15), (115, 15), (116, 14), (117, 13), (118, 13), (119, 14), (120, 15), (121, 15), (122, 15)   ], "H40", [RESTRICTING, RESTRICTING], ["SSw15", "SSw17"], ["S16R", "S18LB"])
-		self.routes["SRtP42N25"] = Route(self.screen, block, "SRtP42N25", "P42", [  (114, 15), (115, 15), (116, 15), (117, 15), (118, 16), (119, 17), (120, 17)   ], "N25", [MAIN, MAIN], ["SSw15"], ["S16R", "S16L"])
+		self.routes["SRtP42H11"] = Route(self.screen, block, "SRtP42H11", "P42", [  (114, 15), (115, 15), (116, 14), (117, 13), (118, 13), (119, 13), (120, 12), (121, 11), (122, 11)   ], "H11", [RESTRICTING, DIVERGING], ["SSw15:R", "SSw17:N", "SSw19:R"], ["S16R", "S20L"])
+		self.routes["SRtP42H21"] = Route(self.screen, block, "SRtP42H21", "P42", [  (114, 15), (115, 15), (116, 14), (117, 13), (118, 13), (119, 13), (120, 13), (121, 13), (122, 13)   ], "H21", [RESTRICTING, DIVERGING], ["SSw15:R", "SSw17:N", "SSw19:N"], ["S16R", "S18LA"])
+		self.routes["SRtP42H40"] = Route(self.screen, block, "SRtP42H40", "P42", [  (114, 15), (115, 15), (116, 14), (117, 13), (118, 13), (119, 14), (120, 15), (121, 15), (122, 15)   ], "H40", [RESTRICTING, RESTRICTING], ["SSw15:R", "SSw17:R"], ["S16R", "S18LB"])
+		self.routes["SRtP42N25"] = Route(self.screen, block, "SRtP42N25", "P42", [  (114, 15), (115, 15), (116, 15), (117, 15), (118, 16), (119, 17), (120, 17)   ], "N25", [MAIN, MAIN], ["SSw15:N"], ["S16R", "S16L"])
 
 		self.signals["S20R"].AddPossibleRoutes("SOSHJW", [ "SRtH10H11" ])
 		self.signals["S18R"].AddPossibleRoutes("SOSHJM", [ "SRtH20H11", "SRtH20H21", "SRtH20H40" ])

@@ -1,22 +1,28 @@
-Districts:
-	PortInOut.cpp - add inout routine
+
+re-write determineroutes to use turnout information within the route objects themselves
+    bank  DONE
+    cliff
+    cliveden  DONE
+    dell     DONE
+    hyde     DONE
+    krulish   DONE
+    latham   DONE
+    nassau   DONE
+    port
+    shore    DONE
+    yard    DONE
 
 
-  check other districts use of indicators and if it's consistent with yard
+dispatcher only - upload route definitions at connection
+auto-router - request download of route definitions
 
 
-
-how to use release  yard nassau and cliff
+how to use release - yard nassau and cliff
 call on signals - I think it refers to JUST lighting the signal with no route clearing etc
 how to use wos1norm in yard
-why do we need the switch buttons in yard  outin method
+do we really need a separate cliff fleet checkbox?  And what is port fleeting if we have no control over port
 
-do we really need a separate cliff fleet checkbox?  Na what is port fleeting if we have no control over port
-
-check all block indicator outputs to see if I need a combined occupancy value like I do for block N25 in hyde
-
-deduction of train movement - reporting train location
-  checking train for non-contiguous Blocks
+checking train for non-contiguous Blocks
 
 ATC
  need dcc interface
@@ -25,3 +31,5 @@ Auto routing
 
 Simulator
   new commands for dispatcher in simulation mode:  placetrain, removetrain, set signal, get signal
+  multiple simultaneous scripts
+  display scripts running and their status

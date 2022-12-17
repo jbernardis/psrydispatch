@@ -8,6 +8,7 @@ from handswitch import HandSwitch
 
 from constants import NaCl, RegAspects, RESTRICTING, DIVERGING, MAIN
 
+
 class Krulish (District):
 	def __init__(self, name, frame, screen):
 		District.__init__(self, name, frame, screen)
@@ -42,42 +43,14 @@ class Krulish (District):
 			self.frame.DrawTile(self.screen, (124, 24), bmp)
 
 	def DetermineRoute(self, blocks):
-		s1 = 'N' if self.turnouts["KSw1"].IsNormal() else 'R'
 		s3 = 'N' if self.turnouts["KSw3"].IsNormal() else 'R'
 		s5 = 'N' if self.turnouts["KSw5"].IsNormal() else 'R'
-		s7 = 'N' if self.turnouts["KSw7"].IsNormal() else 'R'
-		self.turnouts["KSw3"].SetLock("KSw5", s5=='R', refresh=True)
-		self.turnouts["KSw3b"].SetLock("KSw9", s5=='R', refresh=True)
-		self.turnouts["KSw5"].SetLock("KSw3", s3=='R', refresh=True)
-		self.turnouts["KSw5b"].SetLock("KSw3", s3=='R', refresh=True)
+		self.turnouts["KSw3"].SetLock("KSw5", s5 == 'R', refresh=True)
+		self.turnouts["KSw3b"].SetLock("KSw9", s5 == 'R', refresh=True)
+		self.turnouts["KSw5"].SetLock("KSw3", s3 == 'R', refresh=True)
+		self.turnouts["KSw5b"].SetLock("KSw3", s3 == 'R', refresh=True)
 
-		for block in blocks:
-			bname = block.GetName()
-			if bname == "KOSW":
-				if s3+s5+s7 == "NNR":
-					block.SetRoute(self.routes["KRtN10K10"])
-				elif s3+s5+s7 == "NNN":
-					block.SetRoute(self.routes["KRtN10N11"])
-				elif s3+s5 == "NR":
-					block.SetRoute(self.routes["KRtN10N21"])
-				else:
-					block.SetRoute(None)
-
-			elif bname == "KOSM":
-				if s3+s5+s7 == "RNR":
-					block.SetRoute(self.routes["KRtN25K10"])
-				elif s3+s5+s7 == "RNN":
-					block.SetRoute(self.routes["KRtN25N11"])
-				elif s1+s3+s5 == "RNN":
-					block.SetRoute(self.routes["KRtN25N21"])
-				else:
-					block.SetRoute(None)
-				
-			elif bname == "KOSE":
-				if s1+s5 == "NN":
-					block.SetRoute(self.routes["KRtN20N21"])
-				else:
-					block.SetRoute(None)
+		self.FindTurnoutCombinations(blocks, ["KSw1", "KSw3", "KSw5", "KSw7"])
 
 	def DefineBlocks(self, tiles):
 		self.blocks = {}
@@ -345,17 +318,17 @@ class Krulish (District):
 			self.blocks[blknm].SetSignals(siglist)
 
 		block = self.blocks["KOSW"]
-		self.routes["KRtN10K10"] = Route(self.screen, block, "KRtN10K10", "K10", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 11), (147, 10), (148, 9), (149, 9) ], "N10", [RESTRICTING, RESTRICTING], ["KSw3", "KSw5", "KSw7"], ["K8R", "K8LA"])
-		self.routes["KRtN10N11"] = Route(self.screen, block, "KRtN10N11", "N11", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 11), (147, 11), (148, 11), (149, 11) ], "N10", [MAIN, MAIN], ["KSw3", "KSw5", "KSw7"], ["K8R", "K8LB"])
-		self.routes["KRtN10N21"] = Route(self.screen, block, "KRtN10N21", "N21", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 12), (147, 13), (148, 13), (149, 13) ], "N10", [DIVERGING, DIVERGING], ["KSw3", "KSw5"], ["K8R", "K2L"])
+		self.routes["KRtN10K10"] = Route(self.screen, block, "KRtN10K10", "K10", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 11), (147, 10), (148, 9), (149, 9) ], "N10", [RESTRICTING, RESTRICTING], ["KSw3:N", "KSw5:N", "KSw7:R"], ["K8R", "K8LA"])
+		self.routes["KRtN10N11"] = Route(self.screen, block, "KRtN10N11", "N11", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 11), (147, 11), (148, 11), (149, 11) ], "N10", [MAIN, MAIN], ["KSw3:N", "KSw5:N", "KSw7:N"], ["K8R", "K8LB"])
+		self.routes["KRtN10N21"] = Route(self.screen, block, "KRtN10N21", "N21", [ (141, 11), (142, 11), (143, 11), (144, 11), (145, 11), (146, 12), (147, 13), (148, 13), (149, 13) ], "N10", [DIVERGING, DIVERGING], ["KSw3:N", "KSw5:R"], ["K8R", "K2L"])
 
 		block = self.blocks["KOSM"]
-		self.routes["KRtN25K10"] = Route(self.screen, block, "KRtN25K10", "K10", [ (141, 13), (142, 13), (143, 12), (144, 11), (145, 11), (146, 11), (147, 10), (148, 9), (149, 9) ], "N25", [RESTRICTING, RESTRICTING], ["KSw3", "KSw5", "KSw7"], ["K4R", "K8LA"])
-		self.routes["KRtN25N11"] = Route(self.screen, block, "KRtN25N11", "N11", [ (141, 13), (142, 13), (143, 12), (144, 11), (145, 11), (146, 11), (147, 11), (148, 11), (149, 11) ], "N25", [DIVERGING, DIVERGING], ["KSw3", "KSw5", "KSw7"], ["K4R", "K8LB"])
-		self.routes["KRtN25N21"] = Route(self.screen, block, "KRtN25N21", "N21", [ (141, 13), (142, 13), (143, 13), (144, 13), (145, 13), (146, 13), (147, 13), (148, 13), (149, 13) ], "N25", [MAIN, MAIN], ["KSw1", "KSw3", "KSw5"], ["K4R", "K2L"])
+		self.routes["KRtN25K10"] = Route(self.screen, block, "KRtN25K10", "K10", [ (141, 13), (142, 13), (143, 12), (144, 11), (145, 11), (146, 11), (147, 10), (148, 9), (149, 9) ], "N25", [RESTRICTING, RESTRICTING], ["KSw3:R", "KSw5:N", "KSw7:R"], ["K4R", "K8LA"])
+		self.routes["KRtN25N11"] = Route(self.screen, block, "KRtN25N11", "N11", [ (141, 13), (142, 13), (143, 12), (144, 11), (145, 11), (146, 11), (147, 11), (148, 11), (149, 11) ], "N25", [DIVERGING, DIVERGING], ["KSw3:R", "KSw5:N", "KSw7:N"], ["K4R", "K8LB"])
+		self.routes["KRtN25N21"] = Route(self.screen, block, "KRtN25N21", "N21", [ (141, 13), (142, 13), (143, 13), (144, 13), (145, 13), (146, 13), (147, 13), (148, 13), (149, 13) ], "N25", [MAIN, MAIN], ["KSw1:R", "KSw3:N", "KSw5:N"], ["K4R", "K2L"])
 
 		block = self.blocks["KOSE"]
-		self.routes["KRtN20N21"] = Route(self.screen, block, "KRtN20N21", "N20", [ (141, 15), (142, 15), (143, 15), (144, 14), (145, 13), (146, 13), (147, 13), (148, 13), (149, 13) ], "N21", [DIVERGING, DIVERGING], ["KSw1", "KSw5"], ["K2R", "K2L"])
+		self.routes["KRtN20N21"] = Route(self.screen, block, "KRtN20N21", "N20", [ (141, 15), (142, 15), (143, 15), (144, 14), (145, 13), (146, 13), (147, 13), (148, 13), (149, 13) ], "N21", [DIVERGING, DIVERGING], ["KSw1:N", "KSw5:N"], ["K2R", "K2L"])
 
 		block = self.blocks["KOSN10S11"]
 		self.routes["KRtN10S11"] = Route(self.screen, block, "KRtN10S11", "N10", [  ], "S11", [MAIN, MAIN], [], ["S11E", "N10W"])
@@ -387,6 +360,5 @@ class Krulish (District):
 		self.osSignals["KOSE"] = [ "K2R", "K2L" ]
 		self.osSignals["KOSN10S11"] = [ "N10W", "S11E" ]
 		self.osSignals["KOSN20S21"] = [ "N20W", "S21E" ]
-
 
 		return self.signals

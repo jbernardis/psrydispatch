@@ -4,7 +4,7 @@ from constants import EMPTY, OCCUPIED, CLEARED, BLOCK, OVERSWITCH, STOPPINGBLOCK
 
 
 class Route:
-	def __init__(self, screen, osblk, name, blkin, pos, blkout, rtype, tolist, signals):
+	def __init__(self, screen, osblk, name, blkin, pos, blkout, rtype, turnouts, signals):
 		self.screen = screen
 		self.name = name
 		self.osblk = osblk
@@ -12,7 +12,7 @@ class Route:
 		self.pos = [x for x in pos]
 		self.blkout = blkout
 		self.rtype = [x for x in rtype]
-		self.turnouts = [x for x in tolist]
+		self.turnouts = [x.split(":") for x in turnouts]
 		self.signals = [x for x in signals]
 
 	# def GetDefinition(self):
@@ -24,6 +24,9 @@ class Route:
 	def GetDescription(self):
 		return "%s <=> %s" % (self.blkin, self.blkout)
 
+	def GetPositions(self):
+		return self.screen, self.pos
+
 	def Contains(self, screen, pos):
 		if screen != self.screen:
 			return False
@@ -32,13 +35,22 @@ class Route:
 	def GetStatus(self):
 		return self.osblk.GetStatus()
 
+	def GetOS(self):
+		return self.osblk
+
+	def GetOSName(self):
+		return self.osblk.GetName()
+
 	def GetRouteType(self, reverse=False):
 		if self.osblk.east:
 			return self.rtype[1] if reverse else self.rtype[0]
 		else:
 			return self.rtype[0] if reverse else self.rtype[1]
 
-	def GetTurnouts(self):
+	def GetLockTurnouts(self):
+		return [x[0] for x in self.turnouts]
+
+	def GetSetTurnouts(self):
 		return self.turnouts
 
 	def GetExitBlock(self, reverse=False):
@@ -119,6 +131,9 @@ class Block:
 
 	def GetTrainLoc(self):
 		return self.trainLoc
+
+	def GetTiles(self):
+		return self.tiles
 
 	def SetSignals(self, sigs):
 		self.sigWest = sigs[0]
@@ -561,7 +576,6 @@ class OverSwitch (Block):
 			newName = route.GetName()
 
 		if oldName == newName:
-			print("noi change for block %s(%s)" % (self.name, oldName))
 			return  # no change
 
 		if self.route is not None:
@@ -667,7 +681,7 @@ class OverSwitch (Block):
 				self.entrySignal = None
 		
 		if self.route:
-			tolist = self.route.GetTurnouts()
+			tolist = self.route.GetLockTurnouts()
 			self.district.LockTurnouts(self.name, tolist, occupied)
 
 	def GetTileInRoute(self, screen, pos):

@@ -93,7 +93,8 @@ class District:
 			self.frame.ResetButtonExpiry(2, wButton)
 			self.frame.ResetButtonExpiry(2, eButton)
 			try:
-				toList = self.NXMap[wButton.GetName()][eButton.GetName()]
+				rtName = self.NXMap[wButton.GetName()][eButton.GetName()]
+				toList = self.routes[rtName].GetSetTurnouts()
 			except KeyError:
 				toList = None
 
@@ -112,6 +113,21 @@ class District:
 
 			self.westButton[groupName] = None
 			self.eastButton[groupName] = None
+
+	def FindTurnoutCombinations(self, blocks, turnouts):
+		# This maps OS name to new route.  Initially assume None for all OSes
+		rteMap = {os.GetName(): None for os in blocks}
+		toMap = [[x, 'N' if self.turnouts[x].IsNormal() else 'R'] for x in turnouts]
+
+		for rte in self.routes.values():
+			osName = rte.GetOSName()
+			if osName in rteMap:
+				rteSet = rte.GetSetTurnouts()
+				if all(x in toMap for x in rteSet):
+					rteMap[osName] = rte
+
+		for osn, rte in rteMap.items():
+			self.blocks[osn].SetRoute(None if rte is None else rte)
 
 	def MatrixTurnoutRequest(self, tolist):
 		for toname, state in tolist:
@@ -258,6 +274,7 @@ class District:
 
 	def anyTurnoutLocked(self, toList):
 		rv = False
+		print(str(toList))
 		for toname, stat in toList:
 			turnout = self.turnouts[toname]
 			tostat = "N" if turnout.IsNormal() else "R"
@@ -464,7 +481,7 @@ class District:
 		if exitBlk.GetBlockType() == OVERSWITCH:
 			rt = exitBlk.GetRoute()
 			if rt:
-				tolist = rt.GetTurnouts()
+				tolist = rt.GetLockTurnouts()
 				self.LockTurnouts(signm, tolist, aspect != STOP)
 
 	def DoSignalLeverAction(self, signame, state):
@@ -524,7 +541,7 @@ class District:
 			osblk = self.blocks[osblknm]
 			rt = osblk.GetRoute()
 			if rt:
-				tolist = rt.GetTurnouts()
+				tolist = rt.GetLockTurnouts()
 				self.LockTurnouts(signm, tolist, flag)
 
 	def LockTurnouts(self, locker, tolist, flag):
