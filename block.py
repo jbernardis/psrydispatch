@@ -15,9 +15,18 @@ class Route:
 		self.turnouts = [x.split(":") for x in turnouts]
 		self.signals = [x for x in signals]
 
-	# def GetDefinition(self):
-	# 	return {"name": self.name, "os": self.osblk.GetName(), "endpoints": [self.blkin, self.blkout]}
-	#
+	def GetDefinition(self):
+		msg = {
+			"name": self.name,
+			"os":   self.osblk.GetName(),
+			"ends": [self.blkin, self.blkout],
+			"signals":
+				[x for x in self.signals],
+			"turnouts":
+				["%s:%s" % (x[0], x[1]) for x in self.turnouts]
+		}
+		return msg
+
 	def GetName(self):
 		return self.name
 
@@ -242,6 +251,9 @@ class Block:
 	def SetEast(self, east):
 		self.east = east
 		self.frame.Request({"blockdir": { "block": self.GetName(), "dir": "E" if east else "W"}})
+		for b in [self.sbEast, self.sbWest]:
+			if b is not None:
+				self.frame.Request({"blockdir": { "block": b.GetName(), "dir": "E" if east else "W"}})
 
 	def IsReversed(self):
 		return self.east != self.defaultEast
@@ -302,7 +314,7 @@ class Block:
 		self.turnouts.append(turnout)
 
 	def SetOccupied(self, occupied=True, blockend=None, refresh=False):
-		if blockend  in ["E", "W"]:
+		if blockend in ["E", "W"]:
 			b = self.sbEast if blockend == "E" else self.sbWest
 			if b is None:
 				logging.warning("Stopping block %s not defined for block %s" % (blockend, self.GetName()))
@@ -481,7 +493,7 @@ class StoppingBlock (Block):
 
 	def Draw(self):
 		self.east = self.block.east
-		self.frame.Request({"blockdir": { "block": self.GetName(), "dir": "E" if self.east else "W"}})
+		# self.frame.Request({"blockdir": { "block": self.GetName(), "dir": "E" if self.east else "W"}})
 		for t, screen, pos, revflag in self.tiles:
 			bmp = t.getBmp(self.status, self.east, revflag)
 			self.frame.DrawTile(screen, pos, bmp)
@@ -693,7 +705,13 @@ class OverSwitch (Block):
 		return False, EMPTY
 
 	def Draw(self):
+		dbg = False
+		if self.name.startswith("SOS"):
+			print("drawing block %s" % self.name)
+			dbg = True
 		for t, screen, pos, revflag in self.tiles:
+			if dbg:
+				print("position %d %d" % (pos[0], pos[1]))
 			draw, stat = self.GetTileInRoute(screen, pos)
 			if draw:
 				bmp = t.getBmp(stat, self.east, revflag)

@@ -19,8 +19,12 @@ class District:
 		self.turnouts = None
 		self.osBlocks = None
 		self.blocks = None
+		self.tiles = None
+		self.totiles = None
+		self.sigtiles = None
 		self.misctiles = None
 		self.sstiles = None
+		self.btntiles = None
 		self.name = name
 		self.frame = frame
 		self.screen = screen
@@ -30,10 +34,15 @@ class District:
 		self.westButton = {}
 		logging.info("Creating district %s" % name)
 
-	def Initialize(self, sstiles, misctiles):
+	def SetTiles(self, tiles, totiles, sstiles, sigtiles, misctiles, btntiles):
+		self.tiles = tiles
+		self.totiles = totiles
 		self.sstiles = sstiles
+		self.sigtiles = sigtiles
 		self.misctiles = misctiles
+		self.btntiles = btntiles
 
+	def Initialize(self):
 		blist = [self.frame.GetBlockByName(n) for n in self.osBlocks.keys()]
 		self.DetermineRoute(blist)
 
@@ -194,7 +203,7 @@ class District:
 				return False
 			aspect = 0
 
-		self.frame.Request({"signal": {"name": signm, "aspect": aspect}})
+		self.frame.Request({"signal": {"name": signm, "aspect": aspect, "dbg": 1}})
 		sig.SetLock(osblk.GetName(), 0 if aspect == 0 else 1)
 		return True
 
@@ -267,10 +276,10 @@ class District:
 		self.CheckBlockSignals(sig, aspect, exitBlk, doReverseExit, rType, nbStatus, nbRType, nnbClear)
 
 		return aspect
-	#
-	# def SendRouteDefinitions(self):
-	# 	for r in self.routes.values():
-	# 		self.frame.Request({"routedef": r.GetDefinition()})
+
+	def SendRouteDefinitions(self):
+		for r in self.routes.values():
+			self.frame.Request({"routedef": r.GetDefinition()})
 
 	def anyTurnoutLocked(self, toList):
 		rv = False
@@ -561,12 +570,12 @@ class District:
 	def CrossingEastWestBoundary(self, blk1, blk2):
 		return False
 
-	def DefineBlocks(self, tiles):
+	def DefineBlocks(self):
 		self.blocks = {}
 		self.osBlocks = {}
 		return {}, {}
 
-	def DefineTurnouts(self, tiles, blocks):
+	def DefineTurnouts(self, blocks):
 		self.turnouts = {}
 		return {}
 
@@ -574,15 +583,15 @@ class District:
 		self.indicators = {}
 		return {}
 
-	def DefineSignals(self, tiles):
+	def DefineSignals(self):
 		self.signals = {}
 		return {}
 
-	def DefineButtons(self, tiles):
+	def DefineButtons(self):
 		self.buttons = {}
 		return {}
 
-	def DefineHandSwitches(self, tiles):
+	def DefineHandSwitches(self):
 		self.handswitches = {}
 		return {}
 
@@ -603,9 +612,13 @@ class Districts:
 	def AddDistrict(self, district):
 		self.districts[district.name] = district
 
-	def Initialize(self, sstiles, misctiles):
+	def SetTiles(self, tiles, totiles, sstiles, sigtiles, misctiles, btntiles):
 		for t in self.districts.values():
-			t.Initialize(sstiles, misctiles)
+			t.SetTiles(tiles, totiles, sstiles, sigtiles, misctiles, btntiles)
+
+	def Initialize(self):
+		for t in self.districts.values():
+			t.Initialize()
 
 	def OnConnect(self):
 		for t in self.districts.values():
@@ -615,41 +628,41 @@ class Districts:
 		for t in self.districts.values():
 			t.Draw()
 
-	def DefineBlocks(self, tiles):
+	def DefineBlocks(self):
 		blocks = {}
 		osBlocks = {}
 		for t in self.districts.values():
-			bl, osbl = t.DefineBlocks(tiles)
+			bl, osbl = t.DefineBlocks()
 			blocks.update(bl)
 			osBlocks.update(osbl)
 
 		return blocks, osBlocks
 
-	def DefineTurnouts(self, tiles, blocks):
+	def DefineTurnouts(self, blocks):
 		tos = {}
 		for t in self.districts.values():
-			tos.update(t.DefineTurnouts(tiles, blocks))
+			tos.update(t.DefineTurnouts(blocks))
 
 		return tos
 
-	def DefineSignals(self, tiles):
+	def DefineSignals(self):
 		sigs = {}
 		for t in self.districts.values():
-			sigs.update(t.DefineSignals(tiles))
+			sigs.update(t.DefineSignals())
 
 		return sigs
 
-	def DefineButtons(self, tiles):
+	def DefineButtons(self):
 		btns = {}
 		for t in self.districts.values():
-			btns.update(t.DefineButtons(tiles))
+			btns.update(t.DefineButtons())
 
 		return btns
 
-	def DefineHandSwitches(self, tiles):
+	def DefineHandSwitches(self):
 		handswitches = {}
 		for t in self.districts.values():
-			handswitches.update(t.DefineHandSwitches(tiles))
+			handswitches.update(t.DefineHandSwitches())
 
 		return handswitches
 
@@ -659,7 +672,7 @@ class Districts:
 			indicators.update(t.DefineIndicators())
 
 		return indicators
-	#
-	# def SendRouteDefinitions(self):
-	# 	for t in self.districts.values():
-	# 		t.SendRouteDefinitions()
+
+	def SendRouteDefinitions(self):
+		for t in self.districts.values():
+			t.SendRouteDefinitions()

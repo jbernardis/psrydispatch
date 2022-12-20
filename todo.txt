@@ -1,17 +1,4 @@
 
-re-write determineroutes to use turnout information within the route objects themselves
-    bank  DONE
-    cliff
-    cliveden  DONE
-    dell     DONE
-    hyde     DONE
-    krulish   DONE
-    latham   DONE
-    nassau   DONE
-    port
-    shore    DONE
-    yard    DONE
-
 
 dispatcher only - upload route definitions at connection
 auto-router - request download of route definitions

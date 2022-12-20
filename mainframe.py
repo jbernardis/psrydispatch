@@ -496,11 +496,13 @@ class MainFrame(wx.Frame):
 		self.districts.AddDistrict(Hyde("Hyde", self, HyYdPt))
 		self.districts.AddDistrict(Port("Port", self, HyYdPt))
 
-		self.blocks, self.osBlocks = self.districts.DefineBlocks(self.tiles)
-		self.turnouts = self.districts.DefineTurnouts(self.totiles, self.blocks)
-		self.signals =  self.districts.DefineSignals(self.sigtiles)
-		self.buttons =  self.districts.DefineButtons(self.bitmaps.buttons)
-		self.handswitches =  self.districts.DefineHandSwitches(self.misctiles)
+		self.districts.SetTiles(self.tiles, self.totiles, self.sstiles, self.sigtiles, self.misctiles, self.bitmaps.buttons)
+
+		self.blocks, self.osBlocks = self.districts.DefineBlocks()
+		self.turnouts = self.districts.DefineTurnouts(self.blocks)
+		self.signals =  self.districts.DefineSignals()
+		self.buttons =  self.districts.DefineButtons()
+		self.handswitches =  self.districts.DefineHandSwitches()
 		self.indicators = self.districts.DefineIndicators()
 
 		self.pendingFleets = {}
@@ -512,7 +514,7 @@ class MainFrame(wx.Frame):
 
 		self.trains = {}
 
-		self.districts.Initialize(self.sstiles, self.misctiles)
+		self.districts.Initialize()
 
 		# only set up hot spots on the diagram for dispatchr - not for remote display
 		if self.settings.dispatch:
@@ -1077,7 +1079,7 @@ class MainFrame(wx.Frame):
 		for b in self.blocks.values():
 			if b.GetBlockType() == OVERSWITCH:
 				b.SendRouteRequest()
-		# self.districts.SendRouteDefinitions()
+		self.districts.SendRouteDefinitions()
 
 	def onDisconnectEvent(self, _):
 		self.listener = None
