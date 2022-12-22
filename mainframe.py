@@ -832,14 +832,12 @@ class MainFrame(wx.Frame):
 			self.bRefresh.Enable(True)
 			self.bLoadTrains.Enable(True)
 			self.bLoadLocos.Enable(True)
-			if self.settings.dispatch:
-				self.SendBlockDirRequests()
-				self.SendOSRoutes()
-				
+
 		self.breakerDisplay.UpdateDisplay()
 		self.ShowTitle()
 
 	def OnRefresh(self, _):
+		# self.districts.GenerateRouteInformation()
 		self.rrServer.SendRequest({"refresh": {"SID": self.sessionid}})
 
 	def raiseDeliveryEvent(self, data): # thread context
@@ -1054,6 +1052,18 @@ class MainFrame(wx.Frame):
 				logging.info("connected to railroad server with session ID %d" % self.sessionid)
 				self.districts.OnConnect()
 				self.ShowTitle()
+
+			elif cmd == "end":
+				if parms["type"] == "layout":
+					print("======================================== end of layout")
+					if self.settings.dispatch:
+						self.SendBlockDirRequests()
+						self.SendOSRoutes()
+					self.rrServer.SendRequest({"refresh": {"SID": self.sessionid, "type": "trains"}})
+				elif parms["type"] == "trains":
+					print("======================================== end of trains")
+			else:
+				print("command = %s" % cmd)
 
 	def raiseDisconnectEvent(self): # thread context
 		evt = DisconnectEvent()

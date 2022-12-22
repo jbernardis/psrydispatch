@@ -1,5 +1,5 @@
 import logging
-import pprint
+import json
 
 from constants import RegAspects, RegSloAspects, AdvAspects, SloAspects, \
 	MAIN, SLOW, DIVERGING, RESTRICTING, \
@@ -610,6 +610,13 @@ class District:
 	def ReportTurnoutLocked(self, tonm):
 		self.frame.Popup("Turnout is locked")
 
+	def GenerateRouteInformation(self):
+		routes = {}
+		for r in self.routes.values():
+			routes.update(r.ToJson())
+
+		return routes
+
 
 class Districts:
 	def __init__(self):
@@ -682,3 +689,12 @@ class Districts:
 	def SendRouteDefinitions(self):
 		for t in self.districts.values():
 			t.SendRouteDefinitions()
+
+	def GenerateRouteInformation(self):
+		routes = {}
+		for t in self.districts.values():
+			routes.update(t.GenerateRouteInformation())
+
+		with open("routes.json", "w") as jfp:
+			json.dump(routes, jfp, sort_keys=True, indent=2)
+

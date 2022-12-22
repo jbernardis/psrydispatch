@@ -88,6 +88,9 @@ class Route:
 	def rprint(self):
 		logging.debug("Block %s: set route to %s: %s => %s => %s %s" % (self.osblk.GetName(), self.name, self.blkin, str(self.pos), self.blkout, str(self.turnouts)))
 
+	def ToJson(self):
+		return {self.name: {"os": self.osblk.GetName(), "ends": [self.blkin, self.blkout], "signals": self.signals, "turnouts": self.turnouts}}
+
 
 class Block:
 	def __init__(self, district, frame, name, tiles, east=True):
