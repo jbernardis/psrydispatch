@@ -81,10 +81,8 @@ class Route:
 		return self.signals
 
 	def ReleaseSignalLocks(self):
-		print("release %s signals********************************************" % self.name)
 		frame = self.osblk.frame
 		for s in self.signals:
-			print("(%s)" % str(s))
 			frame.signals[s].ClearLocks()
 
 	def rprint(self):
@@ -705,13 +703,7 @@ class OverSwitch (Block):
 		return False, EMPTY
 
 	def Draw(self):
-		dbg = False
-		if self.name.startswith("SOS"):
-			print("drawing block %s" % self.name)
-			dbg = True
 		for t, screen, pos, revflag in self.tiles:
-			if dbg:
-				print("position %d %d" % (pos[0], pos[1]))
 			draw, stat = self.GetTileInRoute(screen, pos)
 			if draw:
 				bmp = t.getBmp(stat, self.east, revflag)

@@ -81,7 +81,6 @@ class Shore (District):
 		bestat = self.blocks["SOSE"].GetStatus()
 
 		if self.turnouts["SSw3"].IsReverse() or self.turnouts["SSw5"].IsReverse():
-			print("swapping")
 			bwstat, bestat = bestat, bwstat
 
 		if osstat == OCCUPIED:
@@ -102,8 +101,6 @@ class Shore (District):
 				bmpe = "green-main"
 			else:
 				bmpe = "white-main"
-
-		print(str(self.misctiles))
 
 		bmp = self.misctiles["crossing"].getBmp("", bmpw)
 		self.frame.DrawTile(self.screen, (90, 11), bmp)

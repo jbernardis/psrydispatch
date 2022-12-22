@@ -442,10 +442,8 @@ class District:
 			turnout.SetReverse(refresh=True)
 
 	def DoSignalAction(self, sig, aspect):
+
 		signm = sig.GetName()
-		if sig.GetAspect() == aspect:
-			# no change necessary
-			return
 
 		for blknm, siglist in self.osSignals.items():
 			if signm in siglist:
@@ -453,10 +451,18 @@ class District:
 				rname = osblock.GetRouteName()
 				if osblock.route is None:
 					continue
-				# rt = self.routes[rname]
 				if sig.IsPossibleRoute(blknm, rname):
 					break
 		else:
+			return
+		if aspect < 0:
+			aspect = self.CalculateAspect(sig, osblock, self.routes[rname])
+			print("calculated the aspect as: %s" % aspect)
+			#  report calculated aspect back to the server
+			self.frame.Request({"signal": {"name": signm, "aspect": aspect}})
+
+		if sig.GetAspect() == aspect:
+			# no change necessary
 			return
 
 		# all checking was done on the sending side, so this is a valid request - just do it
