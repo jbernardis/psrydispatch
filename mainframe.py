@@ -837,8 +837,8 @@ class MainFrame(wx.Frame):
 		self.ShowTitle()
 
 	def OnRefresh(self, _):
-		# self.districts.GenerateRouteInformation()
-		self.rrServer.SendRequest({"refresh": {"SID": self.sessionid}})
+		self.districts.GenerateLayoutInformation()  # only do for dispatcher
+		# self.rrServer.SendRequest({"refresh": {"SID": self.sessionid}})
 
 	def raiseDeliveryEvent(self, data): # thread context
 		try:
@@ -852,7 +852,7 @@ class MainFrame(wx.Frame):
 	def onDeliveryEvent(self, evt):
 		for cmd, parms in evt.data.items():
 			logging.info("Dispatch: %s: %s" % (cmd, parms))
-			print("Dispatch: %s: %s" % (cmd, parms))
+			# print("Dispatch: %s: %s" % (cmd, parms))
 			if cmd == "turnout":
 				for p in parms:
 					turnout = p["name"]
@@ -884,6 +884,11 @@ class MainFrame(wx.Frame):
 				for p in parms:
 					block = p["name"]
 					state = p["state"]
+					try:
+						direction = p["dir"] == 'E'
+					except KeyError:
+						direction = True  # east
+
 					blk = None
 					try:
 						blk = self.blocks[block]
@@ -898,9 +903,11 @@ class MainFrame(wx.Frame):
 								blk = None
 
 					stat = OCCUPIED if state == 1 else EMPTY
-					if blk is not None and blk.GetStatus(blockend) != stat:
-						district = blk.GetDistrict()
-						district.DoBlockAction(blk, blockend, stat)
+					if blk is not None:
+						blk.SetEast(direction)
+						if blk.GetStatus(blockend) != stat:
+							district = blk.GetDistrict()
+							district.DoBlockAction(blk, blockend, stat)
 					
 			elif cmd == "signal":
 				for p in parms:
@@ -1045,7 +1052,7 @@ class MainFrame(wx.Frame):
 				for p in parms:
 					name = p["name"]
 					value = int(p["value"])
-				self.UpdateControlWidget(name, value)
+					self.UpdateControlWidget(name, value)
 
 			elif cmd == "sessionID":
 				self.sessionid = int(parms)
@@ -1055,15 +1062,12 @@ class MainFrame(wx.Frame):
 
 			elif cmd == "end":
 				if parms["type"] == "layout":
-					print("======================================== end of layout")
 					if self.settings.dispatch:
 						self.SendBlockDirRequests()
 						self.SendOSRoutes()
 					self.rrServer.SendRequest({"refresh": {"SID": self.sessionid, "type": "trains"}})
 				elif parms["type"] == "trains":
-					print("======================================== end of trains")
-			else:
-				print("command = %s" % cmd)
+					pass
 
 	def raiseDisconnectEvent(self): # thread context
 		evt = DisconnectEvent()
@@ -1074,7 +1078,7 @@ class MainFrame(wx.Frame):
 		if self.settings.dispatch or command in allowedCommands:
 			if self.subscribed:
 				logging.debug(json.dumps(req))
-				print("Outgoing request: %s" % json.dumps(req))
+				# print("Outgoing request: %s" % json.dumps(req))
 				self.rrServer.SendRequest(req)
 
 	def SendBlockDirRequests(self):

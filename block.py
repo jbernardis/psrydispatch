@@ -435,6 +435,10 @@ class Block:
 			if b is not None:
 				b.SetCleared(cleared, refresh)
 
+	def ToJson(self):
+		return {self.name: {"sbeast": None if self.sbEast is None else self.sbEast.GetName(),
+							"sbwest": None if self.sbWest is None else self.sbWest.GetName()}}
+
 
 class StoppingBlock (Block):
 	def __init__(self, block, tiles, eastend):

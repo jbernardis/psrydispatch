@@ -617,6 +617,13 @@ class District:
 
 		return routes
 
+	def GenerateBlockInformation(self):
+		blocks = {}
+		for b in self.blocks.values():
+			blocks.update(b.ToJson())
+
+		return blocks
+
 
 class Districts:
 	def __init__(self):
@@ -690,11 +697,14 @@ class Districts:
 		for t in self.districts.values():
 			t.SendRouteDefinitions()
 
-	def GenerateRouteInformation(self):
+	def GenerateLayoutInformation(self):
 		routes = {}
+		blocks = {}
 		for t in self.districts.values():
 			routes.update(t.GenerateRouteInformation())
+			blocks.update(t.GenerateBlockInformation())
 
-		with open("routes.json", "w") as jfp:
-			json.dump(routes, jfp, sort_keys=True, indent=2)
+		layout = {"routes": routes, "blocks": blocks}
+		with open("layout.json", "w") as jfp:
+			json.dump(layout, jfp, sort_keys=True, indent=2)
 
