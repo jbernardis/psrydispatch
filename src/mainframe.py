@@ -852,7 +852,7 @@ class MainFrame(wx.Frame):
 	def onDeliveryEvent(self, evt):
 		for cmd, parms in evt.data.items():
 			logging.info("Dispatch: %s: %s" % (cmd, parms))
-			# print("Dispatch: %s: %s" % (cmd, parms))
+			print("Dispatch: %s: %s" % (cmd, parms))
 			if cmd == "turnout":
 				for p in parms:
 					turnout = p["name"]
@@ -908,6 +908,32 @@ class MainFrame(wx.Frame):
 						if blk.GetStatus(blockend) != stat:
 							district = blk.GetDistrict()
 							district.DoBlockAction(blk, blockend, stat)
+
+			elif cmd == "blockdir":
+				for p in parms:
+					block = p["name"]
+					try:
+						direction = p["dir"] == 'E'
+					except KeyError:
+						direction = True  # east
+
+					blk = None
+					try:
+						blk = self.blocks[block]
+						blockend = None
+					except KeyError:
+						if block.endswith(".E") or block.endswith(".W"):
+							blockend = block[-1]
+							block = block[:-2]
+							try:
+								blk = self.blocks[block]
+							except KeyError:
+								blk = None
+					if blk is not None:
+						blk.SetEast(direction)
+
+			elif cmd == "blockclear":
+				pass
 					
 			elif cmd == "signal":
 				for p in parms:
@@ -1078,7 +1104,7 @@ class MainFrame(wx.Frame):
 		if self.settings.dispatch or command in allowedCommands:
 			if self.subscribed:
 				logging.debug(json.dumps(req))
-				# print("Outgoing request: %s" % json.dumps(req))
+				print("Outgoing request: %s" % json.dumps(req))
 				self.rrServer.SendRequest(req)
 
 	def SendBlockDirRequests(self):

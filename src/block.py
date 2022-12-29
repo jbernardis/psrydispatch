@@ -250,6 +250,9 @@ class Block:
 		return not self.east if reverse else self.east
 
 	def SetEast(self, east):
+		if self.east == east:
+			return
+
 		self.east = east
 		self.frame.Request({"blockdir": { "block": self.GetName(), "dir": "E" if east else "W"}})
 		for b in [self.sbEast, self.sbWest]:
@@ -422,12 +425,12 @@ class Block:
 			# already in the desired state
 			return
 
-		self.frame.Request({"blockclear": { "block": self.GetName(), "clear": 1 if cleared else 0}})
 		self.cleared = cleared
 		self.determineStatus()
 		if self.status == EMPTY:
 			self.Reset()
-			
+		self.frame.Request({"blockclear": { "block": self.GetName(), "clear": 1 if cleared else 0}})
+
 		if refresh:
 			self.Draw()
 
@@ -436,7 +439,8 @@ class Block:
 				b.SetCleared(cleared, refresh)
 
 	def ToJson(self):
-		return {self.name: {"sbeast": None if self.sbEast is None else self.sbEast.GetName(),
+		return {self.name: {"east": 1 if self.defaultEast else 0,
+							"sbeast": None if self.sbEast is None else self.sbEast.GetName(),
 							"sbwest": None if self.sbWest is None else self.sbWest.GetName()}}
 
 
