@@ -249,15 +249,16 @@ class Block:
 	def GetEast(self, reverse=False):
 		return not self.east if reverse else self.east
 
-	def SetEast(self, east):
+	def SetEast(self, east, broadcast=True):
 		if self.east == east:
 			return
 
 		self.east = east
-		self.frame.Request({"blockdir": { "block": self.GetName(), "dir": "E" if east else "W"}})
-		for b in [self.sbEast, self.sbWest]:
-			if b is not None:
-				self.frame.Request({"blockdir": { "block": b.GetName(), "dir": "E" if east else "W"}})
+		if broadcast:
+			self.frame.Request({"blockdir": { "block": self.GetName(), "dir": "E" if east else "W"}})
+			for b in [self.sbEast, self.sbWest]:
+				if b is not None:
+					self.frame.Request({"blockdir": { "block": b.GetName(), "dir": "E" if east else "W"}})
 
 	def IsReversed(self):
 		return self.east != self.defaultEast

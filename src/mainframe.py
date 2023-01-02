@@ -1,5 +1,6 @@
 import wx
 import wx.lib.newevent
+import traceback
 
 import os
 import json
@@ -48,7 +49,6 @@ wildcardLoco = "locomotive files (*.loco)|*.loco|"	 \
 			"All files (*.*)|*.*"
 import pprint
 
-
 class Node:
 	def __init__(self, screen, bitmapName, offset):
 		self.screen = screen
@@ -66,6 +66,8 @@ class MainFrame(wx.Frame):
 		logging.info("Display process starting")
 		self.settings = Settings(cmdFolder)
 
+		self.logCount = 6
+		
 		self.turnoutMap = {}
 		self.buttonMap = {}
 		self.signalMap = {}
@@ -124,12 +126,19 @@ class MainFrame(wx.Frame):
 		else:
 			self.PlaceWidgets()
 
-		self.bSubscribe = wx.Button(self, wx.ID_ANY, "Connect", pos=(100, 25))
+		self.bSubscribe = wx.Button(self, wx.ID_ANY, "Connect", pos=(100, 15))
 		self.Bind(wx.EVT_BUTTON, self.OnSubscribe, self.bSubscribe)
 
-		self.bRefresh = wx.Button(self, wx.ID_ANY, "Refresh", pos=(100, 65))
+		self.bRefresh = wx.Button(self, wx.ID_ANY, "Refresh", pos=(100, 45))
 		self.Bind(wx.EVT_BUTTON, self.OnRefresh, self.bRefresh)
 		self.bRefresh.Enable(False)
+
+		self.bConfig = wx.Button(self, wx.ID_ANY, "Config", pos=(100, 75))
+		self.Bind(wx.EVT_BUTTON, self.OnConfig, self.bConfig)
+		self.bConfig.Enable(False)
+		
+		if not self.IsDispatcher():
+			self.bConfig.Hide()
 
 		self.bLoadTrains = wx.Button(self, wx.ID_ANY, "Load Trains", pos=(250, 25))
 		self.bLoadTrains.Enable(False)
@@ -817,6 +826,7 @@ class MainFrame(wx.Frame):
 			self.sessionid = None
 			self.bSubscribe.SetLabel("Connect")
 			self.bRefresh.Enable(False)
+			self.bConfig.Enable(False)
 			self.bLoadTrains.Enable(False)
 			self.bLoadLocos.Enable(False)
 		else:
@@ -830,6 +840,7 @@ class MainFrame(wx.Frame):
 			self.subscribed = True
 			self.bSubscribe.SetLabel("Disconnect")
 			self.bRefresh.Enable(True)
+			self.bConfig.Enable(True)
 			self.bLoadTrains.Enable(True)
 			self.bLoadLocos.Enable(True)
 
@@ -837,8 +848,10 @@ class MainFrame(wx.Frame):
 		self.ShowTitle()
 
 	def OnRefresh(self, _):
-		self.districts.GenerateLayoutInformation()  # only do for dispatcher
-		# self.rrServer.SendRequest({"refresh": {"SID": self.sessionid}})
+		self.rrServer.SendRequest({"refresh": {"SID": self.sessionid}})
+		
+	def OnConfig(self, _):		
+		self.rrServer.SendRequest({"refresh": {"type": "subblocks", "SID": self.sessionid}})
 
 	def raiseDeliveryEvent(self, data): # thread context
 		try:
@@ -852,7 +865,7 @@ class MainFrame(wx.Frame):
 	def onDeliveryEvent(self, evt):
 		for cmd, parms in evt.data.items():
 			logging.info("Dispatch: %s: %s" % (cmd, parms))
-			print("Dispatch: %s: %s" % (cmd, parms))
+			print("Incoming socket message: %s: %s" % (cmd, parms))
 			if cmd == "turnout":
 				for p in parms:
 					turnout = p["name"]
@@ -884,10 +897,6 @@ class MainFrame(wx.Frame):
 				for p in parms:
 					block = p["name"]
 					state = p["state"]
-					try:
-						direction = p["dir"] == 'E'
-					except KeyError:
-						direction = True  # east
 
 					blk = None
 					try:
@@ -904,14 +913,13 @@ class MainFrame(wx.Frame):
 
 					stat = OCCUPIED if state == 1 else EMPTY
 					if blk is not None:
-						blk.SetEast(direction)
 						if blk.GetStatus(blockend) != stat:
 							district = blk.GetDistrict()
 							district.DoBlockAction(blk, blockend, stat)
 
 			elif cmd == "blockdir":
 				for p in parms:
-					block = p["name"]
+					block = p["block"]
 					try:
 						direction = p["dir"] == 'E'
 					except KeyError:
@@ -930,7 +938,7 @@ class MainFrame(wx.Frame):
 							except KeyError:
 								blk = None
 					if blk is not None:
-						blk.SetEast(direction)
+						blk.SetEast(direction, broadcast=False)
 
 			elif cmd == "blockclear":
 				pass
@@ -1094,6 +1102,10 @@ class MainFrame(wx.Frame):
 					self.rrServer.SendRequest({"refresh": {"SID": self.sessionid, "type": "trains"}})
 				elif parms["type"] == "trains":
 					pass
+				
+			elif cmd == "subblocks":
+				# parms contains subblocks information
+				self.districts.GenerateLayoutInformation(parms)  # only do for dispatcher
 
 	def raiseDisconnectEvent(self): # thread context
 		evt = DisconnectEvent()
@@ -1104,7 +1116,7 @@ class MainFrame(wx.Frame):
 		if self.settings.dispatch or command in allowedCommands:
 			if self.subscribed:
 				logging.debug(json.dumps(req))
-				print("Outgoing request: %s" % json.dumps(req))
+				print("Outgoing HTTP request: %s" % json.dumps(req))
 				self.rrServer.SendRequest(req)
 
 	def SendBlockDirRequests(self):
@@ -1126,6 +1138,7 @@ class MainFrame(wx.Frame):
 		self.subscribed = False
 		self.bSubscribe.SetLabel("Connect")
 		self.bRefresh.Enable(False)
+		self.bConfig.Enable(False)
 		self.bLoadTrains.Enable(False)
 		self.bLoadLocos.Enable(False)
 		logging.info("Server socket closed")
@@ -1230,12 +1243,15 @@ class MainFrame(wx.Frame):
 						print("block %s not occupied or not known - ignoring" % bname)
 
 	def OnClose(self, _):
-		dlg = ExitDlg(self)
-		rc = dlg.ShowModal()
-		dlg.Destroy()
-		if rc != wx.ID_OK:
-			return
-
+		if self.IsDispatcher():
+			dlg = ExitDlg(self)
+			rc = dlg.ShowModal()
+			dlg.Destroy()
+			if rc != wx.ID_OK:
+				return
+		self.KillWindow()
+		
+	def KillWindow(self):
 		self.toaster.Close()
 		try:
 			self.listener.kill()

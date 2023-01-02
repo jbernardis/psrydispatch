@@ -2,6 +2,7 @@
 
 dispatcher only - upload route definitions at connection
 auto-router - request download of route definitions
+dispatcher-initiated mechanism to output layout information for use in trainedit and AR
 
 
 how to use release - yard nassau and cliff
@@ -15,8 +16,13 @@ ATC
  need dcc interface
 
 Auto routing
+  interface needs work
 
 Simulator
-  new commands for dispatcher in simulation mode:  placetrain, removetrain, set signal, get signal
-  multiple simultaneous scripts
-  display scripts running and their status
+  fix sluggish vlist interface
+  
+Train Edit
+  deal with subblocks when generating sim script - may need to assume subblock order
+  when generating AR, option to include first OS to allow for manual train starting
+  I/O - save trains, etc
+  adding block traversal time and train length to generate sim script

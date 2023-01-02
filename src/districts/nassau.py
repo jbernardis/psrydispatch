@@ -179,9 +179,7 @@ class Nassau (District):
 				turnout.Draw()
 
 		else:
-			print("NASSAU DTA")
 			if tn in ["NSw13", "NSw15", "NSw17"]:  # Coach Yard - update display
-				print("COACH YARD")
 				for t, screen, pos, revflag in self.blocks["N60"].GetTiles():
 					bmp = t.getBmp(EMPTY, False, False)
 					self.frame.DrawTile(screen, pos, bmp)

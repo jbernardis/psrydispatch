@@ -283,7 +283,6 @@ class District:
 
 	def anyTurnoutLocked(self, toList):
 		rv = False
-		print(str(toList))
 		for toname, stat in toList:
 			turnout = self.turnouts[toname]
 			tostat = "N" if turnout.IsNormal() else "R"
@@ -457,7 +456,6 @@ class District:
 			return
 		if aspect < 0:
 			aspect = self.CalculateAspect(sig, osblock, self.routes[rname])
-			print("calculated the aspect as: %s" % aspect)
 			#  report calculated aspect back to the server
 			self.frame.Request({"signal": {"name": signm, "aspect": aspect}})
 
@@ -697,14 +695,14 @@ class Districts:
 		for t in self.districts.values():
 			t.SendRouteDefinitions()
 
-	def GenerateLayoutInformation(self):
+	def GenerateLayoutInformation(self, subblocks):
 		routes = {}
 		blocks = {}
 		for t in self.districts.values():
 			routes.update(t.GenerateRouteInformation())
 			blocks.update(t.GenerateBlockInformation())
 
-		layout = {"routes": routes, "blocks": blocks}
+		layout = {"routes": routes, "blocks": blocks, "subblocks": subblocks}
 		with open("layout.json", "w") as jfp:
 			json.dump(layout, jfp, sort_keys=True, indent=2)
 
