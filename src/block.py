@@ -685,6 +685,11 @@ class OverSwitch (Block):
 
 	def SetOccupied(self, occupied=True, blockend=None, refresh=False):
 		Block.SetOccupied(self, occupied, blockend, refresh)
+		
+		if self.route:
+			tolist = self.route.GetLockTurnouts()
+			self.district.LockTurnouts(self.name, tolist, occupied)
+
 		if occupied:
 			if self.entrySignal is not None:
 				signm = self.entrySignal.GetName()
@@ -702,10 +707,6 @@ class OverSwitch (Block):
 				self.district.LockTurnoutsForSignal(self.GetName(), self.entrySignal, False)
 				self.entrySignal = None
 		
-		if self.route:
-			tolist = self.route.GetLockTurnouts()
-			self.district.LockTurnouts(self.name, tolist, occupied)
-
 	def GetTileInRoute(self, screen, pos):
 		if self.route is None:
 			return False, EMPTY
