@@ -17,12 +17,12 @@ ATC
 
 Auto routing
   interface needs work
-
-Simulator
-  fix sluggish vlist interface
   
 Train Edit
-  deal with subblocks when generating sim script - may need to assume subblock order
-  when generating AR, option to include first OS to allow for manual train starting
-  I/O - save trains, etc
-  adding block traversal time and train length to generate sim script
+  work traversal times and ability to set for each train/block combination
+  work train length into interface
+  integrate generate into other apps - merge into master file
+  
+set up a run-time environment so that we can have a common settings area and also a common place for layout.json, etc
+
+
