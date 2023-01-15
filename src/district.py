@@ -1,5 +1,6 @@
 import logging
 import json
+import os
 
 from constants import RegAspects, RegSloAspects, AdvAspects, SloAspects, \
 	MAIN, SLOW, DIVERGING, RESTRICTING, \
@@ -703,6 +704,6 @@ class Districts:
 			blocks.update(t.GenerateBlockInformation())
 
 		layout = {"routes": routes, "blocks": blocks, "subblocks": subblocks}
-		with open("layout.json", "w") as jfp:
+		with open(os.path.join(os.getcwd(), "data", "layout.json"), "w") as jfp:
 			json.dump(layout, jfp, sort_keys=True, indent=2)
 

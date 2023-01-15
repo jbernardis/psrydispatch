@@ -3,7 +3,8 @@ import os
 import logging
 import wx
 
-INIFILE = "psrydispatch.ini"
+INIFILE = "psry.ini"
+GLOBAL = "global"
 
 
 def parseBoolean(val, defaultVal):
@@ -19,10 +20,10 @@ def parseBoolean(val, defaultVal):
 
 
 class Settings:
-	def __init__(self, folder):
-		self.cmdfolder = folder
-		self.inifile = os.path.join(folder, INIFILE)
-		self.section = "psrydispatch"	
+	def __init__(self):
+		self.datafolder = os.path.join(os.getcwd(), "data")
+		self.inifile = os.path.join(self.datafolder, INIFILE)
+		self.section = "dispatcher"
 		
 		self.pages = 3
 		self.dispatch = True
@@ -37,7 +38,6 @@ class Settings:
 		self.cfg.optionxform = str
 		if not self.cfg.read(self.inifile):
 			logging.warning("Settings file %s does not exist.  Using default values" % INIFILE)
-			self.save()
 			return
 
 		if self.cfg.has_section(self.section):
@@ -59,11 +59,19 @@ class Settings:
 
 				elif opt == 'showcameras':
 					self.showcameras = parseBoolean(value, False)
-						
-				elif opt == 'ipaddr':
-					self.ipaddr = value
-						
-				elif opt == 'socketport':
+
+				elif opt == "traindir":
+					self.traindir = value
+
+				elif opt == "locodir":
+					self.locodir = value
+
+		else:
+			logging.warning("Missing %s section - assuming defaults" % self.section)
+			
+		if self.cfg.has_section(GLOBAL):
+			for opt, value in self.cfg.items(GLOBAL):
+				if opt == 'socketport':
 					try:
 						s = int(value)
 					except:
@@ -78,15 +86,12 @@ class Settings:
 						logging.warning("invalid value in ini file for server port: (%s)" % value)
 						s = 9000
 					self.serverport = s
-
-				elif opt == "traindir":
-					self.traindir = value
-
-				elif opt == "locodir":
-					self.locodir = value
+						
+				elif opt == 'ipaddr':
+					self.ipaddr = value
 
 		else:
-			logging.warning("Missing %s section - assuming defaults" % self.section)
+			logging.warning("Missing global section - assuming defaults")
 
 	def SetTrainDir(self, tdir):
 		self.traindir = tdir
@@ -102,9 +107,6 @@ class Settings:
 
 		self.cfg.set(self.section, "pages", str(self.pages))
 		self.cfg.set(self.section, "dispatch", "True" if self.dispatch else "False")
-		self.cfg.set(self.section, "ipaddr", str(self.ipaddr))
-		self.cfg.set(self.section, "serverport", str(self.serverport))
-		self.cfg.set(self.section, "socketport", str(self.socketport))
 		self.cfg.set(self.section, "showcameras", "True" if self.showcameras else "False")
 		self.cfg.set(self.section, "traindir", str(self.traindir))
 		self.cfg.set(self.section, "locodir", str(self.locodir))

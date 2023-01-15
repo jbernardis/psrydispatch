@@ -1,10 +1,5 @@
 
 
-dispatcher only - upload route definitions at connection
-auto-router - request download of route definitions
-dispatcher-initiated mechanism to output layout information for use in trainedit and AR
-
-
 how to use release - yard nassau and cliff
 call on signals - I think it refers to JUST lighting the signal with no route clearing etc
 how to use wos1norm in yard
@@ -19,10 +14,10 @@ Auto routing
   interface needs work
   
 Train Edit
-  work traversal times and ability to set for each train/block combination
+  change time/trigger via
   work train length into interface
-  integrate generate into other apps - merge into master file
   
 set up a run-time environment so that we can have a common settings area and also a common place for layout.json, etc
+sim and ar settings - move out of code and into settings file
 
 

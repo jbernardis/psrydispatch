@@ -1,12 +1,8 @@
-import wx
+#import wx
 import wx.lib.newevent
-import traceback
 
 import os
 import json
-import inspect
-
-cmdFolder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
 import logging
 
 from settings import Settings
@@ -47,7 +43,6 @@ wildcardTrain = "train files (*.trn)|*.trn|"	 \
 			"All files (*.*)|*.*"
 wildcardLoco = "locomotive files (*.loco)|*.loco|"	 \
 			"All files (*.*)|*.*"
-import pprint
 
 class Node:
 	def __init__(self, screen, bitmapName, offset):
@@ -64,7 +59,7 @@ class MainFrame(wx.Frame):
 		self.sessionid = None
 		self.subscribed = False
 		logging.info("Display process starting")
-		self.settings = Settings(cmdFolder)
+		self.settings = Settings()
 
 		self.logCount = 6
 		
@@ -76,7 +71,7 @@ class MainFrame(wx.Frame):
 		self.title = "PSRY Dispatcher" if self.settings.dispatch else "PSRY Monitor"
 		self.ToasterSetup()
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
-		self.bitmaps = BitMaps(os.path.join(".", "bitmaps"))
+		self.bitmaps = BitMaps(os.path.join(os.getcwd(), "data", "bitmaps"))
 		singlePage = self.settings.pages == 1
 		self.bmpw, self.bmph = self.bitmaps.diagrams.HydeYardPort.GetSize()
 		self.diagrams = {
@@ -1159,7 +1154,7 @@ class MainFrame(wx.Frame):
 		for trid, tr in self.trains.items():
 			if not trid.startswith("??"):
 				trDict[trid] = tr.GetBlockNameList()
-
+		print(path)
 		with open(path, "w") as fp:
 			json.dump(trDict, fp, indent=4, sort_keys=True)
 
@@ -1208,7 +1203,7 @@ class MainFrame(wx.Frame):
 			loco = tr.GetLoco()
 			if loco is not None and not loco.startswith("??"):
 				locoDict[loco] = tr.GetBlockNameList()
-
+		print(path)
 		with open(path, "w") as fp:
 			json.dump(locoDict, fp, indent=4, sort_keys=True)
 
